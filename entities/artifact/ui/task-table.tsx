@@ -69,9 +69,9 @@ export function TaskTable({ data }: { data: TaskTableArtifact['data'] }) {
                 {task.title}
               </p>
               <span
-                className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[task.status] ?? 'bg-muted text-muted-foreground'}`}
+                className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[task.status ?? ''] ?? 'bg-muted text-muted-foreground'}`}
               >
-                {STATUS_LABELS[task.status] ?? task.status}
+                {STATUS_LABELS[task.status ?? ''] ?? task.status}
               </span>
             </div>
             {task.description &&
