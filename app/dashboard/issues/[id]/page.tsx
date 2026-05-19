@@ -11,6 +11,7 @@ import {
   getIssueComments,
   IssueForm,
   IssueLinkedTask,
+  EpicChildIssues,
 } from '@/features/issues';
 import { getOrganizations } from '@/features/organization';
 import { getUser } from '@/features/user';
@@ -104,6 +105,10 @@ export default async function IssueDetailPage({
             </div>
           </Card>
           <IssueLinkedTask issue={issue} />
+
+          {issue.type === 'epic' && (
+            <EpicChildIssues issues={issue.child_issues ?? []} />
+          )}
 
           <Card className='flex flex-col'>
             <PageHeader title='Comments' />
