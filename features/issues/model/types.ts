@@ -220,7 +220,7 @@ export interface IssueUpsertDTO {
   status: IssueStatus;
   organization_id: number | null;
   team_id: number | null;
-  epic_id?: number | null;
+  epic_id: number | null;
   assignee_id: number | null;
   author_id: number | null;
   due_date: string | null;

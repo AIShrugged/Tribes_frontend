@@ -90,6 +90,7 @@ export function IssueForm({
   const [hasPendingOps, setHasPendingOps] = useState(false);
   const isSubmittedRef = useRef(false);
   const pendingAttachmentsRef = useRef(pendingAttachments);
+  const savedEpicIdRef = useRef<string | undefined>(undefined);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Stable upload token for create mode — lazy initializer runs exactly once per mount.
@@ -197,7 +198,7 @@ export function IssueForm({
         status,
         organization_id: Number(values.organization_id),
         team_id: values.team_id ? Number(values.team_id) : null,
-        epic_id: values.epic_id ? Number(values.epic_id) : null,
+        epic_id: values.epic_id === '' ? null : Number(values.epic_id),
         assignee_id: values.assignee_id ? Number(values.assignee_id) : null,
         author_id: values.author_id ? Number(values.author_id) : null,
         due_date: values.due_date || null,
@@ -270,7 +271,16 @@ export function IssueForm({
           options={[{ value: '', label: 'Select type' }, ...typeOptions]}
           value={watch('type')}
           onChange={(value) => {
+            const previousEpicId = watch('epic_id');
             setValue('type', value as string, { shouldDirty: true });
+            if (value === 'epic') {
+              savedEpicIdRef.current = previousEpicId;
+              setValue('epic_id', '', { shouldDirty: true });
+              clearErrors('epic_id');
+            } else if (savedEpicIdRef.current !== undefined) {
+              setValue('epic_id', savedEpicIdRef.current, { shouldDirty: true });
+              savedEpicIdRef.current = undefined;
+            }
             clearErrors('type');
             setRootError('');
           }}
@@ -318,20 +328,23 @@ export function IssueForm({
         disabled={isPending}
       />
 
-      <InputDropdown
-        label='Epic'
-        options={[
-          { value: '', label: 'None' },
-          ...epics.map((e) => {
-            return { value: String(e.id), label: e.name };
-          }),
-        ]}
-        value={watch('epic_id')}
-        onChange={(value) => {
-          setValue('epic_id', value as string, { shouldDirty: true });
-        }}
-        searchable
-      />
+      {watch('type') !== 'epic' &&
+        (epics.length > 0 || (!!issue && issue.epic_id !== null)) && (
+          <InputDropdown
+            label='Epic'
+            options={[
+              { value: '', label: 'None' },
+              ...epics.map((e) => {
+                return { value: String(e.id), label: e.name };
+              }),
+            ]}
+            value={watch('epic_id')}
+            onChange={(value) => {
+              setValue('epic_id', value as string, { shouldDirty: true });
+            }}
+            searchable
+          />
+        )}
 
       <div className='grid gap-2 md:grid-cols-2'>
         <InputDropdown

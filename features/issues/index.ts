@@ -56,6 +56,7 @@ export { default as IssueCreateButton } from './ui/issue-create-button';
 export { IssuesLayoutClient } from './ui/issues-layout-client';
 export { IssuesListTab } from './ui/issues-list-tab';
 export { IssueLinkedTask } from './ui/issue-linked-task';
+export { EpicChildIssues } from './ui/epic-child-issues';
 export { getCriticalPath, rebuildCriticalPath } from './api/critical-path';
 export { CriticalPathGraph } from './ui/critical-path-graph';
 export { CriticalPathNodeDetail } from './ui/critical-path-node-detail';
