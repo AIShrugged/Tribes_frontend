@@ -5,7 +5,6 @@ export * from './lib/format';
 export * from './model/types';
 export { TodayActivityFeed } from './ui/today-activity-feed';
 export { AgentRunStatusBadge } from './ui/agent-run-status-badge';
-export type { AgentRunStatus } from './ui/agent-run-status-badge';
 export { AccessDeniedState } from './ui/access-denied-state';
 export { AgentActivityFeed } from './ui/agent-activity-feed';
 export { AgentJsonPreview } from './ui/agent-json-preview';

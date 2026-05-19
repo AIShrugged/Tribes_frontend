@@ -1,14 +1,5 @@
 import { Badge } from '@/shared/ui/badge';
 
-export type AgentRunStatus =
-  | 'queued'
-  | 'processing'
-  | 'running'
-  | 'completed'
-  | 'success'
-  | 'failed'
-  | 'error';
-
 function getVariant(
   status: string,
 ): React.ComponentProps<typeof Badge>['variant'] {

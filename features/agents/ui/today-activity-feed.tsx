@@ -5,33 +5,25 @@ import { useState } from 'react';
 
 import { formatDateTime } from '@/features/agents/lib/format';
 import { AgentJsonPreview } from '@/features/agents/ui/agent-json-preview';
+import { AgentRunStatusBadge } from '@/features/agents/ui/agent-run-status-badge';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/feedback/empty-state';
 
 import type {
+  AgentRunStatus,
   AgentTaskActivityItem,
   AgentTaskLatestRun,
 } from '@/features/agents/model/types';
 
-const STATUS_VARIANT: Record<
-  NonNullable<AgentTaskLatestRun['status']>,
-  'default' | 'success' | 'destructive' | 'warning'
-> = {
-  queued: 'default',
-  processing: 'warning',
-  completed: 'success',
-  failed: 'destructive',
-};
-
-const STATUS_EMPTY_MESSAGE: Record<
-  NonNullable<AgentTaskLatestRun['status']>,
-  string
-> = {
+const STATUS_EMPTY_MESSAGE: Record<AgentRunStatus, string> = {
   queued: 'Run is queued — activity will appear once it starts.',
   processing: 'Run is in progress — refresh the page to see new activity.',
+  running: 'Run is in progress — refresh the page to see new activity.',
   completed: 'This run completed with no recorded tool calls.',
+  success: 'This run completed successfully with no recorded tool calls.',
   failed: 'Run failed with no recorded activity.',
+  error: 'Run encountered an error with no recorded activity.',
 };
 
 /**
@@ -40,13 +32,12 @@ const STATUS_EMPTY_MESSAGE: Record<
  * @param root0.run
  */
 function RunStatusHeader({ run }: { run: AgentTaskLatestRun }) {
-  const statusVariant = run.status ? STATUS_VARIANT[run.status] : 'default';
   const startedLabel = formatDateTime(run.started_at);
   const finishedLabel = formatDateTime(run.finished_at);
 
   return (
     <div className='mb-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-border bg-card px-4 py-3'>
-      <Badge variant={statusVariant}>{run.status ?? 'unknown'}</Badge>
+      <AgentRunStatusBadge status={run.status ?? 'unknown'} />
       {run.started_at && (
         <span className='text-xs text-muted-foreground'>
           Started: {startedLabel}

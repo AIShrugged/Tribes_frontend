@@ -12,10 +12,9 @@ import {
 } from '@/features/agents/api/agents';
 import { normalizeAllowedTools } from '@/features/agents/lib/format';
 import { parseJsonInput, stringifyJson } from '@/features/agents/lib/json';
-import { isAgentActionError } from '@/features/agents/model/types';
 import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
-import { Button } from '@/shared/ui/button/Button';
+import { Button } from '@/shared/ui/button';
 import Input from '@/shared/ui/input/Input';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 import InputTextarea from '@/shared/ui/input/InputTextarea';
@@ -122,7 +121,7 @@ export function AgentProfileForm({
           ? await updateAgentProfile(profile.id, payload)
           : await createAgentProfile(payload);
 
-      if (isAgentActionError(result)) {
+      if (result.error !== null) {
         for (const [field, message] of Object.entries(
           result.fieldErrors ?? {},
         )) {
@@ -136,7 +135,7 @@ export function AgentProfileForm({
       }
 
       toast.success(isEdit ? 'Agent profile updated' : 'Agent profile created');
-      router.push(`${ROUTES.DASHBOARD.AGENT_PROFILES}/${result.id}`);
+      router.push(`${ROUTES.DASHBOARD.AGENT_PROFILES}/${result.data.id}`);
       router.refresh();
     });
   };
@@ -245,7 +244,7 @@ export function AgentProfileForm({
                       payload,
                     );
 
-                    if (isAgentActionError(result)) {
+                    if (result.error !== null) {
                       toast.error(result.error);
 
                       return;
