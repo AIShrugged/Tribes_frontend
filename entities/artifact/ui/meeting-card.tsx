@@ -54,7 +54,7 @@ export function MeetingCard({ data }: { data: MeetingCardArtifact['data'] }) {
           <Clock className='w-3.5 h-3.5' />
           {formatTime(data.starts_at)}
           {'\u2013'}
-          {formatTime(data.ends_at)}
+          {data.ends_at ? formatTime(data.ends_at) : ''}
         </span>
         {participants.length > 0 && (
           <span className='flex items-center gap-1'>
