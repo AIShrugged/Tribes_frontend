@@ -1,10 +1,15 @@
 import { PRIORITY_LEVELS } from '@/entities/issue/model/types';
 
-import type { IssueStatus, PersonOption } from '@/entities/issue/model/types';
+import type {
+  EpicOption,
+  IssueStatus,
+  PersonOption,
+} from '@/entities/issue/model/types';
 import type { SortOrder } from '@/shared/ui/table/types';
 
 export type {
   IssueStatus,
+  EpicOption,
   PersonOption,
   SharedFilters,
   PriorityLevel,
@@ -80,12 +85,6 @@ export interface IssueAgentTaskRun {
   status: string | null;
   current_tool: string | null;
   current_tool_description: string | null;
-}
-
-export interface EpicOption {
-  id: number;
-  name: string;
-  status: IssueStatus;
 }
 
 export interface Issue {

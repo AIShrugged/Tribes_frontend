@@ -56,13 +56,20 @@ export const KanbanCardItem = memo(function KanbanCardItem({
           {card.description}
         </p>
       ) : null}
-      {card.type ? (
+      {card.type || card.epic ? (
         <div className='flex flex-wrap gap-1 mb-3'>
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeClass}`}
-          >
-            {card.type}
-          </span>
+          {card.type ? (
+            <span
+              className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeClass}`}
+            >
+              {card.type}
+            </span>
+          ) : null}
+          {card.epic ? (
+            <span className='text-xs px-2 py-0.5 rounded-full font-medium bg-violet-500/20 text-violet-300 truncate max-w-[140px]'>
+              {card.epic.name}
+            </span>
+          ) : null}
         </div>
       ) : null}
       <div className='flex items-center gap-2 text-xs text-muted-foreground'>

@@ -8,6 +8,8 @@ export {
   answerAgentFlow,
   getPersons,
   getEpics,
+  linkIssuesToEpic,
+  getTasksForEpicForm,
   getIssueAttachments,
   uploadIssueAttachment,
   deleteAttachment,

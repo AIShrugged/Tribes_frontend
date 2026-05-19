@@ -282,11 +282,18 @@ export function IssuesPage({
     };
   }, [filtersVersion, archivedBaseFilters]);
 
+  // Ref-based guard prevents double-invoke race on handleLoadMoreArchived.
+  // State booleans can be stale in closures; a ref is always current.
+  const archivedLoadingRef = useRef(false);
+
   // Load first page of archived items when show_archived becomes true
   useEffect(() => {
     if (!showArchived) return;
 
+    let cancelled = false;
+
     const run = async () => {
+      archivedLoadingRef.current = true;
       setArchivedLoading(true);
       setArchivedItems([]);
       setArchivedOffset(0);
@@ -298,22 +305,29 @@ export function IssuesPage({
           limit: PAGE_SIZE,
         });
 
+        if (cancelled) return;
         setArchivedItems(data);
         setArchivedOffset(PAGE_SIZE);
         setArchivedHasMore(hasMore);
       } catch {
         // silently fail
       } finally {
-        setArchivedLoading(false);
+        archivedLoadingRef.current = false;
+        if (!cancelled) setArchivedLoading(false);
       }
     };
 
     void run();
+
+    return () => {
+      cancelled = true;
+    };
   }, [showArchived, filtersVersion]);
 
   const handleLoadMoreArchived = useCallback(() => {
-    if (archivedLoading) return;
+    if (archivedLoadingRef.current) return;
 
+    archivedLoadingRef.current = true;
     setArchivedLoading(true);
 
     loadArchivedChunk({
@@ -334,9 +348,10 @@ export function IssuesPage({
         // silently fail
       })
       .finally(() => {
+        archivedLoadingRef.current = false;
         setArchivedLoading(false);
       });
-  }, [archivedLoading, archivedBaseFilters, archivedOffset]);
+  }, [archivedBaseFilters, archivedOffset]);
 
   const scrollInitialItems = useMemo(() => {
     return firstPage.data;

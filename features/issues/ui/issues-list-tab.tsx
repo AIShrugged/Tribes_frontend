@@ -1,6 +1,7 @@
 'use client';
 
 import { useFiltersContext } from '@/features/issues/model/filters-context';
+import { IssueTypeToggle } from '@/features/issues/ui/issue-type-toggle';
 import { IssuesPage } from '@/features/issues/ui/issues-page';
 
 import type { Issue, PersonOption } from '@/features/issues/model/types';
@@ -22,18 +23,29 @@ export function IssuesListTab({
     initialSort,
     initialOrder,
     setShowArchived,
+    handleFiltersChange,
   } = useFiltersContext();
 
   return (
-    <IssuesPage
-      initialIssues={initialIssues}
-      initialTotalCount={initialTotalCount}
-      persons={persons}
-      filters={filters}
-      filtersVersion={filtersVersion}
-      initialSort={initialSort}
-      initialOrder={initialOrder}
-      onShowArchivedChange={setShowArchived}
-    />
+    <>
+      <div className='px-2 mb-3'>
+        <IssueTypeToggle
+          value={(filters.type === 'epic' ? 'epic' : '') as '' | 'epic'}
+          onChange={(val) => {
+            return handleFiltersChange({ type: val });
+          }}
+        />
+      </div>
+      <IssuesPage
+        initialIssues={initialIssues}
+        initialTotalCount={initialTotalCount}
+        persons={persons}
+        filters={filters}
+        filtersVersion={filtersVersion}
+        initialSort={initialSort}
+        initialOrder={initialOrder}
+        onShowArchivedChange={setShowArchived}
+      />
+    </>
   );
 }
