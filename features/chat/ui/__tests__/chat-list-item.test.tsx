@@ -59,7 +59,7 @@ describe('ChatListItem', () => {
       />,
     );
     expect(
-      screen.getByRole('link', { name: 'My Chat Personal chat' }),
+      screen.getByRole('link', { name: 'My Chat' }),
     ).toBeInTheDocument();
   });
 

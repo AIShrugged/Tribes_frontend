@@ -76,7 +76,7 @@ export function ChatListItem({
 
   const href = `${ROUTES.DASHBOARD.CHAT}/${chat.id}`;
   const displayTitle = chat.title ?? 'Untitled chat';
-  let scopeLabel = 'Personal chat';
+  let scopeLabel: string | null = null;
 
   if ((chat.organization_id ?? null) !== null) {
     scopeLabel = chat.team_id
@@ -129,9 +129,11 @@ export function ChatListItem({
             <div className='min-w-0 truncate text-sm text-foreground'>
               {displayTitle}
             </div>
-            <p className='truncate text-xs text-muted-foreground'>
-              {scopeLabel}
-            </p>
+            {scopeLabel && (
+              <p className='truncate text-xs text-muted-foreground'>
+                {scopeLabel}
+              </p>
+            )}
           </Link>
           {/* opacity-based visibility keeps buttons in tab order for keyboard users */}
           <div className='opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 flex items-center gap-0.5 flex-shrink-0 transition-opacity'>

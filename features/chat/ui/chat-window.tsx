@@ -267,7 +267,10 @@ export function ChatWindow({
         addMessage(queuedMessage);
 
         if (queuedMessage.agent_run_uuid) {
-          startPollingRef.current(queuedMessage.id, queuedMessage.agent_run_uuid);
+          startPollingRef.current(
+            queuedMessage.id,
+            queuedMessage.agent_run_uuid,
+          );
         } else {
           isSendingRef.current = false;
           setIsSending(false);
@@ -305,10 +308,10 @@ export function ChatWindow({
     }, 100);
   }, [searchParams]);
 
-  let chatScopeLabel = 'Personal chat';
+  let fixedScopeLabel: string | null = null;
 
   if ((chat.organization_id ?? null) !== null) {
-    chatScopeLabel = chat.team_id
+    fixedScopeLabel = chat.team_id
       ? `Fixed scope: Org #${chat.organization_id} · Team #${chat.team_id}`
       : `Fixed scope: Org #${chat.organization_id}`;
   }
@@ -334,11 +337,13 @@ export function ChatWindow({
 
           {/* Desktop: icon + label */}
           <MessageSquare className='hidden md:block w-4 h-4 text-primary' />
-          <div className='hidden md:flex flex-col'>
-            <span className='text-xs text-muted-foreground'>
-              {chatScopeLabel}
-            </span>
-          </div>
+          {fixedScopeLabel && (
+            <div className='hidden md:flex flex-col'>
+              <span className='text-xs text-muted-foreground'>
+                {fixedScopeLabel}
+              </span>
+            </div>
+          )}
         </div>
         {onCollapse && (
           <ButtonIcon
