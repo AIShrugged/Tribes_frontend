@@ -6,6 +6,12 @@ export type IssueStatus =
   | 'reopen'
   | 'done';
 
+export interface EpicOption {
+  id: number;
+  name: string;
+  status: IssueStatus;
+}
+
 export interface PersonOption {
   id: number;
   name: string;

@@ -1,4 +1,5 @@
 import type {
+  EpicOption,
   IssueStatus,
   PersonOption,
   SharedFilters,
@@ -16,6 +17,8 @@ export interface KanbanCard {
   team_id: number | null;
   assignee_id: number | null;
   assignee?: PersonOption | null;
+  epic_id: number | null;
+  epic?: EpicOption | null;
   priority: number;
   attachments_count: number;
   comments_count: number;
@@ -93,6 +96,7 @@ export interface KanbanColumnProps {
 }
 
 export type {
+  EpicOption,
   IssueStatus,
   SharedFilters,
   PersonOption,

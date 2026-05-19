@@ -25,18 +25,20 @@ export function EpicChildIssues({ issues }: EpicChildIssuesProps) {
             </p>
           ) : (
             <div className='flex flex-col gap-2'>
-              {issues.map((child) => {return (
-                <Link
-                  key={child.id}
-                  href={`${ROUTES.DASHBOARD.ISSUES}/${child.id.toString()}`}
-                  className='flex items-center justify-between rounded-[var(--radius-card)] border border-border bg-background/30 px-4 py-3 hover:bg-background/50 transition-colors'
-                >
-                  <span className='truncate text-sm font-medium text-foreground'>
-                    #{child.id} {child.name}
-                  </span>
-                  <IssueStatusBadge status={child.status} />
-                </Link>
-              )})}
+              {issues.map((child) => {
+                return (
+                  <Link
+                    key={child.id}
+                    href={`${ROUTES.DASHBOARD.ISSUES}/${child.id.toString()}`}
+                    className='flex items-center justify-between rounded-[var(--radius-card)] border border-border bg-background/30 px-4 py-3 hover:bg-background/50 transition-colors'
+                  >
+                    <span className='truncate text-sm font-medium text-foreground'>
+                      #{child.id} {child.name}
+                    </span>
+                    <IssueStatusBadge status={child.status} />
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

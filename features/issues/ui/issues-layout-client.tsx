@@ -197,6 +197,7 @@ export function IssuesLayoutClient({
       initialOrder,
       setShowArchived,
       bumpColumnsVersion,
+      handleFiltersChange,
     };
   }, [
     filters,
@@ -206,6 +207,7 @@ export function IssuesLayoutClient({
     initialOrder,
     setShowArchived,
     bumpColumnsVersion,
+    handleFiltersChange,
   ]);
 
   return (

@@ -6,6 +6,7 @@ import {
   getIssueAttachments,
   getPersons,
   getEpics,
+  getTasksForEpicForm,
   IssueAttachments,
   IssueComments,
   getIssueComments,
@@ -69,6 +70,10 @@ export default async function IssueDetailPage({
     getUser(),
   ]);
 
+  const tasks = await getTasksForEpicForm(issue.organization_id).catch(() => {
+    return [];
+  });
+
   const currentUserId = userResponse.data?.id ?? 0;
   const isArchived =
     issue.status === 'done' &&
@@ -99,6 +104,7 @@ export default async function IssueDetailPage({
                   organizations={organizationsResponse.data ?? []}
                   persons={persons}
                   epics={epics}
+                  tasks={tasks}
                   currentUser={userResponse.data ?? null}
                 />
               </CardBody>

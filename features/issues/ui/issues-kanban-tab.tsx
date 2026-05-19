@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useFiltersContext } from '@/features/issues/model/filters-context';
+import { IssueTypeToggle } from '@/features/issues/ui/issue-type-toggle';
 import { KanbanBoard, fetchKanbanIssues } from '@/features/kanban';
 
 import type { OrganizationProps } from '@/entities/organization';
@@ -25,8 +26,13 @@ export function IssuesKanbanTab({
   organizations,
   persons,
 }: IssuesKanbanTabProps) {
-  const { filters, filtersVersion, columnsVersion, setShowArchived } =
-    useFiltersContext();
+  const {
+    filters,
+    filtersVersion,
+    columnsVersion,
+    setShowArchived,
+    handleFiltersChange,
+  } = useFiltersContext();
   const [columns, setColumns] = useState<Record<IssueStatus, KanbanCard[]>>(
     initialResult.columns,
   );
@@ -77,6 +83,14 @@ export function IssuesKanbanTab({
 
   return (
     <>
+      <div className='px-2 mb-3'>
+        <IssueTypeToggle
+          value={(filters.type === 'epic' ? 'epic' : '') as '' | 'epic'}
+          onChange={(val) => {
+            return handleFiltersChange({ type: val });
+          }}
+        />
+      </div>
       {isTruncated && (
         <div className='mx-2 mb-2 rounded-[var(--radius-card)] border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-400'>
           Some issues are not shown — there are more than 500 open issues. Use

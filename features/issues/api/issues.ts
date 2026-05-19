@@ -354,6 +354,36 @@ export async function answerAgentFlow(
 }
 
 /**
+ * linkIssuesToEpic sets epic_id on a batch of issues (child-side relationship only).
+ * Fires PATCH requests in parallel and collects failures.
+ * @param epicId - id of the parent epic.
+ * @param issueIds - ids of child issues to link.
+ * @returns list of ids that failed to update.
+ */
+export async function linkIssuesToEpic(
+  epicId: number,
+  issueIds: number[],
+): Promise<number[]> {
+  if (issueIds.length === 0) return [];
+
+  const results = await Promise.allSettled(
+    issueIds.map((childId) => {
+      return httpClient(`${API_URL}/issues/${childId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ epic_id: epicId }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }),
+  );
+
+  revalidatePath('/dashboard/issues', 'layout');
+
+  return issueIds.filter((_, i) => {
+    return results[i].status === 'rejected';
+  });
+}
+
+/**
  * getEpics fetches open/in-progress issues of type 'epic' for use in dropdowns.
  * @param organizationId - optional organization scope.
  * @returns epics list.
@@ -372,6 +402,30 @@ export async function getEpics(
     const result = await httpClientList<Issue>(`${API_URL}/issues?${query}`);
 
     return result.data;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * getTasksForEpicForm fetches non-epic issues for the child task selector on the epic form.
+ * @param organizationId - optional org scope.
+ * @returns issues list (max 200).
+ */
+export async function getTasksForEpicForm(
+  organizationId?: number | null,
+): Promise<Issue[]> {
+  try {
+    const query = buildIssuesQuery({
+      organization_id: organizationId ?? null,
+      exclude_archived: true,
+      limit: 200,
+      offset: 0,
+    });
+    const result = await httpClientList<Issue>(`${API_URL}/issues?${query}`);
+    return result.data.filter((i) => {
+      return i.type !== 'epic';
+    });
   } catch {
     return [];
   }

@@ -2,6 +2,7 @@ export { IssueStatusBadge } from './ui/issue-status-badge';
 export { IssuePriorityBadge } from './ui/issue-priority-badge';
 export type {
   IssueStatus,
+  EpicOption,
   PersonOption,
   SharedFilters,
   PriorityLevel,

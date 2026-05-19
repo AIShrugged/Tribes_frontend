@@ -16,6 +16,7 @@ export interface FiltersContextValue {
   initialOrder: SortOrder;
   setShowArchived: (value: boolean) => void;
   bumpColumnsVersion: () => void;
+  handleFiltersChange: (patch: Partial<SharedFilters>) => void;
 }
 
 export const FiltersContext = createContext<FiltersContextValue | null>(null);

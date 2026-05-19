@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { getTeams } from '@/entities/team/api/team';
@@ -10,6 +10,7 @@ import {
   createIssue,
   deleteIssue,
   deletePendingAttachment,
+  linkIssuesToEpic,
   updateIssue,
 } from '@/features/issues/api/issues';
 import {
@@ -41,6 +42,8 @@ interface IssueFormProps {
   organizations: OrganizationProps[];
   persons: PersonOption[];
   epics?: EpicOption[];
+  /** Non-epic issues available as children when type=epic */
+  tasks?: Issue[];
   issue?: Issue;
   defaultOrganizationId?: string;
   currentUser?: UserBasicProps | null;
@@ -76,6 +79,7 @@ export function IssueForm({
   organizations,
   persons,
   epics = [],
+  tasks = [],
   issue,
   defaultOrganizationId = '',
   currentUser,
@@ -92,6 +96,23 @@ export function IssueForm({
   const pendingAttachmentsRef = useRef(pendingAttachments);
   const savedEpicIdRef = useRef<string | undefined>(undefined);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const initialChildIds = useMemo(() => {
+    return (issue?.child_issues ?? []).map((c) => {
+      return String(c.id);
+    });
+  }, [issue]);
+  const [selectedChildIds, setSelectedChildIds] =
+    useState<string[]>(initialChildIds);
+
+  const availableTasks = useMemo(() => {
+    return tasks.filter((t) => {
+      return (
+        t.epic_id === null ||
+        (issue?.id !== undefined && t.epic_id === issue.id)
+      );
+    });
+  }, [tasks, issue]);
 
   // Stable upload token for create mode — lazy initializer runs exactly once per mount.
   // useState guarantees stability; useMemo does not (React may discard memoized values).
@@ -142,6 +163,7 @@ export function IssueForm({
   const {
     register,
     watch,
+    control,
     handleSubmit,
     setValue,
     setError,
@@ -152,6 +174,8 @@ export function IssueForm({
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
+
+  const watchedType = useWatch({ control, name: 'type' });
 
   const personOptions = [
     { value: '', label: 'Unassigned' },
@@ -227,6 +251,28 @@ export function IssueForm({
       }
 
       isSubmittedRef.current = true;
+
+      // Link child tasks if epic
+      if (result.data.type === 'epic') {
+        const epicId = result.data.id;
+        if (issue) {
+          // Edit mode: find newly added children only
+          const prevIds = new Set(initialChildIds.map(Number));
+          const toAdd = selectedChildIds.map(Number).filter((id) => {
+            return !prevIds.has(id);
+          });
+          if (toAdd.length > 0) {
+            await linkIssuesToEpic(epicId, toAdd);
+          }
+        } else {
+          // Create mode: link all selected
+          const toLink = selectedChildIds.map(Number).filter(Boolean);
+          if (toLink.length > 0) {
+            await linkIssuesToEpic(epicId, toLink);
+          }
+        }
+      }
+
       toast.success(issue ? 'Issue updated' : 'Issue created');
       if (issue) {
         router.refresh();
@@ -278,7 +324,9 @@ export function IssueForm({
               setValue('epic_id', '', { shouldDirty: true });
               clearErrors('epic_id');
             } else if (savedEpicIdRef.current !== undefined) {
-              setValue('epic_id', savedEpicIdRef.current, { shouldDirty: true });
+              setValue('epic_id', savedEpicIdRef.current, {
+                shouldDirty: true,
+              });
               savedEpicIdRef.current = undefined;
             }
             clearErrors('type');
@@ -328,7 +376,7 @@ export function IssueForm({
         disabled={isPending}
       />
 
-      {watch('type') !== 'epic' &&
+      {watchedType !== 'epic' &&
         (epics.length > 0 || (!!issue && issue.epic_id !== null)) && (
           <InputDropdown
             label='Epic'
@@ -345,6 +393,21 @@ export function IssueForm({
             searchable
           />
         )}
+
+      {watchedType === 'epic' && (
+        <InputDropdown
+          label='Child tasks'
+          multiple
+          options={availableTasks.map((t) => {
+            return { value: String(t.id), label: `#${t.id} ${t.name}` };
+          })}
+          value={selectedChildIds}
+          onChange={(value) => {
+            setSelectedChildIds(value as string[]);
+          }}
+          searchable
+        />
+      )}
 
       <div className='grid gap-2 md:grid-cols-2'>
         <InputDropdown
