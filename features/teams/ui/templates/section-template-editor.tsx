@@ -18,9 +18,9 @@ import {
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { SortableSection } from './sortable-section';
-
 import { Button } from '@/shared/ui/button/Button';
+
+import { SortableSection } from './sortable-section';
 
 export interface SectionGroup<S extends string> {
   id: string;
@@ -67,22 +67,30 @@ export function SectionTemplateEditor<S extends string>({
 
   // Reset local state when parent reloads (e.g. after save).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelected([...initialSelected]);
   }, [initialSelected]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
-  const initialKey = useMemo(() => initialSelected.join('|'), [initialSelected]);
-  const currentKey = useMemo(() => selected.join('|'), [selected]);
+  const initialKey = useMemo(() => {
+    return initialSelected.join('|');
+  }, [initialSelected]);
+  const currentKey = useMemo(() => {
+    return selected.join('|');
+  }, [selected]);
   const isDirty = initialKey !== currentKey;
 
-  const availableForAdd = useMemo(
-    () => availableSections.filter((s) => !selected.includes(s)),
-    [availableSections, selected],
-  );
+  const availableForAdd = useMemo(() => {
+    return availableSections.filter((s) => {
+      return !selected.includes(s);
+    });
+  }, [availableSections, selected]);
 
   const groupsForRender: ReadonlyArray<SectionGroup<S>> = useMemo(() => {
     if (groups && groups.length > 0) return groups;
@@ -95,7 +103,9 @@ export function SectionTemplateEditor<S extends string>({
       const groupSet = new Set<S>(group.sections);
       map.set(
         group.id,
-        selected.filter((s) => groupSet.has(s)),
+        selected.filter((s) => {
+          return groupSet.has(s);
+        }),
       );
     }
     return map;
@@ -113,12 +123,12 @@ export function SectionTemplateEditor<S extends string>({
       if (groupId !== overGroupId) return;
 
       const groupSections = selectedByGroup.get(groupId) ?? [];
-      const oldIndex = groupSections.findIndex(
-        (s) => `${groupId}:${s}` === active.id,
-      );
-      const newIndex = groupSections.findIndex(
-        (s) => `${groupId}:${s}` === over.id,
-      );
+      const oldIndex = groupSections.findIndex((s) => {
+        return `${groupId}:${s}` === active.id;
+      });
+      const newIndex = groupSections.findIndex((s) => {
+        return `${groupId}:${s}` === over.id;
+      });
       if (oldIndex === -1 || newIndex === -1) return;
 
       const reordered = arrayMove(groupSections, oldIndex, newIndex);
@@ -139,25 +149,28 @@ export function SectionTemplateEditor<S extends string>({
   );
 
   const handleRemove = (section: S) => {
-    setSelected((prev) => prev.filter((s) => s !== section));
+    setSelected((prev) => {
+      return prev.filter((s) => {
+        return s !== section;
+      });
+    });
   };
 
   const handleAdd = (section: S) => {
     // Append to the end of its group's sub-list to keep group ordering intact.
     setSelected((prev) => {
-      const group = groupsForRender.find((g) =>
-        (g.sections as readonly S[]).includes(section),
-      );
+      const group = groupsForRender.find((g) => {
+        return (g.sections as readonly S[]).includes(section);
+      });
       if (!group) return [...prev, section];
 
       const next: S[] = [];
-      const groupSet = new Set<S>(group.sections);
       let inserted = false;
 
       for (const g of groupsForRender) {
-        const groupItems = prev.filter((s) =>
-          (g.sections as readonly S[]).includes(s),
-        );
+        const groupItems = prev.filter((s) => {
+          return (g.sections as readonly S[]).includes(s);
+        });
 
         if (g.id === group.id) {
           next.push(...groupItems, section);
@@ -208,7 +221,9 @@ export function SectionTemplateEditor<S extends string>({
         <div className='flex flex-col gap-5'>
           {groupsForRender.map((group) => {
             const groupSelected = selectedByGroup.get(group.id) ?? [];
-            const itemIds = groupSelected.map((s) => `${group.id}:${s}`);
+            const itemIds = groupSelected.map((s) => {
+              return `${group.id}:${s}`;
+            });
 
             return (
               <div key={group.id} className='flex flex-col gap-2'>
@@ -228,15 +243,19 @@ export function SectionTemplateEditor<S extends string>({
                     strategy={verticalListSortingStrategy}
                   >
                     <div className='flex flex-col gap-1.5'>
-                      {groupSelected.map((section) => (
-                        <SortableSection
-                          key={`${group.id}:${section}`}
-                          id={`${group.id}:${section}`}
-                          label={labels[section]}
-                          isReadOnly={isReadOnly}
-                          onRemove={() => handleRemove(section)}
-                        />
-                      ))}
+                      {groupSelected.map((section) => {
+                        return (
+                          <SortableSection
+                            key={`${group.id}:${section}`}
+                            id={`${group.id}:${section}`}
+                            label={labels[section]}
+                            isReadOnly={isReadOnly}
+                            onRemove={() => {
+                              return handleRemove(section);
+                            }}
+                          />
+                        );
+                      })}
                     </div>
                   </SortableContext>
                 )}
@@ -252,17 +271,21 @@ export function SectionTemplateEditor<S extends string>({
             Available sections
           </p>
           <div className='flex flex-wrap gap-2'>
-            {availableForAdd.map((section) => (
-              <button
-                key={section}
-                type='button'
-                onClick={() => handleAdd(section)}
-                className='inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border border-border bg-background text-foreground hover:bg-white/5 transition-colors'
-              >
-                <Plus className='size-3' />
-                {labels[section]}
-              </button>
-            ))}
+            {availableForAdd.map((section) => {
+              return (
+                <button
+                  key={section}
+                  type='button'
+                  onClick={() => {
+                    return handleAdd(section);
+                  }}
+                  className='inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border border-border bg-background text-foreground hover:bg-white/5 transition-colors'
+                >
+                  <Plus className='size-3' />
+                  {labels[section]}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

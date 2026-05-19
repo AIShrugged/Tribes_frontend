@@ -20,7 +20,7 @@ jest.mock('next/navigation', () => {
 });
 
 jest.mock('@/shared/api/session', () => {
-  return { clearSession: jest.fn().mockResolvedValue() };
+  return { clearSession: jest.fn().mockResolvedValue(undefined) };
 });
 
 const makeResponse = (
@@ -105,13 +105,13 @@ describe('httpClient', () => {
     });
   });
 
-  it('redirects to clear-session on 401', async () => {
+  it('redirects to logout on 401', async () => {
     mockFetch.mockResolvedValueOnce(
       makeResponse({ message: 'Unauthorized' }, { status: 401 }),
     );
 
     await expect(httpClient(API_RESOURCE_URL)).rejects.toThrow(
-      'REDIRECT:/auth/login',
+      'REDIRECT:/api/auth/logout',
     );
   });
 
@@ -210,7 +210,7 @@ describe('httpClientList', () => {
     );
 
     await expect(httpClientList(API_LIST_URL)).rejects.toThrow(
-      'REDIRECT:/auth/login',
+      'REDIRECT:/api/auth/logout',
     );
   });
 });

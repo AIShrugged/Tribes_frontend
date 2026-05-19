@@ -132,14 +132,14 @@ describe('getOrganizations', () => {
     );
   });
 
-  it('redirects on 401', async () => {
+  it('redirects to logout on 401', async () => {
     globalThis.fetch = jest
       .fn()
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(getOrganizations()).rejects.toThrow();
 
-    expect(mockClearSession).toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith('/api/auth/logout');
   });
 
   it('throws on other non-ok status', async () => {

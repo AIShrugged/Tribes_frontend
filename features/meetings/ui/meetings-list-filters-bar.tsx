@@ -34,13 +34,14 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const defaultOrgId =
-    organizations[0]?.id != null ? String(organizations[0].id) : '';
+    organizations[0]?.id == null ? '' : String(organizations[0].id);
   const [organizationId, setOrganizationId] = useState<string>(defaultOrgId);
   const [teams, setTeams] = useState<TeamProps[]>([]);
   const [teamUsers, setTeamUsers] = useState<TeamUserRecord[]>([]);
 
   useEffect(() => {
     if (!organizationId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTeams([]);
       return;
     }
@@ -64,6 +65,7 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
 
   useEffect(() => {
     if (filters.team_id == null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTeamUsers([]);
       return;
     }
@@ -121,21 +123,27 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
 
   const teamOptions: DropdownOption[] = [
     { value: '', label: 'All teams' },
-    ...teams.map((t) => ({ value: String(t.id), label: t.name })),
+    ...teams.map((t) => {
+      return { value: String(t.id), label: t.name };
+    }),
   ];
 
   const userOptions: DropdownOption[] = [
     { value: '', label: 'All participants' },
-    ...teamUsers.map((tu) => ({
-      value: String(tu.user.id),
-      label: tu.user.name || tu.user.email,
-    })),
+    ...teamUsers.map((tu) => {
+      return {
+        value: String(tu.user.id),
+        label: tu.user.name || tu.user.email,
+      };
+    }),
   ];
 
-  const orgOptions: DropdownOption[] = organizations.map((o) => ({
-    value: String(o.id),
-    label: o.name,
-  }));
+  const orgOptions: DropdownOption[] = organizations.map((o) => {
+    return {
+      value: String(o.id),
+      label: o.name,
+    };
+  });
 
   const showClear = hasActiveFilters(filters);
 
@@ -149,9 +157,9 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
           label='Scope'
           options={SCOPE_OPTIONS}
           value={filters.scope}
-          onChange={(value) =>
-            updateFilter({ scope: value as MeetingScope })
-          }
+          onChange={(value) => {
+            return updateFilter({ scope: value as MeetingScope });
+          }}
           searchable={false}
           disabled={isPending}
         />
@@ -163,7 +171,9 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
             label='Organization'
             options={orgOptions}
             value={organizationId}
-            onChange={(value) => setOrganizationId(value as string)}
+            onChange={(value) => {
+              return setOrganizationId(value as string);
+            }}
             disabled={isPending}
           />
         </div>
@@ -173,7 +183,7 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
         <InputDropdown
           label='Team'
           options={teamOptions}
-          value={filters.team_id != null ? String(filters.team_id) : ''}
+          value={filters.team_id == null ? '' : String(filters.team_id)}
           onChange={(value) => {
             const v = value as string;
             updateFilter({
@@ -189,7 +199,7 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
         <InputDropdown
           label='Participant'
           options={userOptions}
-          value={filters.user_id != null ? String(filters.user_id) : ''}
+          value={filters.user_id == null ? '' : String(filters.user_id)}
           onChange={(value) => {
             const v = value as string;
             updateFilter({ user_id: v === '' ? null : Number(v) });

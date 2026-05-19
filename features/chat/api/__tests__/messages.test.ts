@@ -165,8 +165,6 @@ describe('getMessages', () => {
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(getMessages(1)).rejects.toThrow();
-
-    expect(mockClearSession).toHaveBeenCalled();
   });
 
   it('throws on non-ok status', async () => {
@@ -258,8 +256,6 @@ describe('sendMessage', () => {
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(sendMessage(1, 'hi')).rejects.toThrow();
-
-    expect(mockClearSession).toHaveBeenCalled();
   });
 
   it('returns ActionResult with error on server failure', async () => {
@@ -328,8 +324,6 @@ describe('pollRun', () => {
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(pollRun(1, 'uuid')).rejects.toThrow();
-
-    expect(mockClearSession).toHaveBeenCalled();
   });
 
   it('throws on non-ok status', async () => {

@@ -47,7 +47,7 @@ const baseMessage: Message = {
 describe('ChatMessage', () => {
   beforeEach(() => {
     Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: jest.fn().mockResolvedValue() },
+      value: { writeText: jest.fn().mockResolvedValue(undefined) },
       writable: true,
       configurable: true,
     });

@@ -9,7 +9,7 @@ const ALLOWED_BACK_PATHS = [
  * Only allows root-relative paths starting with an issues tab route.
  * Prevents open redirects and path traversal. Returns null for invalid input.
  */
-export function validateBackHref(from: string | undefined): string | null {
+export function validateBackHref(from?: string): string | null {
   if (!from) return null;
 
   try {

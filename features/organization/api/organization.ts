@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 
-import { clearSession } from '@/shared/api/session';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
@@ -35,7 +34,7 @@ export const getOrganizations = cache(
 
     if (!res.ok) {
       if (res.status === 401) {
-        await clearSession();
+        redirect('/api/auth/logout');
       }
 
       const text = await res.text();
@@ -69,6 +68,10 @@ export const getOrganization = cache(
     });
 
     if (!res.ok) {
+      if (res.status === 401) {
+        redirect('/api/auth/logout');
+      }
+
       const text = await res.text();
 
       // eslint-disable-next-line no-console

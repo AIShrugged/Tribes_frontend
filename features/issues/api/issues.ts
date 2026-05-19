@@ -419,14 +419,16 @@ export async function getTasksForEpicForm(
     const query = buildIssuesQuery({
       organization_id: organizationId ?? null,
       exclude_archived: true,
-      limit: 200,
+      limit: 100,
       offset: 0,
     });
     const result = await httpClientList<Issue>(`${API_URL}/issues?${query}`);
     return result.data.filter((i) => {
       return i.type !== 'epic';
     });
-  } catch {
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[getTasksForEpicForm] failed to load tasks:', error);
     return [];
   }
 }

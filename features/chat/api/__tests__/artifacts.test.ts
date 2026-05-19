@@ -112,7 +112,7 @@ describe('getArtifacts', () => {
     expect(result).toBeNull();
   });
 
-  it('calls clearSession and redirect on 401', async () => {
+  it('redirects to logout on 401', async () => {
     globalThis.fetch = jest
       .fn()
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
@@ -121,8 +121,7 @@ describe('getArtifacts', () => {
     // and throws ServerError — getArtifacts re-throws it since status !== 404
     await expect(getArtifacts(1)).rejects.toBeInstanceOf(ServerError);
 
-    expect(mockClearSession).toHaveBeenCalled();
-    expect(mockRedirect).toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith('/api/auth/logout');
   });
 
   it('throws ServerError on other non-ok status', async () => {

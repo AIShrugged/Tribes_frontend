@@ -145,8 +145,6 @@ describe('getChats', () => {
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(getChats()).rejects.toThrow();
-
-    expect(mockClearSession).toHaveBeenCalled();
   });
 
   it('throws on other non-ok status', async () => {
@@ -248,8 +246,6 @@ describe('createChat', () => {
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(createChat()).rejects.toThrow();
-
-    expect(mockClearSession).toHaveBeenCalled();
   });
 
   it('returns ActionResult with error on server failure', async () => {
@@ -309,8 +305,6 @@ describe('updateChatTitle', () => {
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(updateChatTitle(1, 'title')).rejects.toThrow();
-
-    expect(mockClearSession).toHaveBeenCalled();
   });
 
   it('throws on server failure', async () => {
@@ -359,8 +353,6 @@ describe('deleteChat', () => {
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
     await expect(deleteChat(1)).rejects.toThrow();
-
-    expect(mockClearSession).toHaveBeenCalled();
   });
 
   it('throws on failure', async () => {

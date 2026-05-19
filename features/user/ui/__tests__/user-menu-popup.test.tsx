@@ -16,7 +16,7 @@ jest.mock('next/navigation', () => {
 
 jest.mock('@/shared/api/session', () => {
   return {
-    logout: jest.fn().mockResolvedValue(),
+    logout: jest.fn().mockResolvedValue(undefined),
   };
 });
 

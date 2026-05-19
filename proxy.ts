@@ -18,8 +18,8 @@ export function proxy(request: NextRequest) {
       return pathname.startsWith(route);
     })
   ) {
-    // Redirect to dashboard if already authenticated
-    if (token && pathname !== '/auth/organization') {
+    // Redirect to org selector if already authenticated
+    if (token) {
       return NextResponse.redirect(new URL('/auth/organization', request.url));
     }
 

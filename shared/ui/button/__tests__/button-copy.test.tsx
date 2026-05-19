@@ -32,7 +32,7 @@ describe('ButtonCopy', () => {
       writable: true,
       configurable: true,
     });
-    mockWriteText.mockResolvedValue();
+    mockWriteText.mockResolvedValue(undefined);
   });
 
   it('renders a button with copy icon', () => {

@@ -1,4 +1,4 @@
-// FIXME: extract to i18n framework when adopted.
+// Strings will be moved to i18n when that framework is adopted.
 
 import type {
   AgendaSection,
