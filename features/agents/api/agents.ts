@@ -71,8 +71,8 @@ async function actionAgentApi<T>(
   return { data: json.data as T, error: null };
 }
 
-export async function getAgentProfiles(limit = 200) {
-  const safeLimit = Math.min(Math.max(limit, 1), 200);
+export async function getAgentProfiles(limit = 100) {
+  const safeLimit = Math.min(Math.max(limit, 1), 100);
   const params = new URLSearchParams({ offset: '0', limit: String(safeLimit) });
   const { data, totalCount } = await httpClientList<AgentProfile>(
     `${API_URL}/agent-profiles?${params}`,
@@ -151,7 +151,7 @@ export async function validateAgentProfilePayload(
 }
 
 export async function getAgentTasks(offset = 0, limit = 20) {
-  const safeLimit = Math.min(Math.max(limit, 1), 200);
+  const safeLimit = Math.min(Math.max(limit, 1), 100);
   const safeOffset = Math.max(offset, 0);
   const params = new URLSearchParams({
     offset: String(safeOffset),
