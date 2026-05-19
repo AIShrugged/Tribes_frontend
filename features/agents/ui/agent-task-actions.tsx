@@ -10,7 +10,6 @@ import {
   dispatchAgentTask,
   updateAgentTask,
 } from '@/features/agents/api/agents';
-import { isAgentActionError } from '@/features/agents/model/types';
 import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button, ButtonLink } from '@/shared/ui/button';
@@ -19,12 +18,6 @@ interface BaseProps {
   backHref: string;
 }
 
-/**
- *
- * @param root0
- * @param root0.id
- * @param root0.backHref
- */
 export function AgentProfileActions({
   id,
   backHref,
@@ -83,13 +76,6 @@ export function AgentProfileActions({
   );
 }
 
-/**
- *
- * @param root0
- * @param root0.id
- * @param root0.enabled
- * @param root0.backHref
- */
 export function AgentTaskActions({
   id,
   enabled,
@@ -99,14 +85,15 @@ export function AgentTaskActions({
   enabled: boolean;
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isDispatchPending, startDispatch] = useTransition();
+  const [isTogglePending, startToggle] = useTransition();
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   return (
     <div className='flex flex-wrap gap-3'>
       <ButtonLink
-        href={`${ROUTES.DASHBOARD.AGENT_TASKS}/${id}?tab=config`}
+        href={`${ROUTES.DASHBOARD.AGENT_TASKS}/${id}/config`}
         variant='secondary'
       >
         Edit
@@ -114,12 +101,12 @@ export function AgentTaskActions({
       <Button
         type='button'
         fullWidth={false}
-        loading={isPending}
+        loading={isDispatchPending}
         onClick={() => {
-          startTransition(async () => {
+          startDispatch(async () => {
             const result = await dispatchAgentTask(id);
 
-            if (isAgentActionError(result)) {
+            if (result.error !== null) {
               toast.error(result.error);
 
               return;
@@ -136,12 +123,12 @@ export function AgentTaskActions({
         type='button'
         variant={BUTTON_VARIANT.secondary}
         fullWidth={false}
-        loading={isPending}
+        loading={isTogglePending}
         onClick={() => {
-          startTransition(async () => {
+          startToggle(async () => {
             const result = await updateAgentTask(id, { enabled: !enabled });
 
-            if (isAgentActionError(result)) {
+            if (result.error !== null) {
               toast.error(result.error);
 
               return;
@@ -178,6 +165,9 @@ export function AgentTaskActions({
               toast.success('Agent task deleted');
               router.push(backHref);
               router.refresh();
+            })
+            .catch(() => {
+              toast.error('Failed to delete agent task');
             })
             .finally(() => {
               setIsConfirmingDelete(false);

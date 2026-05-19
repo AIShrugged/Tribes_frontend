@@ -1,13 +1,16 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+import { cache } from 'react';
+
 import { clearSession } from '@/shared/api/session';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
 import { getAuthHeaders } from '@/shared/lib/getAuthToken';
+import { httpClient, httpClientList } from '@/shared/lib/httpClient';
 
 import type {
-  AgentActionError,
   AgentProfile,
   AgentProfilePayload,
   AgentTask,
@@ -17,63 +20,13 @@ import type {
   AgentToolDefinition,
 } from '@/features/agents/model/types';
 import type { ApiResponse } from '@/shared/types/common';
+import type { ActionResult } from '@/shared/types/server-action';
 
-/**
- *
- * @param path
- * @param init
- * @param fallbackMessage
- */
-async function requestAgentApi<T>(
-  path: string,
-  init: RequestInit,
-  fallbackMessage: string,
-): Promise<{ response: Response; json: ApiResponse<T> }> {
-  const authHeaders = await getAuthHeaders();
-  const response = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      ...authHeaders,
-      ...init.headers,
-    },
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) await clearSession();
-
-    const text = await response.text();
-
-    throw new ServerError(parseApiError(text, fallbackMessage).message, {
-      status: response.status,
-      url: response.url,
-      responseBody: text,
-    });
-  }
-
-  const json = (await response.json()) as ApiResponse<T>;
-
-  if (!json.success) {
-    throw new ServerError(json.error ?? fallbackMessage, {
-      url: response.url,
-      status: response.status,
-    });
-  }
-
-  return { response, json };
-}
-
-/**
- *
- * @param path
- * @param init
- * @param fallbackMessage
- */
 async function actionAgentApi<T>(
   path: string,
   init: RequestInit,
   fallbackMessage: string,
-): Promise<T | AgentActionError> {
+): Promise<ActionResult<T>> {
   const authHeaders = await getAuthHeaders();
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -96,7 +49,6 @@ async function actionAgentApi<T>(
         data: null,
         error: parsed.message,
         fieldErrors: parsed.fieldErrors,
-        status: response.status,
       };
     }
 
@@ -116,124 +68,88 @@ async function actionAgentApi<T>(
     };
   }
 
-  return json.data as T;
+  return { data: json.data as T, error: null };
 }
 
-/**
- *
- */
-export async function getAgentProfiles() {
-  const { response, json } = await requestAgentApi<AgentProfile[]>(
-    '/agent-profiles',
-    { method: 'GET' },
-    'Failed to load agent profiles',
+export async function getAgentProfiles(limit = 200) {
+  const safeLimit = Math.min(Math.max(limit, 1), 200);
+  const params = new URLSearchParams({ offset: '0', limit: String(safeLimit) });
+  const { data, totalCount } = await httpClientList<AgentProfile>(
+    `${API_URL}/agent-profiles?${params}`,
   );
 
-  return {
-    data: json.data ?? [],
-    totalCount: Number(response.headers.get('Items-Count') ?? '0'),
-  };
+  return { data, totalCount };
 }
 
-/**
- *
- * @param id
- */
 export async function getAgentProfile(id: number) {
-  const { json } = await requestAgentApi<AgentProfile>(
-    `/agent-profiles/${id}`,
-    { method: 'GET' },
-    'Failed to load agent profile',
+  const { data } = await httpClient<AgentProfile>(
+    `${API_URL}/agent-profiles/${id}`,
   );
 
-  return json.data as AgentProfile;
+  return data as AgentProfile;
 }
 
-/**
- *
- * @param payload
- */
 export async function createAgentProfile(payload: AgentProfilePayload) {
-  return actionAgentApi<AgentProfile>(
+  const result = await actionAgentApi<AgentProfile>(
     '/agent-profiles',
-    {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    },
+    { method: 'POST', body: JSON.stringify(payload) },
     'Failed to create agent profile',
   );
+
+  if (result.error === null) {
+    revalidatePath('/dashboard/agents/profiles', 'layout');
+  }
+
+  return result;
 }
 
-/**
- *
- * @param id
- * @param payload
- */
 export async function updateAgentProfile(
   id: number,
   payload: Partial<AgentProfilePayload>,
 ) {
-  return actionAgentApi<AgentProfile>(
+  const result = await actionAgentApi<AgentProfile>(
     `/agent-profiles/${id}`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    },
+    { method: 'PATCH', body: JSON.stringify(payload) },
     'Failed to update agent profile',
   );
-}
 
-/**
- *
- * @param id
- */
-export async function deleteAgentProfile(id: number) {
-  const authHeaders = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/agent-profiles/${id}`, {
-    method: 'DELETE',
-    headers: {
-      ...authHeaders,
-    },
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    const parsed = parseApiError(text, 'Failed to delete agent profile');
-
-    return {
-      error: parsed.message,
-      status: response.status,
-    };
+  if (result.error === null) {
+    revalidatePath(`/dashboard/agents/profiles/${id}`, 'layout');
   }
 
-  return { error: null, status: response.status };
+  return result;
 }
 
-/**
- *
- * @param id
- * @param payload
- */
+export async function deleteAgentProfile(id: number): Promise<ActionResult<null>> {
+  try {
+    await httpClient(`${API_URL}/agent-profiles/${id}`, { method: 'DELETE' });
+    revalidatePath('/dashboard/agents/profiles', 'layout');
+
+    return { data: null, error: null };
+  } catch (error) {
+    if (error instanceof ServerError) {
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to delete agent profile',
+      );
+
+      return { data: null, error: parsed.message };
+    }
+    throw error;
+  }
+}
+
 export async function validateAgentProfilePayload(
   id: number,
   payload: Record<string, unknown> | null,
 ) {
   return actionAgentApi<unknown>(
     `/agent-profiles/${id}/validate-payload`,
-    {
-      method: 'POST',
-      body: JSON.stringify({ payload }),
-    },
+    { method: 'POST', body: JSON.stringify({ payload }) },
     'Failed to validate payload',
   );
 }
 
-/**
- *
- * @param offset
- * @param limit
- */
 export async function getAgentTasks(offset = 0, limit = 20) {
   const safeLimit = Math.min(Math.max(limit, 1), 200);
   const safeOffset = Math.max(offset, 0);
@@ -241,13 +157,9 @@ export async function getAgentTasks(offset = 0, limit = 20) {
     offset: String(safeOffset),
     limit: String(safeLimit),
   });
-  const { response, json } = await requestAgentApi<AgentTask[]>(
-    `/agent-tasks?${params}`,
-    { method: 'GET' },
-    'Failed to load agent tasks',
+  const { data, totalCount } = await httpClientList<AgentTask>(
+    `${API_URL}/agent-tasks?${params}`,
   );
-  const data = json.data ?? [];
-  const totalCount = Number(response.headers.get('Items-Count') ?? '0');
   const hasTotalCount = Number.isFinite(totalCount) && totalCount > 0;
 
   return {
@@ -259,150 +171,104 @@ export async function getAgentTasks(offset = 0, limit = 20) {
   };
 }
 
-/**
- *
- * @param id
- */
-export async function getAgentTask(id: number) {
-  const { json } = await requestAgentApi<AgentTask>(
-    `/agent-tasks/${id}`,
-    { method: 'GET' },
-    'Failed to load agent task',
-  );
+export const getAgentTask = cache(async (id: number) => {
+  const { data } = await httpClient<AgentTask>(`${API_URL}/agent-tasks/${id}`);
 
-  return json.data as AgentTask;
-}
+  return data as AgentTask;
+});
 
-/**
- *
- * @param payload
- */
 export async function createAgentTask(payload: AgentTaskPayload) {
-  return actionAgentApi<AgentTask>(
+  const result = await actionAgentApi<AgentTask>(
     '/agent-tasks',
-    {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    },
+    { method: 'POST', body: JSON.stringify(payload) },
     'Failed to create agent task',
   );
+
+  if (result.error === null) {
+    revalidatePath('/dashboard/agents/tasks', 'layout');
+  }
+
+  return result;
 }
 
-/**
- *
- * @param id
- * @param payload
- */
 export async function updateAgentTask(
   id: number,
   payload: Partial<AgentTaskPayload>,
 ) {
-  return actionAgentApi<AgentTask>(
+  const result = await actionAgentApi<AgentTask>(
     `/agent-tasks/${id}`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    },
+    { method: 'PATCH', body: JSON.stringify(payload) },
     'Failed to update agent task',
   );
-}
 
-/**
- *
- * @param id
- */
-export async function deleteAgentTask(id: number) {
-  const authHeaders = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/agent-tasks/${id}`, {
-    method: 'DELETE',
-    headers: {
-      ...authHeaders,
-    },
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    const parsed = parseApiError(text, 'Failed to delete agent task');
-
-    return {
-      error: parsed.message,
-      status: response.status,
-    };
+  if (result.error === null) {
+    revalidatePath(`/dashboard/agents/tasks/${id}`, 'layout');
   }
 
-  return { error: null, status: response.status };
+  return result;
 }
 
-/**
- *
- * @param id
- */
+export async function deleteAgentTask(id: number): Promise<ActionResult<null>> {
+  try {
+    await httpClient(`${API_URL}/agent-tasks/${id}`, { method: 'DELETE' });
+    revalidatePath('/dashboard/agents/tasks', 'layout');
+
+    return { data: null, error: null };
+  } catch (error) {
+    if (error instanceof ServerError) {
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to delete agent task',
+      );
+
+      return { data: null, error: parsed.message };
+    }
+    throw error;
+  }
+}
+
 export async function dispatchAgentTask(id: number) {
-  return actionAgentApi<unknown>(
+  const result = await actionAgentApi<unknown>(
     `/agent-tasks/${id}/dispatch`,
-    {
-      method: 'POST',
-      body: JSON.stringify({}),
-    },
+    { method: 'POST', body: JSON.stringify({}) },
     'Failed to dispatch agent task',
   );
+
+  if (result.error === null) {
+    revalidatePath(`/dashboard/agents/tasks/${id}`, 'layout');
+  }
+
+  return result;
 }
 
-/**
- *
- */
 export async function getAgentTasksMeta() {
-  const { json } = await requestAgentApi<AgentTasksMeta>(
-    '/agent-tasks/meta',
-    { method: 'GET' },
-    'Failed to load agent task metadata',
+  const { data } = await httpClient<AgentTasksMeta>(
+    `${API_URL}/agent-tasks/meta`,
   );
 
-  return json.data ?? {};
+  return (data ?? {}) as AgentTasksMeta;
 }
 
-/**
- *
- */
 export async function getAgentTools() {
-  const { json } = await requestAgentApi<AgentToolDefinition[]>(
-    '/agent-tools',
-    { method: 'GET' },
-    'Failed to load agent tools',
+  const { data } = await httpClient<AgentToolDefinition[]>(
+    `${API_URL}/agent-tools`,
   );
 
-  return json.data ?? [];
+  return data ?? [];
 }
 
-/**
- *
- * @param id
- */
 export async function getAgentTaskRuns(id: number) {
-  const { response, json } = await requestAgentApi<AgentTaskRun[]>(
-    `/agent-tasks/${id}/runs`,
-    { method: 'GET' },
-    'Failed to load task runs',
+  const { data, totalCount } = await httpClientList<AgentTaskRun>(
+    `${API_URL}/agent-tasks/${id}/runs`,
   );
 
-  return {
-    data: json.data ?? [],
-    totalCount: Number(response.headers.get('Items-Count') ?? '0'),
-  };
+  return { data, totalCount };
 }
 
-/**
- *
- * @param id
- * @param runId
- */
 export async function getAgentTaskRun(id: number, runId: number) {
-  const { json } = await requestAgentApi<AgentTaskRun>(
-    `/agent-tasks/${id}/runs/${runId}`,
-    { method: 'GET' },
-    'Failed to load task run',
+  const { data } = await httpClient<AgentTaskRun>(
+    `${API_URL}/agent-tasks/${id}/runs/${runId}`,
   );
 
-  return json.data as AgentTaskRun;
+  return data as AgentTaskRun;
 }

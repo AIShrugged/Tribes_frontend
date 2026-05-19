@@ -1,8 +1,16 @@
+export type AgentRunStatus =
+  | 'queued'
+  | 'processing'
+  | 'running'
+  | 'completed'
+  | 'success'
+  | 'failed'
+  | 'error';
+
 export interface AgentToolDefinition {
   name: string;
   label?: string | null;
   description?: string | null;
-  [key: string]: unknown;
 }
 
 export interface AgentProfile {
@@ -15,10 +23,10 @@ export interface AgentProfile {
   sandbox_profile: string | null;
   model?: string | null;
   config?: Record<string, unknown> | null;
-  profile_schema?: Record<string, unknown> | null;
+  config_schema?: Record<string, unknown> | null;
+  task_payload_schema?: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
-  [key: string]: unknown;
 }
 
 export interface AgentProfilePayload {
@@ -61,14 +69,13 @@ export interface AgentTask {
   metadata: Record<string, unknown> | null;
   enabled: boolean;
   next_run_at: string | null;
-  latest_run_status?: string | null;
+  latest_run_status?: AgentRunStatus | null;
   latest_run?: AgentTaskLatestRun | null;
   organization?: AgentTaskOrganization | null;
   team?: AgentTaskTeam | null;
   agent_profile?: Pick<AgentProfile, 'id' | 'name'> | null;
   created_at: string;
   updated_at: string;
-  [key: string]: unknown;
 }
 
 export interface AgentTaskPayload {
@@ -90,7 +97,7 @@ export interface AgentTaskPayload {
 
 export interface AgentTaskRun {
   id: number;
-  status: string;
+  status: AgentRunStatus | null;
   attempt: number | null;
   scheduled_for: string | null;
   started_at: string | null;
@@ -104,7 +111,6 @@ export interface AgentTaskRun {
   followup?: unknown;
   created_at?: string | null;
   updated_at?: string | null;
-  [key: string]: unknown;
 }
 
 export interface AgentTasksMeta {
@@ -113,7 +119,6 @@ export interface AgentTasksMeta {
   agent_task_types?: unknown;
   output_modes?: unknown;
   sandbox_profiles?: unknown;
-  [key: string]: unknown;
 }
 
 export interface AgentActivityItem {
@@ -137,7 +142,7 @@ export interface AgentTaskActivityItem {
 export interface AgentTaskLatestRun {
   id: number;
   paperclip_issue_id: number | null;
-  status: 'queued' | 'processing' | 'completed' | 'failed' | null;
+  status: AgentRunStatus | null;
   attempt: number;
   scheduled_for: string | null;
   started_at: string | null;
@@ -152,34 +157,8 @@ export interface AgentTaskLatestRun {
   activity: AgentTaskActivityItem[] | null;
 }
 
-export interface AgentActivityResponse {
-  data: AgentActivityItem[];
-  totalCount: number;
-  hasMore: boolean;
-}
-
 export interface AgentSelectOption {
   value: string;
   label: string;
   description?: string | null;
-}
-
-export interface AgentActionError {
-  data: null;
-  error: string;
-  fieldErrors?: Record<string, string>;
-  status?: number;
-}
-
-/**
- *
- * @param value
- */
-export function isAgentActionError(value: unknown): value is AgentActionError {
-  return Boolean(
-    value &&
-      typeof value === 'object' &&
-      'error' in value &&
-      typeof (value as { error?: unknown }).error === 'string',
-  );
 }

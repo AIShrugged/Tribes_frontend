@@ -1,5 +1,4 @@
 import { Bot } from 'lucide-react';
-import Link from 'next/link';
 
 import {
   getAgentProfiles,
@@ -13,6 +12,7 @@ import {
 } from '@/features/agents';
 import { ServerError } from '@/shared/lib/errors';
 import { ROUTES } from '@/shared/lib/routes';
+import { ButtonLink } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/feedback/empty-state';
 
@@ -77,12 +77,9 @@ export default async function AgentProfilesPage() {
         <p className='text-sm text-muted-foreground'>
           Configure reusable agent profiles and backend-constrained tool access.
         </p>
-        <Link
-          href={ROUTES.DASHBOARD.AGENT_PROFILES_NEW}
-          className='inline-flex h-10 items-center justify-center rounded-[var(--radius-button)] bg-primary px-4 text-sm text-primary-foreground'
-        >
+        <ButtonLink href={ROUTES.DASHBOARD.AGENT_PROFILES_NEW}>
           New profile
-        </Link>
+        </ButtonLink>
       </div>
       <div className='mb-6 grid gap-4 md:grid-cols-2'>
         <div className='rounded-[var(--radius-card)] border border-border p-4'>

@@ -58,7 +58,7 @@ function buildColumns(taskId: number): TableColumn<AgentTaskRun>[] {
       id: 'details',
       header: 'Details',
       renderCell: (run) => {
-        const href = `/dashboard/agents/tasks/${taskId}?tab=runs&runId=${run.id}`;
+        const href = `/dashboard/agents/tasks/${taskId}/runs?runId=${run.id}`;
 
         return (
           <Link href={href} className='text-primary hover:underline'>
@@ -98,7 +98,7 @@ export function AgentTaskRunsList({
         return selectedRunId === run.id ? 'bg-accent/20' : '';
       }}
       renderMobileCard={(run) => {
-        const href = `/dashboard/agents/tasks/${taskId}?tab=runs&runId=${run.id}`;
+        const href = `/dashboard/agents/tasks/${taskId}/runs?runId=${run.id}`;
         const isSelected = selectedRunId === run.id;
 
         return (

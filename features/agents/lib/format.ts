@@ -121,13 +121,6 @@ export function normalizeToolOptions(
     })
     .filter((tool) => {
       return Boolean(tool.value);
-    })
-    .map((tool) => {
-      return {
-        value: tool.value,
-        label: tool.label,
-        description: tool.description,
-      };
     });
 }
 

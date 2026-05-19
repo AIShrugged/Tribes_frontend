@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import { getOrganizations } from '@/features/organization';
+import { getOrganizations } from '@/entities/organization';
 
 import type { OrganizationProps } from '@/entities/organization';
 

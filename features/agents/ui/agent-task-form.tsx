@@ -13,10 +13,10 @@ import {
 } from '@/features/agents/api/agents';
 import { normalizeAllowedTools } from '@/features/agents/lib/format';
 import { parseJsonInput, stringifyJson } from '@/features/agents/lib/json';
-import { isAgentActionError } from '@/features/agents/model/types';
 import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
-import { Button } from '@/shared/ui/button/Button';
+import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/input';
 import Input from '@/shared/ui/input/Input';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 import InputTextarea from '@/shared/ui/input/InputTextarea';
@@ -181,7 +181,7 @@ export function AgentTaskForm({
           ? await updateAgentTask(task.id, payload)
           : await createAgentTask(payload);
 
-      if (isAgentActionError(result)) {
+      if (result.error !== null) {
         for (const [field, message] of Object.entries(
           result.fieldErrors ?? {},
         )) {
@@ -195,7 +195,7 @@ export function AgentTaskForm({
       }
 
       toast.success(isEdit ? 'Agent task updated' : 'Agent task created');
-      router.push(`${ROUTES.DASHBOARD.AGENT_TASKS}/${result.id}`);
+      router.push(`${ROUTES.DASHBOARD.AGENT_TASKS}/${result.data.id}`);
       router.refresh();
     });
   };
@@ -323,16 +323,13 @@ export function AgentTaskForm({
         />
       </div>
 
-      <label className='flex items-center gap-3 text-sm text-foreground'>
-        <input
-          type='checkbox'
-          checked={watch('enabled')}
-          onChange={(event) => {
-            setValue('enabled', event.target.checked, { shouldDirty: true });
-          }}
-        />
-        Enabled
-      </label>
+      <Checkbox
+        label='Enabled'
+        checked={watch('enabled')}
+        onChange={(event) => {
+          setValue('enabled', event.target.checked, { shouldDirty: true });
+        }}
+      />
 
       <InputTextarea
         {...register('input_payload')}
@@ -364,7 +361,7 @@ export function AgentTaskForm({
                   payload,
                 );
 
-                if (isAgentActionError(result)) {
+                if (result.error !== null) {
                   toast.error(result.error);
 
                   return;
