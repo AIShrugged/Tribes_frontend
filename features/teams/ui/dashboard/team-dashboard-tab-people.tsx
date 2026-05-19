@@ -1,8 +1,16 @@
 'use client';
 
-import { UserMinus, UserPlus, X } from 'lucide-react';
+import {
+  Activity,
+  MessageSquareText,
+  Sparkles,
+  Timer,
+  UserMinus,
+  UserPlus,
+  X,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import { cancelTeamInvite, kickTeamMember } from '@/features/teams/api/team';
@@ -17,10 +25,209 @@ import Avatar from '@/shared/ui/common/avatar';
 import type { TeamInvite, TeamProps } from '@/entities/team';
 import type { TelegramChatRegistration } from '@/entities/telegram';
 import type {
+  PersonInsightCategoryValue,
   PersonMember,
   TabPeople,
 } from '@/features/teams/model/dashboard-types';
 import type { TeamNotificationSetting } from '@/features/teams/model/types';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Backend `InsightProfile.content` is free-form JSON whose shape depends on category:
+ *
+ *  - `strengths` / `development_areas` → `{ items: string[], evidence?: string[] }`
+ *    The `items` array is the user-facing list of strengths / weaknesses;
+ *    `evidence` holds optional transcript citations we don't surface in the card.
+ *
+ *  - `work_patterns` → flat key/value object like
+ *    `{ meeting_role: "...", decision_style: "...", deadline_reliability: "..." }`
+ *
+ *  - Legacy / other: may be a plain `string[]`.
+ *
+ * Order of detection here matches frequency in production data; null when nothing
+ * is renderable.
+ */
+function normalizeInsightCategory(
+  value: PersonInsightCategoryValue,
+): string[] | null {
+  if (!value) {
+    return null;
+  }
+
+  if (Array.isArray(value)) {
+    const items = value
+      .filter((v): v is string => {return typeof v === 'string'})
+      .map((v) => {return v.trim()})
+      .filter((v) => {return v.length > 0});
+    return items.length > 0 ? items : null;
+  }
+
+  if (typeof value === 'object') {
+    // Primary shape for strengths / development_areas
+    const itemsField = (value as Record<string, unknown>).items;
+    if (Array.isArray(itemsField)) {
+      const items = itemsField
+        .filter((v): v is string => {return typeof v === 'string'})
+        .map((v) => {return v.trim()})
+        .filter((v) => {return v.length > 0});
+      if (items.length > 0) return items;
+    }
+
+    // Fallback for work_patterns and similar flat key/value objects
+    const items = Object.entries(value)
+      .filter(([k]) => {return k !== 'evidence'}) // never surface raw evidence in the card
+      .map(([k, v]) => {
+        if (typeof v === 'string') return `${k}: ${v}`;
+        if (typeof v === 'number' || typeof v === 'boolean') return `${k}: ${v}`;
+        return null;
+      })
+      .filter((s): s is string => {return s !== null});
+    return items.length > 0 ? items : null;
+  }
+
+  return null;
+}
+
+// ─── Stats mini-section (US-12.7 cycle time / AI usage / chat activity) ──────
+
+/**
+ * Compact "Stats" row showing the three US-12.7 metrics:
+ *   - Cycle time (days from first in_progress → done)
+ *   - AI usage (agent_activity_logs in last 7 days)
+ *   - Chat activity (role='user' messages in org-bound TG chats, last 7 days)
+ *
+ * Only rendered when at least one of the three has signal — keeps the card
+ * uncluttered for members with zero activity.
+ */
+function StatsSection({ metrics }: { metrics: NonNullable<PersonMember['metrics']> }) {
+  const cycle = metrics.avg_cycle_time_days ?? null;
+  const ai = metrics.ai_calls_week ?? 0;
+  const chat = metrics.chat_messages_week ?? 0;
+
+  if (cycle === null && ai === 0 && chat === 0) return null;
+
+  return (
+    <div className='flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-[11px] text-muted-foreground'>
+      <span className='font-semibold uppercase tracking-wide text-[10px] text-violet-400'>
+        Stats
+      </span>
+      <span
+        className='flex items-center gap-1'
+        title='Average cycle time: first in_progress → done'
+      >
+        <Timer className='size-3' />
+        Cycle:{' '}
+        <span className='text-foreground font-medium'>
+          {cycle === null ? '—' : `${cycle.toFixed(1)}d`}
+        </span>
+      </span>
+      <span
+        className='flex items-center gap-1'
+        title='AI tool calls in the last 7 days (all events incl. system pipeline)'
+      >
+        <Activity className='size-3' />
+        AI:{' '}
+        <span className='text-foreground font-medium'>{ai}</span>
+        /wk
+      </span>
+      <span
+        className='flex items-center gap-1'
+        title='Messages in org-bound TG chats in the last 7 days'
+      >
+        <MessageSquareText className='size-3' />
+        Chat:{' '}
+        <span className='text-foreground font-medium'>{chat}</span>
+        /wk
+      </span>
+    </div>
+  );
+}
+
+// ─── Insight section (collapsible) ────────────────────────────────────────────
+
+function InsightSection({
+  insight,
+}: {
+  insight: NonNullable<PersonMember['insight']>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (insight.status === 'unavailable') {
+    return null;
+  }
+
+  if (insight.status === 'collecting' || !insight.data) {
+    return (
+      <div className='mt-2 text-xs text-muted-foreground italic flex items-center gap-1.5'>
+        <Sparkles className='size-3' />
+        Insights are being collected…
+      </div>
+    );
+  }
+
+  const strengths = normalizeInsightCategory(insight.data.strengths);
+  const dev = normalizeInsightCategory(insight.data.development_areas);
+  const patterns = normalizeInsightCategory(insight.data.work_patterns);
+
+  if (!strengths && !dev && !patterns) {
+    return null;
+  }
+
+  return (
+    <div className='mt-2 text-xs'>
+      <button
+        type='button'
+        onClick={() => {return setExpanded((v) => {return !v})}}
+        className='flex items-center gap-1.5 text-violet-400 hover:text-violet-300 transition-colors'
+      >
+        <Sparkles className='size-3' />
+        {expanded ? 'Hide insights' : 'Show AI insights'}
+      </button>
+
+      {expanded && (
+        <div className='mt-2 space-y-2 border-l-2 border-violet-500/30 pl-3'>
+          {strengths && (
+            <div>
+              <p className='font-semibold text-emerald-400 text-[11px] uppercase tracking-wide mb-0.5'>
+                Strengths
+              </p>
+              <ul className='space-y-0.5 text-muted-foreground'>
+                {strengths.map((s, i) => {return (
+                  <li key={i}>• {s}</li>
+                )})}
+              </ul>
+            </div>
+          )}
+          {dev && (
+            <div>
+              <p className='font-semibold text-amber-400 text-[11px] uppercase tracking-wide mb-0.5'>
+                Development areas
+              </p>
+              <ul className='space-y-0.5 text-muted-foreground'>
+                {dev.map((s, i) => {return (
+                  <li key={i}>• {s}</li>
+                )})}
+              </ul>
+            </div>
+          )}
+          {patterns && (
+            <div>
+              <p className='font-semibold text-sky-400 text-[11px] uppercase tracking-wide mb-0.5'>
+                Work patterns
+              </p>
+              <ul className='space-y-0.5 text-muted-foreground'>
+                {patterns.map((s, i) => {return (
+                  <li key={i}>• {s}</li>
+                )})}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Member row ───────────────────────────────────────────────────────────────
 
@@ -77,8 +284,12 @@ function MemberRow({ member, analytics, teamId, isManager }: MemberRowProps) {
     );
   };
 
+  // Extended metrics from PerformanceMetricsService (always shown when present,
+  // even when values are 0/null — the section anchors "Темп/Активность" per US-12.6).
+  const m = analytics?.metrics ?? null;
+
   return (
-    <div className='flex items-center gap-3 p-4 rounded-[var(--radius-card)] border border-border bg-card'>
+    <div className='flex items-start gap-3 p-4 rounded-[var(--radius-card)] border border-border bg-card'>
       <Avatar
         size='sm'
         className={`text-xs font-bold text-white ${avatarColor(member.name)}`}
@@ -93,7 +304,7 @@ function MemberRow({ member, analytics, teamId, isManager }: MemberRowProps) {
         <p className='text-xs text-muted-foreground truncate'>{member.email}</p>
 
         {analytics && (
-          <div className='flex items-center gap-3 mt-1 text-xs'>
+          <div className='flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs'>
             <span className='text-muted-foreground'>
               <span className='text-foreground font-medium'>
                 {analytics.done_tasks}
@@ -118,6 +329,36 @@ function MemberRow({ member, analytics, teamId, isManager }: MemberRowProps) {
             )}
           </div>
         )}
+
+        {m && (
+          <div className='flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-[11px] text-muted-foreground'>
+            <span title='Closed tasks in the last 7 days'>
+              Velocity:{' '}
+              <span className='text-foreground font-medium'>
+                {m.velocity_week}
+              </span>
+              /wk
+            </span>
+            <span title='Average time from creation to close'>
+              Lead time:{' '}
+              <span className='text-foreground font-medium'>
+                {m.avg_lead_time_days === null
+                  ? '—'
+                  : `${m.avg_lead_time_days.toFixed(1)}d`}
+              </span>
+            </span>
+            <span title='Tasks currently in progress'>
+              In progress:{' '}
+              <span className='text-foreground font-medium'>
+                {m.in_progress}
+              </span>
+            </span>
+          </div>
+        )}
+
+        {m && <StatsSection metrics={m} />}
+
+        {analytics?.insight && <InsightSection insight={analytics.insight} />}
       </div>
 
       {isManager && (

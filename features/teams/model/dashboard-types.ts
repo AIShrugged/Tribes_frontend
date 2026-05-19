@@ -96,6 +96,50 @@ export interface TabMeetingReadiness {
   notes: string[];
 }
 
+export interface PersonMetrics {
+  done: number;
+  in_progress: number;
+  overdue: number;
+  velocity_week: number;
+  avg_lead_time_days: number | null;
+  /** Avg cycle time in days — first in_progress → done. Null when no history yet. */
+  avg_cycle_time_days?: number | null;
+  /** All agent_activity_logs rows in last 7 days (incl. system pipeline events). */
+  ai_calls_week?: number;
+  /** role='user' messages in TG chats bound to an org, last 7 days. */
+  chat_messages_week?: number;
+}
+
+/**
+ * Status discriminator for `PersonMember.insight`:
+ *   - `ready`         — profile has accumulated enough data; `data` is populated
+ *   - `collecting`    — viewer is allowed to see; but no aggregated profile yet
+ *   - `unavailable`   — viewer is not permitted (non-manager looking at someone else)
+ */
+export type PersonInsightStatus = 'ready' | 'collecting' | 'unavailable';
+
+/**
+ * Each category in `PersonInsightData` mirrors backend InsightProfile.content.
+ * Content shape depends on category; common case is a list of plain strings,
+ * but legacy/free-form categories may store a structured object. UI must render
+ * defensively.
+ */
+export type PersonInsightCategoryValue =
+  | string[]
+  | Record<string, unknown>
+  | null;
+
+export interface PersonInsightData {
+  strengths: PersonInsightCategoryValue;
+  development_areas: PersonInsightCategoryValue;
+  work_patterns: PersonInsightCategoryValue;
+}
+
+export interface PersonInsight {
+  status: PersonInsightStatus;
+  data: PersonInsightData | null;
+}
+
 export interface PersonMember {
   id: number;
   name: string;
@@ -104,6 +148,8 @@ export interface PersonMember {
   done_tasks: number;
   overdue_tasks: number;
   latest_meeting: DashboardMeetingRef | null;
+  metrics?: PersonMetrics | null;
+  insight?: PersonInsight;
 }
 
 export interface TabPeople {
