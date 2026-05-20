@@ -9,8 +9,10 @@ import {
   issueTypeOptionsFromOrgs,
 } from '@/features/issues/model/types';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
+import { CollapsibleSection } from '@/shared/ui/layout/collapsible-section';
 import { TenantScopeFields } from '@/shared/ui/input/tenant-scope-fields';
 
+import type { EpicOption } from '@/entities/issue';
 import type { OrganizationProps } from '@/entities/organization';
 import type {
   IssueStatus,
@@ -22,6 +24,7 @@ interface SharedFiltersBarProps {
   filters: SharedFilters;
   organizations: OrganizationProps[];
   persons: PersonOption[];
+  epics: EpicOption[];
   onChange: (patch: Partial<SharedFilters>) => void;
   disabled?: boolean;
 }
@@ -45,6 +48,7 @@ export function SharedFiltersBar({
   filters,
   organizations,
   persons,
+  epics,
   onChange,
   disabled,
 }: SharedFiltersBarProps) {
@@ -76,6 +80,30 @@ export function SharedFiltersBar({
       };
     }),
   ];
+
+  const authorOptions = [
+    { value: '', label: 'Any author' },
+    ...persons.map((person) => {
+      return {
+        value: String(person.id),
+        label: person.email ? `${person.name} (${person.email})` : person.name,
+      };
+    }),
+  ];
+
+  const epicOptions = [
+    { value: '', label: 'Any epic' },
+    ...epics.map((epic) => {
+      return { value: String(epic.id), label: epic.name };
+    }),
+  ];
+
+  const hasAdvancedFilters =
+    filters.author_id.length > 0 || filters.epic_id.length > 0;
+
+  const advancedIndicator = hasAdvancedFilters ? (
+    <span className='h-1.5 w-1.5 rounded-full bg-primary' />
+  ) : null;
 
   return (
     <div className='flex flex-col gap-4'>
@@ -140,6 +168,35 @@ export function SharedFiltersBar({
           disabled={disabled}
         />
       </div>
+
+      <CollapsibleSection
+        label='Advanced filters'
+        defaultOpen={hasAdvancedFilters}
+        extraContent={advancedIndicator}
+      >
+        <div className='grid gap-2 sm:grid-cols-2 xl:grid-cols-4'>
+          <InputDropdown
+            label='Author'
+            options={authorOptions}
+            value={filters.author_id}
+            onChange={(value) => {
+              onChange({ author_id: value as string });
+            }}
+            searchable
+            disabled={disabled}
+          />
+          <InputDropdown
+            label='Epic'
+            options={epicOptions}
+            value={filters.epic_id}
+            onChange={(value) => {
+              onChange({ epic_id: value as string });
+            }}
+            searchable
+            disabled={disabled}
+          />
+        </div>
+      </CollapsibleSection>
     </div>
   );
 }

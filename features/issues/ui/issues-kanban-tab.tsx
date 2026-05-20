@@ -81,11 +81,14 @@ export function IssuesKanbanTab({
     };
   }, [filtersVersion, columnsVersion]);
 
+  const toggleType =
+    filters.type === 'epic' || filters.type === 'task' ? filters.type : '';
+
   return (
     <>
       <div className='px-2 mb-3'>
         <IssueTypeToggle
-          value={(filters.type === 'epic' ? 'epic' : '') as '' | 'epic'}
+          value={toggleType as '' | 'epic' | 'task'}
           onChange={(val) => {
             return handleFiltersChange({ type: val });
           }}

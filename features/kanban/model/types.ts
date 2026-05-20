@@ -40,6 +40,8 @@ export interface KanbanFilters {
   team_id?: number | null;
   type?: string;
   assignee_id?: number | null;
+  author_id?: number | null;
+  epic_id?: number | null;
   search?: string;
   archived?: boolean;
   exclude_archived?: boolean;

@@ -82,9 +82,15 @@ function buildIssuesQuery(filters: IssueFilters = {}) {
 
   if (filters.status) params.set('status', filters.status);
 
-  if (filters.type) params.set('type', filters.type);
+  if (filters.type === 'task') {
+    params.set('exclude_type', 'epic');
+  } else if (filters.type) {
+    params.set('type', filters.type);
+  }
 
   if (filters.assignee) params.set('assignee', String(filters.assignee));
+
+  if (filters.author_id) params.set('author_id', String(filters.author_id));
 
   if (filters.unassigned) params.set('unassigned', '1');
 

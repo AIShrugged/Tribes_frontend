@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { IssueCreateButton } from '@/features/issues';
 import { FiltersContext } from '@/features/issues/model/filters-context';
+import { FilterPresetsPanel } from '@/features/issues/ui/filter-presets-panel';
 import {
   isIssueStatus,
   isIssueSortField,
@@ -15,6 +16,7 @@ import {
 import { SharedFiltersBar } from '@/features/issues/ui/shared-filters-bar';
 import { CollapsibleSection } from '@/shared/ui/layout/collapsible-section';
 
+import type { EpicOption } from '@/entities/issue';
 import type { OrganizationProps } from '@/entities/organization';
 import type {
   IssueSortField,
@@ -26,6 +28,7 @@ import type {
 type IssuesLayoutClientProps = React.PropsWithChildren<{
   organizations: OrganizationProps[];
   persons: PersonOption[];
+  epics: EpicOption[];
   currentUserId: number | null;
   cookieOrgId: string;
 }>;
@@ -41,6 +44,7 @@ const STALE_PARAMS = ['assignee'] as const;
 export function IssuesLayoutClient({
   organizations,
   persons,
+  epics,
   currentUserId,
   cookieOrgId,
   children,
@@ -64,6 +68,8 @@ export function IssuesLayoutClient({
       search: searchParams.get('search') ?? '',
       type: isIssueType(typeRaw) ? typeRaw : '',
       assignee_id: assigneeIdRaw,
+      author_id: searchParams.get('author_id') ?? '',
+      epic_id: searchParams.get('epic_id') ?? '',
       status: isIssueStatus(statusRaw) ? statusRaw : '',
       show_archived: searchParams.get('show_archived') === '1',
     };
@@ -151,7 +157,11 @@ export function IssuesLayoutClient({
 
   const handleFiltersChange = useCallback((patch: Partial<SharedFilters>) => {
     setFilters((prev) => {
-      return { ...prev, ...patch };
+      const next = { ...prev, ...patch };
+      if (patch.type === 'epic' && prev.type !== 'epic') {
+        next.epic_id = '';
+      }
+      return next;
     });
     setFiltersVersion((v) => {
       return v + 1;
@@ -183,10 +193,12 @@ export function IssuesLayoutClient({
       search: filters.search,
       type: filters.type,
       assignee_id: filters.assignee_id,
+      author_id: filters.author_id,
+      epic_id: filters.epic_id,
       status: filters.status,
       show_archived: filters.show_archived ? '1' : '',
     });
-  }, [filters]);
+  }, [filters, updateUrl]);
 
   const contextValue = useMemo(() => {
     return {
@@ -217,13 +229,22 @@ export function IssuesLayoutClient({
           <CollapsibleSection
             label='Filters'
             icon={<SlidersHorizontal className='h-3.5 w-3.5' />}
-            extraContent={<IssueCreateButton />}
+            extraContent={
+              <div className='flex items-center gap-2'>
+                <FilterPresetsPanel
+                  currentFilters={filters}
+                  onApply={handleFiltersChange}
+                />
+                <IssueCreateButton />
+              </div>
+            }
           >
             <SharedFiltersBar
               key={filters.organization_id}
               filters={filters}
               organizations={organizations}
               persons={persons}
+              epics={epics}
               onChange={handleFiltersChange}
             />
           </CollapsibleSection>

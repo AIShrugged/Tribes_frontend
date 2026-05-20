@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 
 import {
+  getEpics,
   getPersons,
   IssuesLayoutClient,
   IssuesTabsNav,
@@ -16,10 +17,11 @@ import type { PropsWithChildren } from 'react';
 export default async function IssuesTabsLayout({
   children,
 }: PropsWithChildren) {
-  const [organizationsResponse, persons, currentUserId, cookieOrgId] =
+  const [organizationsResponse, persons, epics, currentUserId, cookieOrgId] =
     await Promise.all([
       getOrganizations(),
       getPersons(),
+      getEpics(),
       getCurrentUserId(),
       getOrganizationId(),
     ]);
@@ -35,6 +37,7 @@ export default async function IssuesTabsLayout({
             <IssuesLayoutClient
               organizations={organizationsResponse.data ?? []}
               persons={persons}
+              epics={epics}
               currentUserId={currentUserId ?? null}
               cookieOrgId={cookieOrgId}
             >

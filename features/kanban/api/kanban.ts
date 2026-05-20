@@ -34,6 +34,14 @@ function buildKanbanQuery(filters: KanbanFilters = {}): string {
     params.set('assignee', String(filters.assignee_id));
   }
 
+  if (filters.author_id) {
+    params.set('author_id', String(filters.author_id));
+  }
+
+  if (filters.epic_id) {
+    params.set('epic_id', String(filters.epic_id));
+  }
+
   if (filters.unassigned) {
     params.set('unassigned', '1');
   }

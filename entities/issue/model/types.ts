@@ -24,8 +24,32 @@ export interface SharedFilters {
   search: string;
   type: string | '';
   assignee_id: string;
+  author_id: string;
+  epic_id: string;
   status: IssueStatus | '';
   show_archived: boolean;
+}
+
+export type IssueAuditField =
+  | 'name'
+  | 'description'
+  | 'status'
+  | 'type'
+  | 'assignee_id'
+  | 'due_date'
+  | 'priority'
+  | 'epic_id'
+  | 'team_id'
+  | 'organization_id'
+  | (string & {});
+
+export interface IssueAuditEvent {
+  id: number;
+  field: IssueAuditField;
+  old_value: string | null;
+  new_value: string | null;
+  user: PersonOption;
+  created_at: string;
 }
 
 export const PRIORITY_LEVELS = [

@@ -5,6 +5,7 @@ import { useRef, type KeyboardEvent } from 'react';
 const OPTIONS = [
   { value: '', label: 'All' },
   { value: 'epic', label: 'Epics' },
+  { value: 'task', label: 'Tasks' },
 ] as const;
 
 type ToggleValue = (typeof OPTIONS)[number]['value'];
@@ -57,7 +58,7 @@ export function IssueTypeToggle({ value, onChange }: Props) {
             className={[
               'px-3 py-1 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               checked
-                ? 'bg-background text-foreground shadow-sm'
+                ? 'bg-card border border-white/8 text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground',
             ].join(' ')}
           >

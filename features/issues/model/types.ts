@@ -4,6 +4,7 @@ import type {
   EpicOption,
   IssueStatus,
   PersonOption,
+  SharedFilters,
 } from '@/entities/issue/model/types';
 import type { SortOrder } from '@/shared/ui/table/types';
 
@@ -13,6 +14,8 @@ export type {
   PersonOption,
   SharedFilters,
   PriorityLevel,
+  IssueAuditEvent,
+  IssueAuditField,
 } from '@/entities/issue/model/types';
 export {
   getPriorityLevel,
@@ -186,6 +189,7 @@ export interface IssueFilters {
   status?: IssueStatus | '';
   type?: string | '';
   assignee?: number | null;
+  author_id?: number | null;
   offset?: number;
   limit?: number;
   sort?: IssueSortField;
@@ -194,6 +198,18 @@ export interface IssueFilters {
   archived?: boolean;
   exclude_archived?: boolean;
   unassigned?: boolean;
+}
+
+export interface DoDItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+export interface FilterPreset {
+  id: string;
+  name: string;
+  filters: SharedFilters;
 }
 
 export interface IssueCommentUser {

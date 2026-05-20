@@ -14,6 +14,8 @@ const defaultValue: FiltersContextValue = {
     search: '',
     type: '',
     assignee_id: '',
+    author_id: '',
+    epic_id: '',
     status: '',
     show_archived: false,
   },

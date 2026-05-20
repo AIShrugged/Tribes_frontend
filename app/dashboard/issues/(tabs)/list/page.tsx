@@ -64,12 +64,34 @@ export default async function IssuesListPage({
     resolvedAssignee = null;
   }
 
+  const rawOrgId = Number(orgId);
+  const rawTeamId =
+    typeof params.team_id === 'string' ? Number(params.team_id) : null;
+  const rawAuthorId =
+    typeof params.author_id === 'string' ? Number(params.author_id) : null;
+  const rawEpicId =
+    typeof params.epic_id === 'string' ? Number(params.epic_id) : null;
+
   const issues = await getIssues({
-    organization_id: orgId ? Number(orgId) : null,
-    team_id: params.team_id ? Number(params.team_id) : null,
+    organization_id:
+      Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : null,
+    team_id:
+      rawTeamId !== null && Number.isFinite(rawTeamId) && rawTeamId > 0
+        ? rawTeamId
+        : null,
     status: statusParam,
     type: typeParam,
     assignee: resolvedAssignee,
+    author_id:
+      rawAuthorId !== null &&
+      Number.isFinite(rawAuthorId) &&
+      rawAuthorId > 0
+        ? rawAuthorId
+        : null,
+    epic_id:
+      rawEpicId !== null && Number.isFinite(rawEpicId) && rawEpicId > 0
+        ? rawEpicId
+        : null,
     unassigned: isUnassigned,
     offset: 0,
     limit: 20,

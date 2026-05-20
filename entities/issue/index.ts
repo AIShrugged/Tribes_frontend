@@ -6,5 +6,7 @@ export type {
   PersonOption,
   SharedFilters,
   PriorityLevel,
+  IssueAuditEvent,
+  IssueAuditField,
 } from './model/types';
 export { getPriorityLevel, PRIORITY_LEVELS } from './model/types';
