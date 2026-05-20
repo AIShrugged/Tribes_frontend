@@ -3,13 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import { notFound } from 'next/navigation';
 
+import { buildIssuesQuery } from '@/features/issues/model/build-issues-query';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL, FILES_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
 import { httpClient, httpClientList } from '@/shared/lib/httpClient';
 
 import type { AgentTaskRun } from '@/features/agents/model/types';
-import { buildIssuesQuery } from '@/features/issues/model/build-issues-query';
 import type {
   Issue,
   IssueAttachment,
@@ -18,8 +18,6 @@ import type {
   PersonOption,
 } from '@/features/issues/model/types';
 import type { ActionResult } from '@/shared/types/server-action';
-
-export { buildIssuesQuery };
 
 type IssueAttachmentApiResource = IssueAttachment & {
   file_path?: string | null;

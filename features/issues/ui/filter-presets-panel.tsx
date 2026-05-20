@@ -1,7 +1,7 @@
 'use client';
 
 import { Bookmark, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Popup } from '@/shared/ui/popup/Popup';
 
@@ -16,7 +16,7 @@ interface StorageEnvelope {
 }
 
 function loadPresets(): FilterPreset[] {
-  if (typeof globalThis.window === 'undefined') return [];
+  if (globalThis.window === undefined) return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
@@ -50,14 +50,10 @@ export function FilterPresetsPanel({
   currentFilters,
   onApply,
 }: FilterPresetsPanelProps) {
-  const [presets, setPresets] = useState<FilterPreset[]>([]);
+  const [presets, setPresets] = useState<FilterPreset[]>(() => loadPresets());
   const [open, setOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    setPresets(loadPresets());
-  }, []);
 
   function handleSave() {
     const trimmed = saveName.trim();

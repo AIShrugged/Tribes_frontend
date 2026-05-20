@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { PropsWithChildren } from 'react';
 
 import { FilterPresetsPanel } from '@/features/issues/ui/filter-presets-panel';
 
@@ -22,10 +23,7 @@ jest.mock('@/shared/ui/popup/Popup', () => {
     Popup: ({
       open,
       children,
-    }: {
-      open: boolean;
-      children: React.ReactNode;
-    }) => {
+    }: PropsWithChildren<{ open: boolean }>) => {
       return open ? <div data-testid='popup'>{children}</div> : null;
     },
   };
