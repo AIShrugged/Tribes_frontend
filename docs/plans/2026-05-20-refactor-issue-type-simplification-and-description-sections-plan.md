@@ -1,7 +1,7 @@
 ---
 title: "refactor: Simplify Issue Types to Epic/Task and Embed Description Sections"
 type: refactor
-status: active
+status: completed
 date: 2026-05-20
 ---
 
@@ -291,39 +291,39 @@ Delete this file — it renders a component based on a field the backend never r
 ## Acceptance Criteria
 
 ### Type simplification
-- [ ] Form shows exactly two type options: "Task" and "Epic" (not org-configured labels)
-- [ ] Selecting "Task" sends `type: 'organization'` to backend
-- [ ] Selecting "Epic" sends `type: 'epic'` to backend
-- [ ] Existing issues with `type: 'development'` render as "Task" in the form
-- [ ] Existing issues with `type: 'organization'` render as "Task" in the form
-- [ ] Existing issues with `type: 'epic'` render as "Epic" in the form
-- [ ] Type toggle uses same visual style as `IssueTypeToggle` (segmented pill, `bg-card border border-white/8` active state)
-- [ ] Switching to "Epic" clears `epic_id` (task cannot be child of itself)
-- [ ] Switching from "Epic" to "Task" restores previously set `epic_id`
-- [ ] `issueTypeOptionsFromOrgs` removed from form (can be removed from exports if unused elsewhere)
+- [x] Form shows exactly two type options: "Task" and "Epic" (not org-configured labels)
+- [x] Selecting "Task" sends `type: 'organization'` to backend
+- [x] Selecting "Epic" sends `type: 'epic'` to backend
+- [x] Existing issues with `type: 'development'` render as "Task" in the form
+- [x] Existing issues with `type: 'organization'` render as "Task" in the form
+- [x] Existing issues with `type: 'epic'` render as "Epic" in the form
+- [x] Type toggle uses same visual style as `IssueTypeToggle` (segmented pill, `bg-card border border-white/8` active state)
+- [x] Switching to "Epic" clears `epic_id` (task cannot be child of itself)
+- [x] Switching from "Epic" to "Task" restores previously set `epic_id`
+- [x] `issueTypeOptionsFromOrgs` removed from form (can be removed from exports if unused elsewhere)
 
 ### Description sections
-- [ ] New task form pre-populates description with Context/Steps/DoD template
-- [ ] New epic form pre-populates description with Context/Steps template (no DoD)
-- [ ] Editing existing issue: description is NOT auto-reset to template
-- [ ] Description textarea has sufficient height (min 10 rows) for multi-section content
-- [ ] No separate DoD checklist rendered in the form
+- [x] New task form pre-populates description with Context/Steps/DoD template
+- [x] New epic form pre-populates description with Context/Steps template (no DoD)
+- [x] Editing existing issue: description is NOT auto-reset to template
+- [x] Description textarea has sufficient height (min 10 rows) for multi-section content
+- [x] No separate DoD checklist rendered in the form
 
 ### DoD checklist removal
-- [ ] `useFieldArray` for `dod` removed from `issue-form.tsx`
-- [ ] `dod` field removed from `IssueFormValues`
-- [ ] `dod` field removed from `IssueUpsertDTO`
-- [ ] `dod?: DoDItem[] | null` removed from `Issue` interface
-- [ ] `IssueDodProgress` component deleted
-- [ ] `issue-dod-progress.tsx` file deleted
-- [ ] Detail page `[id]/page.tsx` no longer imports or renders `IssueDodProgress`
+- [x] `useFieldArray` for `dod` removed from `issue-form.tsx`
+- [x] `dod` field removed from `IssueFormValues`
+- [x] `dod` field removed from `IssueUpsertDTO`
+- [x] `dod?: DoDItem[] | null` removed from `Issue` interface
+- [x] `IssueDodProgress` component deleted
+- [x] `issue-dod-progress.tsx` file deleted
+- [x] Detail page `[id]/page.tsx` no longer imports or renders `IssueDodProgress`
 
 ### No regressions
-- [ ] Epic child task selector still works (no changes to that flow)
-- [ ] Task's `epic_id` field still works
-- [ ] Filter toggle (`All`/`Epics`/`Tasks`) still works — no changes needed
-- [ ] `buildIssuesQuery` task→exclude_type transform still works
-- [ ] All existing tests pass
+- [x] Epic child task selector still works (no changes to that flow)
+- [x] Task's `epic_id` field still works
+- [x] Filter toggle (`All`/`Epics`/`Tasks`) still works — no changes needed
+- [x] `buildIssuesQuery` task→exclude_type transform still works
+- [x] All existing tests pass
 
 ---
 
