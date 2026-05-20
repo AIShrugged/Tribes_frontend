@@ -1,4 +1,4 @@
-import { buildIssuesQuery } from '@/features/issues/api/issues';
+import { buildIssuesQuery } from '@/features/issues/model/build-issues-query';
 
 jest.mock('@/shared/lib/httpClient', () => {
   return {
