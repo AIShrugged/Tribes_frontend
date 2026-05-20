@@ -136,23 +136,17 @@ export function IssuesLayoutClient({
 
   const updateUrl = useCallback(
     (patch: Record<string, string>) => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      for (const stale of STALE_PARAMS) {
-        params.delete(stale);
-      }
+      const params = new URLSearchParams();
 
       for (const [key, value] of Object.entries(patch)) {
         if (value || KEEP_WHEN_EMPTY.has(key)) {
           params.set(key, value);
-        } else {
-          params.delete(key);
         }
       }
 
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [router, pathname, searchParams],
+    [router, pathname],
   );
 
   const handleFiltersChange = useCallback((patch: Partial<SharedFilters>) => {
