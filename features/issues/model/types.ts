@@ -22,26 +22,6 @@ export {
   PRIORITY_LEVELS,
 } from '@/entities/issue/model/types';
 
-export function issueTypeOptionsFromOrgs(
-  organizations: {
-    issue_types?: { key: string; name: string; is_active: boolean }[];
-  }[],
-): { value: string; label: string }[] {
-  const seen = new Set<string>();
-  const options: { value: string; label: string }[] = [];
-
-  for (const org of organizations) {
-    for (const t of org.issue_types ?? []) {
-      if (t.is_active && !seen.has(t.key)) {
-        seen.add(t.key);
-        options.push({ value: t.key, label: t.name });
-      }
-    }
-  }
-
-  return options;
-}
-
 export const ISSUE_STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
   { value: 'open', label: 'Open' },
   { value: 'in_progress', label: 'In progress' },
@@ -115,7 +95,6 @@ export interface Issue {
   created_at: string;
   updated_at: string;
   attachments?: IssueAttachment[];
-  dod?: DoDItem[] | null;
 }
 
 export interface IssueAttachment {
@@ -199,12 +178,6 @@ export interface IssueFilters {
   archived?: boolean;
   exclude_archived?: boolean;
   unassigned?: boolean;
-}
-
-export interface DoDItem {
-  id: string;
-  text: string;
-  completed: boolean;
 }
 
 export interface FilterPreset {

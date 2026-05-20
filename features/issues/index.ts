@@ -41,7 +41,6 @@ export {
   isIssueSortField,
   isSortOrder,
   VALID_SORT_FIELDS,
-  issueTypeOptionsFromOrgs,
 } from '@/features/issues/model/types';
 export { IssueAttachments } from './ui/issue-attachments';
 export { IssueComments } from './ui/issue-comments';

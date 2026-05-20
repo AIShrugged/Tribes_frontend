@@ -1,9 +1,8 @@
 'use client';
 
-import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { getTeams } from '@/entities/team/api/team';
@@ -17,14 +16,11 @@ import {
 import {
   ISSUE_STATUS_OPTIONS,
   PRIORITY_OPTIONS,
-  issueTypeOptionsFromOrgs,
 } from '@/features/issues/model/types';
 import { PendingAttachmentUploader } from '@/features/issues/ui/pending-attachment-uploader';
 import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
-import { ButtonIcon } from '@/shared/ui/button/button-icon';
-import Checkbox from '@/shared/ui/input/Checkbox';
 import Input from '@/shared/ui/input/Input';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 import InputTextarea from '@/shared/ui/input/InputTextarea';
@@ -34,13 +30,21 @@ import { Modal } from '@/shared/ui/modal/modal';
 import type { OrganizationProps } from '@/entities/organization';
 import type { UserBasicProps } from '@/entities/user';
 import type {
-  DoDItem,
   EpicOption,
   Issue,
   IssueAttachment,
   IssueStatus,
   PersonOption,
 } from '@/features/issues/model/types';
+
+const FORM_TYPE_OPTIONS = [
+  { value: 'organization', label: 'Task' },
+  { value: 'epic', label: 'Epic' },
+] as const;
+
+const DESCRIPTION_TEMPLATE_TASK =
+  '## Context\n\n\n## Steps\n\n\n## Definition of Done\n\n';
+const DESCRIPTION_TEMPLATE_EPIC = '## Context\n\n\n## Steps\n\n';
 
 interface IssueFormProps {
   organizations: OrganizationProps[];
@@ -67,7 +71,6 @@ interface IssueFormValues {
   author_id: string;
   due_date: string;
   priority: string;
-  dod: DoDItem[];
 }
 
 function defaultDueDate(): string {
@@ -78,6 +81,11 @@ function defaultDueDate(): string {
 function submitLabel(hasPendingOps: boolean, isEdit: boolean): string {
   if (hasPendingOps) return 'Uploading...';
   return isEdit ? 'Save changes' : 'Create task';
+}
+
+function resolveDisplayType(rawType: string | undefined): string {
+  if (rawType === 'epic') return 'epic';
+  return 'organization';
 }
 
 export function IssueForm({
@@ -116,8 +124,7 @@ export function IssueForm({
     });
   }, [tasks, issue]);
 
-  // Stable upload token for create mode — lazy initializer runs exactly once per mount.
-  // useState guarantees stability; useMemo does not (React may discard memoized values).
+  // Stable upload token for create mode
   const [uploadToken] = useState<string>(() => {
     return crypto.randomUUID();
   });
@@ -127,7 +134,6 @@ export function IssueForm({
   });
 
   // Cleanup pending attachments if the create form is abandoned without submitting.
-  // Only runs in create mode (no issue prop); edit mode has no pending attachments.
   useEffect(() => {
     if (issue) return;
     return () => {
@@ -138,17 +144,22 @@ export function IssueForm({
     };
   }, []);
 
-  const typeOptions = issueTypeOptionsFromOrgs(organizations);
-
   const defaultAuthorId = issue?.user_id
     ? String(issue.user_id)
     : String(currentUser?.id ?? '');
 
+  const resolvedType = resolveDisplayType(issue?.type);
+
   const defaultValues = useMemo<IssueFormValues>(() => {
+    const type = resolvedType;
+    const description =
+      issue?.description ??
+      (type === 'epic' ? DESCRIPTION_TEMPLATE_EPIC : DESCRIPTION_TEMPLATE_TASK);
+
     return {
       name: issue?.name ?? '',
-      description: issue?.description ?? '',
-      type: issue?.type ?? '',
+      description,
+      type,
       status: issue?.status ?? '',
       organization_id: issue?.organization_id
         ? String(issue.organization_id)
@@ -159,9 +170,8 @@ export function IssueForm({
       author_id: defaultAuthorId,
       due_date: issue?.due_date ?? defaultDueDate(),
       priority: String(issue?.priority ?? 0),
-      dod: issue?.dod ?? [],
     };
-  }, [defaultOrganizationId, issue, defaultAuthorId]);
+  }, [defaultOrganizationId, issue, defaultAuthorId, resolvedType]);
 
   const {
     register,
@@ -178,13 +188,6 @@ export function IssueForm({
     reValidateMode: 'onChange',
   });
 
-  const { fields: dodFields, append: dodAppend, remove: dodRemove } = useFieldArray({
-    control,
-    name: 'dod',
-  });
-
-  const dodRefs = useRef<(HTMLInputElement | null)[]>([]);
-
   const watchedType = useWatch({ control, name: 'type' });
 
   const personOptions = [
@@ -199,26 +202,26 @@ export function IssueForm({
 
   const statusOptions = ISSUE_STATUS_OPTIONS;
 
-  function handleDodKeyDown(
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number,
-  ) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (e.currentTarget.value.trim() === '') return;
-      dodAppend({ id: crypto.randomUUID(), text: '', completed: false });
-      requestAnimationFrame(() => {
-        dodRefs.current[index + 1]?.focus();
-      });
-    }
-    if (e.key === 'Backspace' && e.currentTarget.value === '') {
-      e.preventDefault();
-      dodRemove(index);
-      requestAnimationFrame(() => {
-        if (index > 0) dodRefs.current[index - 1]?.focus();
-      });
-    }
-  }
+  const handleTypeChange = useCallback(
+    (newType: string) => {
+      const wasEpic = watchedType === 'epic';
+      const isNowEpic = newType === 'epic';
+
+      setValue('type', newType, { shouldDirty: true });
+      clearErrors('type');
+      setRootError('');
+
+      if (isNowEpic && !wasEpic) {
+        savedEpicIdRef.current = watch('epic_id');
+        setValue('epic_id', '', { shouldDirty: true });
+        clearErrors('epic_id');
+      } else if (!isNowEpic && wasEpic && savedEpicIdRef.current !== undefined) {
+        setValue('epic_id', savedEpicIdRef.current, { shouldDirty: true });
+        savedEpicIdRef.current = undefined;
+      }
+    },
+    [watchedType, setValue, clearErrors, watch],
+  );
 
   const onSubmit = (values: IssueFormValues) => {
     setRootError('');
@@ -259,9 +262,6 @@ export function IssueForm({
         due_date: values.due_date || null,
         priority: Number(values.priority) || 0,
         upload_token: issue ? null : uploadToken,
-        dod: values.dod.filter((item) => {
-          return item.text.trim().length > 0;
-        }),
       };
       const result = issue
         ? await updateIssue(issue.id, payload)
@@ -290,7 +290,6 @@ export function IssueForm({
       if (result.data.type === 'epic') {
         const epicId = result.data.id;
         if (issue) {
-          // Edit mode: find newly added children only
           const prevIds = new Set(initialChildIds.map(Number));
           const toAdd = selectedChildIds.map(Number).filter((id) => {
             return !prevIds.has(id);
@@ -299,7 +298,6 @@ export function IssueForm({
             await linkIssuesToEpic(epicId, toAdd);
           }
         } else {
-          // Create mode: link all selected
           const toLink = selectedChildIds.map(Number).filter(Boolean);
           if (toLink.length > 0) {
             await linkIssuesToEpic(epicId, toLink);
@@ -334,6 +332,33 @@ export function IssueForm({
         value={watch('name')}
         error={errors.name?.message}
       />
+
+      <div className='flex flex-col gap-1'>
+        <span className='text-xs text-muted-foreground'>Type</span>
+        <div className='flex rounded-[var(--radius-button)] bg-muted p-0.5 gap-0.5'>
+          {FORM_TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type='button'
+              onClick={() => {
+                handleTypeChange(opt.value);
+              }}
+              className={[
+                'flex-1 rounded-[var(--radius-button)] px-3 py-1 text-xs font-medium transition-all',
+                watchedType === opt.value
+                  ? 'bg-card border border-white/8 text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              ].join(' ')}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        {errors.type?.message ? (
+          <span className='text-xs text-destructive'>{errors.type.message}</span>
+        ) : null}
+      </div>
+
       <InputTextarea
         {...register('description', {
           onChange: () => {
@@ -343,44 +368,21 @@ export function IssueForm({
         })}
         label='Description'
         value={watch('description')}
+        rows={12}
         error={errors.description?.message}
       />
-      <div className='grid gap-2 md:grid-cols-2'>
-        <InputDropdown
-          label='Type'
-          options={[{ value: '', label: 'Select type' }, ...typeOptions]}
-          value={watch('type')}
-          onChange={(value) => {
-            const previousEpicId = watch('epic_id');
-            setValue('type', value as string, { shouldDirty: true });
-            if (value === 'epic') {
-              savedEpicIdRef.current = previousEpicId;
-              setValue('epic_id', '', { shouldDirty: true });
-              clearErrors('epic_id');
-            } else if (savedEpicIdRef.current !== undefined) {
-              setValue('epic_id', savedEpicIdRef.current, {
-                shouldDirty: true,
-              });
-              savedEpicIdRef.current = undefined;
-            }
-            clearErrors('type');
-            setRootError('');
-          }}
-          error={errors.type?.message}
-        />
 
-        <InputDropdown
-          label='Status'
-          options={statusOptions}
-          value={watch('status')}
-          onChange={(value) => {
-            setValue('status', value as IssueStatus, { shouldDirty: true });
-            clearErrors('status');
-            setRootError('');
-          }}
-          error={errors.status?.message}
-        />
-      </div>
+      <InputDropdown
+        label='Status'
+        options={statusOptions}
+        value={watch('status')}
+        onChange={(value) => {
+          setValue('status', value as IssueStatus, { shouldDirty: true });
+          clearErrors('status');
+          setRootError('');
+        }}
+        error={errors.status?.message}
+      />
 
       <TenantScopeFields
         organizations={organizations}
@@ -493,65 +495,6 @@ export function IssueForm({
           }}
           error={errors.priority?.message}
         />
-      </div>
-
-      <div className='flex flex-col gap-2'>
-        <span className='text-sm font-medium text-foreground'>
-          Definition of Done
-        </span>
-        {dodFields.length > 0 && (
-          <ul className='flex flex-col gap-1'>
-            {dodFields.map((field, index) => {
-              return (
-                <li
-                  key={field.id}
-                  className='flex items-center gap-2 rounded-[var(--radius-button)] px-2 py-1 hover:bg-muted/60 transition-colors group'
-                >
-                  <Checkbox
-                    {...register(`dod.${index}.completed`)}
-                    defaultChecked={field.completed}
-                  />
-                  <input
-                    type='text'
-                    {...register(`dod.${index}.text`)}
-                    ref={(el) => {
-                      register(`dod.${index}.text`).ref(el);
-                      dodRefs.current[index] = el;
-                    }}
-                    onKeyDown={(e) => {
-                      return handleDodKeyDown(e, index);
-                    }}
-                    placeholder='Acceptance criterion...'
-                    className='flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground'
-                  />
-                  <ButtonIcon
-                    icon={<X size={14} />}
-                    aria-label={`Remove criterion ${index + 1}`}
-                    onClickAction={() => {
-                      return dodRemove(index);
-                    }}
-                    className='opacity-0 group-hover:opacity-100 transition-opacity'
-                    size='sm'
-                    variant='ghost'
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <button
-          type='button'
-          onClick={() => {
-            return dodAppend({
-              id: crypto.randomUUID(),
-              text: '',
-              completed: false,
-            });
-          }}
-          className='self-start text-sm text-muted-foreground hover:text-foreground transition-colors'
-        >
-          + Add criterion
-        </button>
       </div>
 
       {!issue && (

@@ -4,10 +4,7 @@ import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { getTeams } from '@/entities/team/api/team';
-import {
-  ISSUE_STATUS_OPTIONS,
-  issueTypeOptionsFromOrgs,
-} from '@/features/issues/model/types';
+import { ISSUE_STATUS_OPTIONS } from '@/features/issues/model/types';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 import { CollapsibleSection } from '@/shared/ui/layout/collapsible-section';
 import { TenantScopeFields } from '@/shared/ui/input/tenant-scope-fields';
@@ -56,7 +53,8 @@ export function SharedFiltersBar({
 }: SharedFiltersBarProps) {
   const typeOptions = [
     { value: '', label: 'Any type' },
-    ...issueTypeOptionsFromOrgs(organizations),
+    { value: 'organization', label: 'Task' },
+    { value: 'epic', label: 'Epic' },
   ];
 
   const [searchValue, setSearchValue] = useState(filters.search);
