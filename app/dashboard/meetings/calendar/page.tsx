@@ -25,7 +25,10 @@ export default async function MeetingsCalendarPage({
   const params = await searchParams;
   const justAttached = params.attached === '1';
 
-  const [sources, orgId] = await Promise.all([getSources(), getOrganizationId()]);
+  const [sources, orgId] = await Promise.all([
+    getSources(),
+    getOrganizationId(),
+  ]);
   const isCalendarAttached = sources.some((s) => {
     return s.is_connected === '1' || s.is_connected === true;
   });

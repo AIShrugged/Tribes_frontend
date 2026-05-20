@@ -141,11 +141,13 @@ function ChatMessageComponent({ message }: ChatMessageProps) {
 }
 
 // Memoize to skip re-renders during polling — only re-render when content or status changes
-export const ChatMessage = React.memo(ChatMessageComponent, (prev, next) => (
-  prev.message.id === next.message.id &&
-  prev.message.content === next.message.content &&
-  prev.message.status === next.message.status
-));
+export const ChatMessage = React.memo(ChatMessageComponent, (prev, next) => {
+  return (
+    prev.message.id === next.message.id &&
+    prev.message.content === next.message.content &&
+    prev.message.status === next.message.status
+  );
+});
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 

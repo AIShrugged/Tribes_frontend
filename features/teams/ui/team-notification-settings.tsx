@@ -123,14 +123,18 @@ function AddNotificationModal({
             <select
               id='event-type-select'
               value={selectedEventType}
-              onChange={(e) => setSelectedEventType(e.target.value)}
+              onChange={(e) => {
+                return setSelectedEventType(e.target.value);
+              }}
               className='w-full h-10 px-3 rounded-[var(--radius-button)] border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
             >
-              {Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+              {Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => {
+                return (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -150,7 +154,9 @@ function AddNotificationModal({
                 step={5}
                 placeholder={String(DEFAULT_MINUTES_BEFORE)}
                 value={minutesBefore}
-                onChange={(e) => setMinutesBefore(e.target.value)}
+                onChange={(e) => {
+                  return setMinutesBefore(e.target.value);
+                }}
                 className='w-full h-10 px-3 rounded-[var(--radius-button)] border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
               />
               <p className='text-xs text-muted-foreground'>
@@ -181,14 +187,18 @@ function AddNotificationModal({
               <select
                 id='chat-select'
                 value={selectedChatId}
-                onChange={(e) => setSelectedChatId(e.target.value)}
+                onChange={(e) => {
+                  return setSelectedChatId(e.target.value);
+                }}
                 className='w-full h-10 px-3 rounded-[var(--radius-button)] border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
               >
-                {availableChats.map((chat) => (
-                  <option key={chat.id} value={String(chat.id)}>
-                    {chat.chat_title ?? `Chat #${chat.id}`}
-                  </option>
-                ))}
+                {availableChats.map((chat) => {
+                  return (
+                    <option key={chat.id} value={String(chat.id)}>
+                      {chat.chat_title ?? `Chat #${chat.id}`}
+                    </option>
+                  );
+                })}
               </select>
             )}
           </div>
@@ -231,21 +241,23 @@ interface MinutesBeforeEditorProps {
 function MinutesBeforeEditor({ teamId, setting }: MinutesBeforeEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(
-    setting.minutes_before != null ? String(setting.minutes_before) : '',
+    setting.minutes_before == null ? '' : String(setting.minutes_before),
   );
   const [isPending, startTransition] = useTransition();
 
   const displayValue =
-    setting.minutes_before != null
-      ? `${setting.minutes_before} min before`
-      : `Default (${DEFAULT_MINUTES_BEFORE} min)`;
+    setting.minutes_before == null
+      ? `Default (${DEFAULT_MINUTES_BEFORE} min)`
+      : `${setting.minutes_before} min before`;
 
   const handleSave = () => {
     const next = value === '' ? null : Number(value);
 
     if (
       next !== null &&
-      (Number.isNaN(next) || next < MIN_MINUTES_BEFORE || next > MAX_MINUTES_BEFORE)
+      (Number.isNaN(next) ||
+        next < MIN_MINUTES_BEFORE ||
+        next > MAX_MINUTES_BEFORE)
     ) {
       toast.error(
         `Minutes before must be between ${MIN_MINUTES_BEFORE} and ${MAX_MINUTES_BEFORE}`,
@@ -273,7 +285,9 @@ function MinutesBeforeEditor({ teamId, setting }: MinutesBeforeEditorProps) {
     return (
       <button
         type='button'
-        onClick={() => setIsEditing(true)}
+        onClick={() => {
+          return setIsEditing(true);
+        }}
         className='text-xs text-muted-foreground hover:text-foreground transition-colors underline decoration-dotted underline-offset-2'
       >
         {displayValue}
@@ -290,7 +304,9 @@ function MinutesBeforeEditor({ teamId, setting }: MinutesBeforeEditorProps) {
         step={5}
         placeholder={String(DEFAULT_MINUTES_BEFORE)}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          return setValue(e.target.value);
+        }}
         disabled={isPending}
         className='w-20 h-7 px-2 rounded-[var(--radius-button)] border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring'
         autoFocus
@@ -307,9 +323,9 @@ function MinutesBeforeEditor({ teamId, setting }: MinutesBeforeEditorProps) {
         type='button'
         onClick={() => {
           setValue(
-            setting.minutes_before != null
-              ? String(setting.minutes_before)
-              : '',
+            setting.minutes_before == null
+              ? ''
+              : String(setting.minutes_before),
           );
           setIsEditing(false);
         }}
@@ -459,9 +475,11 @@ export default function TeamNotificationSettings({
         </p>
       ) : (
         <div className='flex flex-col gap-2'>
-          {settings.map((setting) => (
-            <SettingRow key={setting.id} setting={setting} teamId={teamId} />
-          ))}
+          {settings.map((setting) => {
+            return (
+              <SettingRow key={setting.id} setting={setting} teamId={teamId} />
+            );
+          })}
         </div>
       )}
     </div>

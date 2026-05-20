@@ -2,17 +2,17 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { parseApiError } from '@/shared/lib/apiError';
-import { API_URL } from '@/shared/lib/config';
-import { ServerError } from '@/shared/lib/errors';
-import { httpClient } from '@/shared/lib/httpClient';
-
 import {
   AGENDA_DEFAULT_SECTIONS,
   type AgendaSection,
   type AgendaTemplate,
   type AgendaTemplateResolved,
 } from '@/features/teams/model/types';
+import { parseApiError } from '@/shared/lib/apiError';
+import { API_URL } from '@/shared/lib/config';
+import { ServerError } from '@/shared/lib/errors';
+import { httpClient } from '@/shared/lib/httpClient';
+
 import type { ActionResult } from '@/shared/types/server-action';
 
 /**
@@ -85,10 +85,10 @@ export async function upsertAgendaTemplate(
     }
 
     return { data, error: null };
-  } catch (err) {
-    if (err instanceof ServerError) {
+  } catch (error) {
+    if (error instanceof ServerError) {
       const parsed = parseApiError(
-        err.responseBody ?? '',
+        error.responseBody ?? '',
         'Failed to save agenda template',
       );
       return {
@@ -97,6 +97,6 @@ export async function upsertAgendaTemplate(
         fieldErrors: parsed.fieldErrors,
       };
     }
-    throw err;
+    throw error;
   }
 }

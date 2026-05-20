@@ -28,7 +28,9 @@ export default async function ChatRoomPage({ params }: PageProps) {
     getChats(0, 20),
     getChat(chatId),
     getMessages(chatId, 0, INITIAL_LIMIT),
-    getArtifacts(chatId).catch(() => { return null; }),
+    getArtifacts(chatId).catch(() => {
+      return null;
+    }),
     getOrganizations(),
   ]);
   // API returns messages oldest-first (ASC by created_at).

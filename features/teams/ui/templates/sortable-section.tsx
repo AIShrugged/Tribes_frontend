@@ -17,8 +17,14 @@ export function SortableSection({
   isReadOnly,
   onRemove,
 }: SortableSectionProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -43,7 +49,9 @@ export function SortableSection({
         <GripVertical className='w-4 h-4' />
       </button>
 
-      <span className='flex-1 text-sm font-medium text-foreground'>{label}</span>
+      <span className='flex-1 text-sm font-medium text-foreground'>
+        {label}
+      </span>
 
       {!isReadOnly && (
         <button

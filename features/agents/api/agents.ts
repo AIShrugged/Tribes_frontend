@@ -120,7 +120,9 @@ export async function updateAgentProfile(
   return result;
 }
 
-export async function deleteAgentProfile(id: number): Promise<ActionResult<null>> {
+export async function deleteAgentProfile(
+  id: number,
+): Promise<ActionResult<null>> {
   try {
     await httpClient(`${API_URL}/agent-profiles/${id}`, { method: 'DELETE' });
     revalidatePath('/dashboard/agents/profiles', 'layout');

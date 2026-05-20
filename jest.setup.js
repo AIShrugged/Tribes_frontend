@@ -9,8 +9,11 @@ globalThis.TextDecoder = TextDecoder;
 // Check both typeof and the .supports method since jsdom may define CSS as an
 // empty object without the supports() API.
 if (typeof CSS === 'undefined' || typeof CSS.supports !== 'function') {
-  // eslint-disable-next-line no-undef
-  globalThis.CSS = { supports: () => false };
+  globalThis.CSS = {
+    supports: () => {
+      return false;
+    },
+  };
 }
 
 // Prevent @/shared/lib/config from throwing when API modules are imported via feature indexes

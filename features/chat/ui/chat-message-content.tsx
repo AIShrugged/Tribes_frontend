@@ -81,15 +81,17 @@ export function ChatMessageContent({ content }: ChatMessageContentProps) {
     if (segments.length === 1 && segments[0].type === 'text') {
       return (
         <div className='chat-html-content'>
-          <ReactMarkdown remarkPlugins={REMARK_PLUGINS}>{content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={REMARK_PLUGINS}>
+            {content}
+          </ReactMarkdown>
         </div>
       );
     }
 
     return (
       <div className='chat-html-content flex flex-col gap-3'>
-        {segments.map((seg, i) =>
-          seg.type === 'tasks' ? (
+        {segments.map((seg, i) => {
+          return seg.type === 'tasks' ? (
             <TaskTable
               key={`tasks-${i}-${seg.tasks.length}`}
               data={{ tasks: seg.tasks }}
@@ -101,8 +103,8 @@ export function ChatMessageContent({ content }: ChatMessageContentProps) {
             >
               {seg.content}
             </ReactMarkdown>
-          ),
-        )}
+          );
+        })}
       </div>
     );
   }

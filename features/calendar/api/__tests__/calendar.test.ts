@@ -19,8 +19,8 @@ jest.mock('@/shared/lib/errors', () => {
   return actual;
 });
 
-import { httpClient } from '@/shared/lib/httpClient';
 import { ServerError } from '@/shared/lib/errors';
+import { httpClient } from '@/shared/lib/httpClient';
 
 const mockHttpClient = httpClient as jest.Mock;
 
@@ -79,7 +79,8 @@ describe('attachCalendar', () => {
     mockHttpClient.mockRejectedValue(
       new ServerError('error', {
         status: 500,
-        responseBody: '<!DOCTYPE html><html><body>Internal Server Error</body></html>',
+        responseBody:
+          '<!DOCTYPE html><html><body>Internal Server Error</body></html>',
       }),
     );
 

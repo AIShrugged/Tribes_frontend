@@ -57,9 +57,15 @@ function normalizeInsightCategory(
 
   if (Array.isArray(value)) {
     const items = value
-      .filter((v): v is string => {return typeof v === 'string'})
-      .map((v) => {return v.trim()})
-      .filter((v) => {return v.length > 0});
+      .filter((v): v is string => {
+        return typeof v === 'string';
+      })
+      .map((v) => {
+        return v.trim();
+      })
+      .filter((v) => {
+        return v.length > 0;
+      });
     return items.length > 0 ? items : null;
   }
 
@@ -68,21 +74,32 @@ function normalizeInsightCategory(
     const itemsField = (value as Record<string, unknown>).items;
     if (Array.isArray(itemsField)) {
       const items = itemsField
-        .filter((v): v is string => {return typeof v === 'string'})
-        .map((v) => {return v.trim()})
-        .filter((v) => {return v.length > 0});
+        .filter((v): v is string => {
+          return typeof v === 'string';
+        })
+        .map((v) => {
+          return v.trim();
+        })
+        .filter((v) => {
+          return v.length > 0;
+        });
       if (items.length > 0) return items;
     }
 
     // Fallback for work_patterns and similar flat key/value objects
     const items = Object.entries(value)
-      .filter(([k]) => {return k !== 'evidence'}) // never surface raw evidence in the card
+      .filter(([k]) => {
+        return k !== 'evidence';
+      }) // never surface raw evidence in the card
       .map(([k, v]) => {
         if (typeof v === 'string') return `${k}: ${v}`;
-        if (typeof v === 'number' || typeof v === 'boolean') return `${k}: ${v}`;
+        if (typeof v === 'number' || typeof v === 'boolean')
+          return `${k}: ${v}`;
         return null;
       })
-      .filter((s): s is string => {return s !== null});
+      .filter((s): s is string => {
+        return s !== null;
+      });
     return items.length > 0 ? items : null;
   }
 
@@ -100,7 +117,11 @@ function normalizeInsightCategory(
  * Only rendered when at least one of the three has signal — keeps the card
  * uncluttered for members with zero activity.
  */
-function StatsSection({ metrics }: { metrics: NonNullable<PersonMember['metrics']> }) {
+function StatsSection({
+  metrics,
+}: {
+  metrics: NonNullable<PersonMember['metrics']>;
+}) {
   const cycle = metrics.avg_cycle_time_days ?? null;
   const ai = metrics.ai_calls_week ?? 0;
   const chat = metrics.chat_messages_week ?? 0;
@@ -127,8 +148,7 @@ function StatsSection({ metrics }: { metrics: NonNullable<PersonMember['metrics'
         title='AI tool calls in the last 7 days (all events incl. system pipeline)'
       >
         <Activity className='size-3' />
-        AI:{' '}
-        <span className='text-foreground font-medium'>{ai}</span>
+        AI: <span className='text-foreground font-medium'>{ai}</span>
         /wk
       </span>
       <span
@@ -136,8 +156,7 @@ function StatsSection({ metrics }: { metrics: NonNullable<PersonMember['metrics'
         title='Messages in org-bound TG chats in the last 7 days'
       >
         <MessageSquareText className='size-3' />
-        Chat:{' '}
-        <span className='text-foreground font-medium'>{chat}</span>
+        Chat: <span className='text-foreground font-medium'>{chat}</span>
         /wk
       </span>
     </div>
@@ -178,7 +197,11 @@ function InsightSection({
     <div className='mt-2 text-xs'>
       <button
         type='button'
-        onClick={() => {return setExpanded((v) => {return !v})}}
+        onClick={() => {
+          return setExpanded((v) => {
+            return !v;
+          });
+        }}
         className='flex items-center gap-1.5 text-violet-400 hover:text-violet-300 transition-colors'
       >
         <Sparkles className='size-3' />
@@ -193,9 +216,9 @@ function InsightSection({
                 Strengths
               </p>
               <ul className='space-y-0.5 text-muted-foreground'>
-                {strengths.map((s, i) => {return (
-                  <li key={i}>• {s}</li>
-                )})}
+                {strengths.map((s, i) => {
+                  return <li key={i}>• {s}</li>;
+                })}
               </ul>
             </div>
           )}
@@ -205,9 +228,9 @@ function InsightSection({
                 Development areas
               </p>
               <ul className='space-y-0.5 text-muted-foreground'>
-                {dev.map((s, i) => {return (
-                  <li key={i}>• {s}</li>
-                )})}
+                {dev.map((s, i) => {
+                  return <li key={i}>• {s}</li>;
+                })}
               </ul>
             </div>
           )}
@@ -217,9 +240,9 @@ function InsightSection({
                 Work patterns
               </p>
               <ul className='space-y-0.5 text-muted-foreground'>
-                {patterns.map((s, i) => {return (
-                  <li key={i}>• {s}</li>
-                )})}
+                {patterns.map((s, i) => {
+                  return <li key={i}>• {s}</li>;
+                })}
               </ul>
             </div>
           )}

@@ -77,7 +77,10 @@ function DecisionRow({ decision }: { decision: MeetingDecision }) {
 
         <p className='text-sm leading-6 text-foreground'>{decision.text}</p>
 
-        <DecisionMeta authorName={authorName} isUncovered={decision.is_uncovered} />
+        <DecisionMeta
+          authorName={authorName}
+          isUncovered={decision.is_uncovered}
+        />
 
         {decision.linked_issues.length > 0 && (
           <LinkedIssuesList issues={decision.linked_issues} />

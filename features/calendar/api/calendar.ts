@@ -35,7 +35,9 @@ export async function attachCalendar(organizationId: number): Promise<string> {
       }
 
       if (errorCode === 'SOURCE_ALREADY_EXISTS') {
-        throw new Error('Google Calendar is already connected to your account.');
+        throw new Error(
+          'Google Calendar is already connected to your account.',
+        );
       }
 
       throw new Error('Failed to connect Google Calendar. Please try again.');

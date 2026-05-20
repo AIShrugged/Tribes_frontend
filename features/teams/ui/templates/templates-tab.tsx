@@ -18,27 +18,25 @@ interface Props {
 }
 
 export function TemplatesTab({ teamId, isReadOnly }: Props) {
-  const [summary, setSummary] =
-    useState<MeetingSummaryTemplateResolved | null>(null);
+  const [summary, setSummary] = useState<MeetingSummaryTemplateResolved | null>(
+    null,
+  );
   const [agenda, setAgenda] = useState<AgendaTemplateResolved | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([
-      getMeetingSummaryTemplate(teamId),
-      getAgendaTemplate(teamId),
-    ])
+    Promise.all([getMeetingSummaryTemplate(teamId), getAgendaTemplate(teamId)])
       .then(([s, a]) => {
         if (cancelled) return;
         setSummary(s);
         setAgenda(a);
       })
-      .catch((err: unknown) => {
+      .catch((error: unknown) => {
         if (cancelled) return;
         const message =
-          err instanceof Error ? err.message : 'Failed to load templates';
+          error instanceof Error ? error.message : 'Failed to load templates';
         setLoadError(message);
       });
 

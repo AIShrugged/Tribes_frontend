@@ -29,10 +29,7 @@ export {
   upsertMeetingSummaryTemplate,
   getMeetingSummaryDefaultPrompt,
 } from './api/meeting-summary-template';
-export {
-  getAgendaTemplate,
-  upsertAgendaTemplate,
-} from './api/agenda-template';
+export { getAgendaTemplate, upsertAgendaTemplate } from './api/agenda-template';
 export { TemplatesTab } from './ui/templates/templates-tab';
 export { MeetingSummaryTemplateEditor } from './ui/templates/meeting-summary-template-editor';
 export { AgendaTemplateEditor } from './ui/templates/agenda-template-editor';

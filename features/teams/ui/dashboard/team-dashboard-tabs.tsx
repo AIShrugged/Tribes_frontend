@@ -2,13 +2,14 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { TemplatesTab } from '../templates/templates-tab';
+
 import TeamDashboardTabDecisions from './team-dashboard-tab-decisions';
 import TeamDashboardTabHealth from './team-dashboard-tab-health';
 import TeamDashboardTabPeople from './team-dashboard-tab-people';
 import TeamDashboardTabReadiness from './team-dashboard-tab-readiness';
 import TeamDashboardTabRisks from './team-dashboard-tab-risks';
 import TeamDashboardTabStatus from './team-dashboard-tab-status';
-import { TemplatesTab } from '../templates/templates-tab';
 
 import type {
   TabHealth,

@@ -73,8 +73,12 @@ export function ChatList({
         PAGE_SIZE,
       );
 
-      setChats((prev) => [...prev, ...more]);
-      setOffset((prev) => prev + more.length);
+      setChats((prev) => {
+        return [...prev, ...more];
+      });
+      setOffset((prev) => {
+        return prev + more.length;
+      });
       // Guard against infinite loop: if server returns 0 items, stop paginating
       setHasMore(more.length > 0 && offset + more.length < total);
     } catch {
@@ -174,7 +178,10 @@ export function ChatList({
         <div className='flex items-center gap-1'>
           <button
             type='button'
-            onClick={() => { setEditingChat(null); setIsModalOpen(true); }}
+            onClick={() => {
+              setEditingChat(null);
+              setIsModalOpen(true);
+            }}
             className='flex items-center gap-1 text-xs text-primary hover:opacity-70 transition-opacity cursor-pointer'
             aria-label='New chat'
           >
@@ -183,7 +190,9 @@ export function ChatList({
           </button>
           <button
             type='button'
-            onClick={() => setIsCollapsed(true)}
+            onClick={() => {
+              return setIsCollapsed(true);
+            }}
             className='p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer'
             aria-label='Collapse chats panel'
           >
@@ -206,7 +215,10 @@ export function ChatList({
               key={chat.id}
               chat={chat}
               isActive={chat.id === activeChatId}
-              onEdit={(chat) => { setEditingChat(chat); setIsModalOpen(true); }}
+              onEdit={(chat) => {
+                setEditingChat(chat);
+                setIsModalOpen(true);
+              }}
               onUpdate={handleUpdate}
               onDelete={handleDelete}
             />
@@ -225,7 +237,10 @@ export function ChatList({
       {isModalOpen && (
         <ChatFormModal
           isOpen={isModalOpen}
-          onClose={() => { setIsModalOpen(false); setEditingChat(null); }}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingChat(null);
+          }}
           organizations={organizations}
           chat={editingChat}
           onSaved={handleSavedChat}

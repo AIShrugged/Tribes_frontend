@@ -5,7 +5,11 @@ import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
 import { httpClient, httpClientList } from '@/shared/lib/httpClient';
 
-import type { AgentRun, Message, PageContext } from '@/features/chat/model/types';
+import type {
+  AgentRun,
+  Message,
+  PageContext,
+} from '@/features/chat/model/types';
 import type { ActionResult } from '@/shared/types/server-action';
 
 export async function getMessages(
@@ -52,8 +56,15 @@ export async function sendMessage(
     return { data: data!, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
-      const parsed = parseApiError(error.responseBody ?? '', 'Failed to send message');
-      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to send message',
+      );
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
     }
     throw error;
   }
@@ -66,7 +77,10 @@ export async function sendMessage(
  * Max 60 attempts × 1500ms = 90s timeout. Backend may complete after this point.
  * Recovery: user can refresh — the mount effect re-polls in-flight runs on load.
  */
-export async function pollRun(chatId: number, runUuid: string): Promise<AgentRun> {
+export async function pollRun(
+  chatId: number,
+  runUuid: string,
+): Promise<AgentRun> {
   const { data } = await httpClient<AgentRun>(
     `${API_URL}/chats/${chatId}/runs/${runUuid}`,
   );

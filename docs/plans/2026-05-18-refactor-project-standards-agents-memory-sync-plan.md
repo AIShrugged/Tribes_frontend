@@ -1,5 +1,5 @@
 ---
-title: "refactor: Project Standards, Agents & Memory Sync"
+title: 'refactor: Project Standards, Agents & Memory Sync'
 type: refactor
 status: completed
 date: 2026-05-18
@@ -10,19 +10,19 @@ deepened: 2026-05-18
 
 ## Enhancement Summary
 
-**Deepened on:** 2026-05-18
-**Research agents used:** 10 parallel agents (architecture-strategist,
-kieran-typescript-reviewer, code-simplicity-reviewer, security-sentinel,
-pattern-recognition-specialist, best-practices-researcher, git-history-analyzer,
-feasibility-reviewer, scope-guardian-reviewer, solutions-learning-check)
+**Deepened on:** 2026-05-18 **Research agents used:** 10 parallel agents
+(architecture-strategist, kieran-typescript-reviewer, code-simplicity-reviewer,
+security-sentinel, pattern-recognition-specialist, best-practices-researcher,
+git-history-analyzer, feasibility-reviewer, scope-guardian-reviewer,
+solutions-learning-check)
 
 ### Key Improvements Over Original Plan
 
 1. **`task_summary` is NOT a simple rename** — git history confirms it was a
    frontend invention never backed by the backend. `methodology_criteria` was
-   deliberately removed from the frontend (PR #92, 2026-05-07). This is a
-   **full replacement**: the data shapes are architecturally different (stat
-   counters vs `blocks: Block[]` polymorphic structure).
+   deliberately removed from the frontend (PR #92, 2026-05-07). This is a **full
+   replacement**: the data shapes are architecturally different (stat counters
+   vs `blocks: Block[]` polymorphic structure).
 
 2. **Two additional type mismatches discovered** — `ChartType` has `'area'`
    (frontend-only) instead of `'pie'` (backend enum value); `PeopleListArtifact`
@@ -91,9 +91,11 @@ deliberately removed from the frontend during the methodology feature deletion
 agent still creates these artifacts.
 
 **Current state:**
+
 - `methodology_criteria` → backend emits it, frontend has no renderer → **silent
   rendering failure**
-- `task_summary` → frontend has a renderer, backend never emits it → **dead code**
+- `task_summary` → frontend has a renderer, backend never emits it → **dead
+  code**
 
 **This is NOT a rename.** The data shapes are architecturally different:
 
@@ -125,12 +127,12 @@ type MethodologyCriteriaBlock =
 
 **Files to replace (not rename):**
 
-| File | Action |
-|---|---|
-| `entities/artifact/model/types.ts` | Replace `TaskSummaryArtifact` with `MethodologyCriteriaArtifact` |
-| `entities/artifact/ui/task-summary-artifact.tsx` | Delete; write `methodology-criteria-artifact.tsx` |
-| `entities/artifact/ui/artifact-card.tsx` | Replace `task_summary` entries in `TYPE_META` and `ARTIFACT_RENDERERS` |
-| `entities/artifact/index.ts` | Replace `TaskSummaryArtifact`/`TaskSummaryArtifactView` exports |
+| File                                             | Action                                                                 |
+| ------------------------------------------------ | ---------------------------------------------------------------------- |
+| `entities/artifact/model/types.ts`               | Replace `TaskSummaryArtifact` with `MethodologyCriteriaArtifact`       |
+| `entities/artifact/ui/task-summary-artifact.tsx` | Delete; write `methodology-criteria-artifact.tsx`                      |
+| `entities/artifact/ui/artifact-card.tsx`         | Replace `task_summary` entries in `TYPE_META` and `ARTIFACT_RENDERERS` |
+| `entities/artifact/index.ts`                     | Replace `TaskSummaryArtifact`/`TaskSummaryArtifactView` exports        |
 
 #### 2. `ChartType` has `'area'` — backend has `'pie'`
 
@@ -155,7 +157,12 @@ branch and remove the dead `area` branch.
 
 ```typescript
 // Current (wrong)
-members: { name: string; role: string; user_id: number }[];
+members: {
+  name: string;
+  role: string;
+  user_id: number;
+}
+[];
 
 // Required (from ArtifactSchema.php)
 members: {
@@ -163,7 +170,8 @@ members: {
   role: string | null;
   profile_id: number | null;
   user_id: number | null;
-}[];
+}
+[];
 ```
 
 `user_id` is used as a React `key` prop in `people-list.tsx`. When the backend
@@ -185,6 +193,7 @@ Migrate to `httpClient`/`httpClientList` as part of this cleanup.
 #### 5. MEMORY.md references two deleted features
 
 Git history confirms both features were created and then deleted:
+
 - `features/main-dashboard/` — lived 2026-03-25 to 2026-04-22, then deleted in
   commit `177a99b`. The MEMORY.md entry still references it as current.
 - `features/debug-logs/` — lived 2026-03-23 to 2026-04-13, then deleted in
@@ -217,15 +226,16 @@ methodology_criteria — source of truth: `entities/artifact/model/types.ts`."
 The `artifact-sync` agent (`.claude/agents/artifact-sync.md`) has two stale
 entries that will cause it to make wrong decisions:
 
-1. **Wrong dispatch location:** its workflow reads `features/chat/ui/artifact-panel.tsx`
-   as "type dispatch / routing" — but dispatch now lives in
-   `entities/artifact/ui/artifact-card.tsx`. The agent following its own
-   instructions would audit the wrong file.
+1. **Wrong dispatch location:** its workflow reads
+   `features/chat/ui/artifact-panel.tsx` as "type dispatch / routing" — but
+   dispatch now lives in `entities/artifact/ui/artifact-card.tsx`. The agent
+   following its own instructions would audit the wrong file.
 
 2. **Wrong type count in description:** agent description says "all 7 artifact
    types" — actual count is 8 (after fix: `task_table`, `meeting_card`,
    `people_list`, `insight_card`, `chart`, `transcript_view`, `decision_log`,
-   `methodology_criteria`). The agent's file listing also omits `decision-log.tsx`.
+   `methodology_criteria`). The agent's file listing also omits
+   `decision-log.tsx`.
 
 Update `artifact-sync.md`: fix the dispatch file path, fix the type count and
 listing, add `decision-log.tsx` to the renderer inventory.
@@ -236,11 +246,10 @@ listing, add `decision-log.tsx` to the renderer inventory.
 
 #### 8. `reporting-convention.md` "Code Style" section contradicts CLAUDE.md
 
-The memory file at
-`~/.claude/projects/.../memory/reporting-convention.md` (lines 12–19)
-instructs writing "maximally documented code" with comments on every block,
-function, and type, and explicitly says "generate more code" as a productivity
-metric.
+The memory file at `~/.claude/projects/.../memory/reporting-convention.md`
+(lines 12–19) instructs writing "maximally documented code" with comments on
+every block, function, and type, and explicitly says "generate more code" as a
+productivity metric.
 
 This directly contradicts CLAUDE.md: "Default to writing no comments. Only add
 one when the WHY is non-obvious."
@@ -248,8 +257,8 @@ one when the WHY is non-obvious."
 Evidence that this conflict causes real problems: `artifact-card.tsx` already
 contains JSDoc on simple components (`ArtifactContent`, `ArtifactCard`) as a
 result of this convention, and `mr-reviewer.md` line 332 references a
-`jsdoc/require-jsdoc` ESLint rule that does not exist in `eslint.config.mjs` —
-a phantom rule caused by the memory convention bleeding into agent knowledge.
+`jsdoc/require-jsdoc` ESLint rule that does not exist in `eslint.config.mjs` — a
+phantom rule caused by the memory convention bleeding into agent knowledge.
 
 **Fix:** Remove only the "Code Style" section (lines 12–19) from
 `reporting-convention.md`. Keep changelog format, line-counting, and tone
@@ -268,24 +277,26 @@ part of the cleanup.
 - [ ] **Read `ArtifactSchema.php`** via `wanda-backend-navigator` to get the
       exact `methodology_criteria` block structure before writing any TypeScript
 - [ ] **Delete** `entities/artifact/ui/task-summary-artifact.tsx`
-- [ ] **Write** `entities/artifact/ui/methodology-criteria-artifact.tsx` with
-      a block dispatcher for all 5 block types (header, scoring_table,
+- [ ] **Write** `entities/artifact/ui/methodology-criteria-artifact.tsx` with a
+      block dispatcher for all 5 block types (header, scoring_table,
       progress_summary, scale, text_list)
 - [ ] **Replace** `TaskSummaryArtifact` with `MethodologyCriteriaArtifact` in
       `entities/artifact/model/types.ts`
-- [ ] **Derive** `ArtifactType` from the union: `export type ArtifactType = Artifact['type']`
-      (eliminates the separate manually-maintained union)
+- [ ] **Derive** `ArtifactType` from the union:
+      `export type ArtifactType = Artifact['type']` (eliminates the separate
+      manually-maintained union)
 - [ ] **Fix** `ChartType`: `'area'` → `'pie'`; update `chart-artifact.tsx` to
       render `PieChart` and remove dead `area` branch
 - [ ] **Fix** `PeopleListArtifact`: add `profile_id: number | null`, make
-      `user_id: number | null`, make `role: string | null`; update `people-list.tsx`
-      key prop fallback
+      `user_id: number | null`, make `role: string | null`; update
+      `people-list.tsx` key prop fallback
 - [ ] **Update** `artifact-card.tsx` `TYPE_META` and `ARTIFACT_RENDERERS`:
       replace `task_summary` entries with `methodology_criteria`
 - [ ] **Update** `entities/artifact/index.ts`: replace stale exports
 - [ ] **Migrate** `entities/artifact/api/artifacts.ts` from raw `fetch` to
       `httpClient`
-- [ ] **Run** `backend-contract-validator` on `entities/artifact/` → zero mismatches
+- [ ] **Run** `backend-contract-validator` on `entities/artifact/` → zero
+      mismatches
 - [ ] **Run** `npm run lint` → zero new errors
 - [ ] **Run** `npm test` → no regressions
 
@@ -293,21 +304,21 @@ part of the cleanup.
 
 - [ ] **Update** MEMORY.md: remove `features/main-dashboard/` and
       `features/debug-logs/` entries (confirmed deleted in git history)
-- [ ] **Update** MEMORY.md: fix artifact type section — correct list of 8
-      types, add "source of truth: `entities/artifact/model/types.ts`"
+- [ ] **Update** MEMORY.md: fix artifact type section — correct list of 8 types,
+      add "source of truth: `entities/artifact/model/types.ts`"
 - [ ] **Update** MEMORY.md: remove stale route constants (`DEBUG_LOGS`, `MAIN`,
       `AGENT_TASKS_NEW`, `TELEGRAM_CHATS`)
-- [ ] **Edit** `reporting-convention.md`: remove the "Code Style" section
-      (lines 12–19) that prescribes verbose comments
-- [ ] **Update** `.claude/agents/artifact-sync.md`:
-      - Fix dispatch location: `artifact-card.tsx` in `entities/artifact/ui/`
-      - Fix description: "all 8 artifact types"
-      - Add `decision-log.tsx` to the renderer file listing
+- [ ] **Edit** `reporting-convention.md`: remove the "Code Style" section (lines
+      12–19) that prescribes verbose comments
+- [ ] **Update** `.claude/agents/artifact-sync.md`: - Fix dispatch location:
+      `artifact-card.tsx` in `entities/artifact/ui/` - Fix description: "all 8
+      artifact types" - Add `decision-log.tsx` to the renderer file listing
 
 ### Phase 3 — ESLint Hardening (optional but high-value)
 
 - [ ] **Add** `'@typescript-eslint/switch-exhaustiveness-check': 'error'` to
-      `eslint.config.mjs` — catches future discriminated union drift at lint time
+      `eslint.config.mjs` — catches future discriminated union drift at lint
+      time
 - [ ] **Decide on JSDoc** — either add `jsdoc/require-jsdoc` to ESLint config
       (make it real) or remove all existing JSDoc stubs from `artifact-card.tsx`
       (lines 110–115, 133–136) and remove the phantom rule from `mr-reviewer.md`
@@ -411,23 +422,23 @@ const { data } = await httpClient<ArtifactsResponse>(`${API_URL}/...`);
 
 ### PHP → TypeScript mapping table (complete, including missing edge cases)
 
-| PHP | TypeScript |
-|-----|------------|
-| `int` / `integer` | `number` |
-| `float` / `double` | `number` |
-| `?int` | `number \| null` |
-| `string` | `string` |
-| `?string` | `string \| null` |
-| `bool` | `boolean` |
-| `Carbon` / timestamp | `string` (ISO 8601) |
-| `?Carbon` | `string \| null` |
-| `array` (indexed) | `T[]` |
-| `Collection<T>` | `T[]` |
+| PHP                         | TypeScript                                      |
+| --------------------------- | ----------------------------------------------- |
+| `int` / `integer`           | `number`                                        |
+| `float` / `double`          | `number`                                        |
+| `?int`                      | `number \| null`                                |
+| `string`                    | `string`                                        |
+| `?string`                   | `string \| null`                                |
+| `bool`                      | `boolean`                                       |
+| `Carbon` / timestamp        | `string` (ISO 8601)                             |
+| `?Carbon`                   | `string \| null`                                |
+| `array` (indexed)           | `T[]`                                           |
+| `Collection<T>`             | `T[]`                                           |
 | `array` (assoc / toArray()) | `Record<string, unknown>` or specific interface |
-| Backed enum | string union: `'value1' \| 'value2'` |
-| `?BackedEnum` | `'value1' \| 'value2' \| null` |
-| `mixed` | `unknown` (never `any`) |
-| Untyped `array` | inspect method body — could be either form |
+| Backed enum                 | string union: `'value1' \| 'value2'`            |
+| `?BackedEnum`               | `'value1' \| 'value2' \| null`                  |
+| `mixed`                     | `unknown` (never `any`)                         |
+| Untyped `array`             | inspect method body — could be either form      |
 
 ---
 
@@ -497,15 +508,23 @@ Add to `entities/artifact/__tests__/artifact-type-contract.test.ts`:
 
 ```typescript
 const BACKEND_ARTIFACT_TYPES = [
-  'task_table', 'meeting_card', 'people_list', 'insight_card',
-  'chart', 'transcript_view', 'decision_log', 'methodology_criteria',
+  'task_table',
+  'meeting_card',
+  'people_list',
+  'insight_card',
+  'chart',
+  'transcript_view',
+  'decision_log',
+  'methodology_criteria',
 ] as const satisfies ArtifactType[];
 
 // Type-level assertion: both sets must be identical
 type _ExhaustiveCheck =
-  typeof BACKEND_ARTIFACT_TYPES[number] extends ArtifactType
-    ? ArtifactType extends typeof BACKEND_ARTIFACT_TYPES[number]
-      ? true : never : never;
+  (typeof BACKEND_ARTIFACT_TYPES)[number] extends ArtifactType
+    ? ArtifactType extends (typeof BACKEND_ARTIFACT_TYPES)[number]
+      ? true
+      : never
+    : never;
 const _: _ExhaustiveCheck = true;
 ```
 
@@ -527,7 +546,8 @@ gains a member the other does not have.
 - `entities/artifact/index.ts` — update exports
 - `.claude/agents/artifact-sync.md` — fix stale dispatch location and type count
 - `~/.claude/projects/.../memory/MEMORY.md` — remove stale entries
-- `~/.claude/projects/.../memory/reporting-convention.md` — remove Code Style section
+- `~/.claude/projects/.../memory/reporting-convention.md` — remove Code Style
+  section
 
 ### Internal — Ground Truth (read-only)
 
@@ -537,7 +557,11 @@ gains a member the other does not have.
 
 ### External — Research Sources
 
-- [spatie/laravel-typescript-transformer](https://github.com/spatie/laravel-typescript-transformer) — auto-generate TS from PHP enums
-- [@typescript-eslint/switch-exhaustiveness-check](https://typescript-eslint.io/rules/switch-exhaustiveness-check/) — ESLint rule for union exhaustiveness
-- [Laravel Wayfinder](https://laravel.com/blog/laravel-wayfinder-end-to-end-type-safety-for-php-and-typescript) — official Laravel cross-repo type sync (monitor for stable release)
-- [Scramble — Laravel OpenAPI Generator](https://scramble.dedoc.co/) — auto-generate OpenAPI spec from Laravel
+- [spatie/laravel-typescript-transformer](https://github.com/spatie/laravel-typescript-transformer)
+  — auto-generate TS from PHP enums
+- [@typescript-eslint/switch-exhaustiveness-check](https://typescript-eslint.io/rules/switch-exhaustiveness-check/)
+  — ESLint rule for union exhaustiveness
+- [Laravel Wayfinder](https://laravel.com/blog/laravel-wayfinder-end-to-end-type-safety-for-php-and-typescript)
+  — official Laravel cross-repo type sync (monitor for stable release)
+- [Scramble — Laravel OpenAPI Generator](https://scramble.dedoc.co/) —
+  auto-generate OpenAPI spec from Laravel

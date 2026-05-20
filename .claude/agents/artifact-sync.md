@@ -55,36 +55,38 @@ entities/artifact/index.ts              ← public API exports
    their JSON schemas
 2. **Read the frontend** — `entities/artifact/model/types.ts` and each renderer
    in `entities/artifact/ui/`
-3. **Read `artifact-card.tsx`** — check the `ARTIFACT_RENDERERS` map and `TYPE_META`
+3. **Read `artifact-card.tsx`** — check the `ARTIFACT_RENDERERS` map and
+   `TYPE_META`
 4. **Identify gaps:**
    - Types in backend but missing frontend renderer
    - Frontend `ArtifactType` union missing new backend types
    - Data field mismatches (backend schema vs frontend TypeScript interface)
 5. **Implement changes** — following FSD, adding new renderer components and
    updating types
-6. **Update `artifact-card.tsx`** — add entry to `ARTIFACT_RENDERERS` and `TYPE_META`
+6. **Update `artifact-card.tsx`** — add entry to `ARTIFACT_RENDERERS` and
+   `TYPE_META`
 7. **Update `entities/artifact/index.ts`** — export new renderer and types
 
 ## Artifact Type → Frontend Mapping
 
-| Backend `type`          | Frontend renderer                      | TypeScript interface            |
-| ----------------------- | -------------------------------------- | ------------------------------- |
-| `task_table`            | `task-table.tsx`                       | `TaskTableArtifact`             |
-| `meeting_card`          | `meeting-card.tsx`                     | `MeetingCardArtifact`           |
-| `people_list`           | `people-list.tsx`                      | `PeopleListArtifact`            |
-| `insight_card`          | `insight-card.tsx`                     | `InsightCardArtifact`           |
-| `chart`                 | `chart-artifact.tsx`                   | `ChartArtifact`                 |
-| `transcript_view`       | `transcript-view.tsx`                  | `TranscriptArtifact`            |
-| `decision_log`          | `decision-log.tsx`                     | `DecisionLogArtifact`           |
-| `methodology_criteria`  | `methodology-criteria-artifact.tsx`    | `MethodologyCriteriaArtifact`   |
+| Backend `type`         | Frontend renderer                   | TypeScript interface          |
+| ---------------------- | ----------------------------------- | ----------------------------- |
+| `task_table`           | `task-table.tsx`                    | `TaskTableArtifact`           |
+| `meeting_card`         | `meeting-card.tsx`                  | `MeetingCardArtifact`         |
+| `people_list`          | `people-list.tsx`                   | `PeopleListArtifact`          |
+| `insight_card`         | `insight-card.tsx`                  | `InsightCardArtifact`         |
+| `chart`                | `chart-artifact.tsx`                | `ChartArtifact`               |
+| `transcript_view`      | `transcript-view.tsx`               | `TranscriptArtifact`          |
+| `decision_log`         | `decision-log.tsx`                  | `DecisionLogArtifact`         |
+| `methodology_criteria` | `methodology-criteria-artifact.tsx` | `MethodologyCriteriaArtifact` |
 
 ## Code Quality Rules
 
 - No `any` — every artifact data shape must be fully typed from the backend JSON
   schema
-- New renderers are NOT `'use client'` unless they use browser APIs
-  (exception: `chart-artifact.tsx` uses recharts ResizeObserver — loaded via
-  `next/dynamic` with `ssr: false` in `artifact-card.tsx`)
+- New renderers are NOT `'use client'` unless they use browser APIs (exception:
+  `chart-artifact.tsx` uses recharts ResizeObserver — loaded via `next/dynamic`
+  with `ssr: false` in `artifact-card.tsx`)
 - Follow existing renderer patterns (props: `{ data: XxxData }`)
 - TypeScript union `Artifact` in `entities/artifact/model/types.ts` must include
   all types; `ArtifactType` is derived as `Artifact['type']` — never manually

@@ -51,41 +51,43 @@ const ChartArtifactView = dynamic(
   },
 );
 
-const TYPE_META: Record<ArtifactType, { label: string; icon: React.ReactNode }> =
-  {
-    task_table: {
-      label: 'Tasks',
-      icon: <ClipboardList className='w-3.5 h-3.5' />,
-    },
-    meeting_card: {
-      label: 'Meeting',
-      icon: <Video className='w-3.5 h-3.5' />,
-    },
-    people_list: {
-      label: 'People',
-      icon: <Users className='w-3.5 h-3.5' />,
-    },
-    insight_card: {
-      label: 'Insight',
-      icon: <Zap className='w-3.5 h-3.5' />,
-    },
-    chart: {
-      label: 'Chart',
-      icon: <BarChart2 className='w-3.5 h-3.5' />,
-    },
-    transcript_view: {
-      label: 'Transcript',
-      icon: <FileText className='w-3.5 h-3.5' />,
-    },
-    decision_log: {
-      label: 'Decisions',
-      icon: <BookMarked className='w-3.5 h-3.5' />,
-    },
-    methodology_criteria: {
-      label: 'Methodology',
-      icon: <ListChecks className='w-3.5 h-3.5' />,
-    },
-  };
+const TYPE_META: Record<
+  ArtifactType,
+  { label: string; icon: React.ReactNode }
+> = {
+  task_table: {
+    label: 'Tasks',
+    icon: <ClipboardList className='w-3.5 h-3.5' />,
+  },
+  meeting_card: {
+    label: 'Meeting',
+    icon: <Video className='w-3.5 h-3.5' />,
+  },
+  people_list: {
+    label: 'People',
+    icon: <Users className='w-3.5 h-3.5' />,
+  },
+  insight_card: {
+    label: 'Insight',
+    icon: <Zap className='w-3.5 h-3.5' />,
+  },
+  chart: {
+    label: 'Chart',
+    icon: <BarChart2 className='w-3.5 h-3.5' />,
+  },
+  transcript_view: {
+    label: 'Transcript',
+    icon: <FileText className='w-3.5 h-3.5' />,
+  },
+  decision_log: {
+    label: 'Decisions',
+    icon: <BookMarked className='w-3.5 h-3.5' />,
+  },
+  methodology_criteria: {
+    label: 'Methodology',
+    icon: <ListChecks className='w-3.5 h-3.5' />,
+  },
+};
 
 const ARTIFACT_RENDERERS: {
   [K in ArtifactType]: (

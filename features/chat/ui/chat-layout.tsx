@@ -9,7 +9,11 @@ import { ChatWindow } from '@/features/chat/ui/chat-window';
 import { CollapsedSidePanel } from '@/shared/ui/layout/collapsed-side-panel';
 
 import type { OrganizationProps } from '@/entities/organization';
-import type { ArtifactsResponse, Chat, Message } from '@/features/chat/model/types';
+import type {
+  ArtifactsResponse,
+  Chat,
+  Message,
+} from '@/features/chat/model/types';
 
 type MobileTab = 'chats' | 'artifacts' | 'chat';
 
@@ -131,7 +135,9 @@ export function ChatLayout({
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',
           ].join(' ')}
-          onClick={() => setMobileTab('chats')}
+          onClick={() => {
+            return setMobileTab('chats');
+          }}
         >
           Chats
         </button>
@@ -146,7 +152,9 @@ export function ChatLayout({
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',
           ].join(' ')}
-          onClick={() => setMobileTab('artifacts')}
+          onClick={() => {
+            return setMobileTab('artifacts');
+          }}
         >
           <Sparkles className='w-3.5 h-3.5' />
           Artifacts
@@ -162,7 +170,9 @@ export function ChatLayout({
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground',
           ].join(' ')}
-          onClick={() => setMobileTab('chat')}
+          onClick={() => {
+            return setMobileTab('chat');
+          }}
         >
           Chat
         </button>

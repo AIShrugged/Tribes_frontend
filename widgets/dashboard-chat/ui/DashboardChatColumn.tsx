@@ -45,7 +45,9 @@ export function DashboardChatColumn({ children }: PropsWithChildren) {
           <div className='flex items-center h-8 px-2 flex-shrink-0 border-b border-border'>
             <button
               type='button'
-              onClick={() => setCollapsed(true)}
+              onClick={() => {
+                return setCollapsed(true);
+              }}
               className='flex items-center gap-1 p-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               aria-label='Collapse chat panel'
             >

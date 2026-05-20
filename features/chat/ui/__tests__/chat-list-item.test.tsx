@@ -58,9 +58,7 @@ describe('ChatListItem', () => {
         onDelete={jest.fn()}
       />,
     );
-    expect(
-      screen.getByRole('link', { name: 'My Chat' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'My Chat' })).toBeInTheDocument();
   });
 
   it('renders "Untitled chat" when title is null', () => {

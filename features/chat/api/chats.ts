@@ -39,7 +39,8 @@ export async function createChat(
 
   const body: Record<string, number | string | null> = {};
   if ('title' in payload) body.title = payload.title ?? null;
-  if ('organization_id' in payload) body.organization_id = payload.organization_id ?? null;
+  if ('organization_id' in payload)
+    body.organization_id = payload.organization_id ?? null;
   if ('team_id' in payload) body.team_id = payload.team_id ?? null;
 
   try {
@@ -51,8 +52,15 @@ export async function createChat(
     return { data: data!, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
-      const parsed = parseApiError(error.responseBody ?? '', 'Failed to create chat');
-      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to create chat',
+      );
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
     }
     throw error;
   }
@@ -64,7 +72,8 @@ export async function updateChat(
 ): Promise<ActionResult<Chat>> {
   const body: Record<string, number | string | null> = {};
   if ('title' in payload) body.title = payload.title ?? null;
-  if ('organization_id' in payload) body.organization_id = payload.organization_id ?? null;
+  if ('organization_id' in payload)
+    body.organization_id = payload.organization_id ?? null;
   if ('team_id' in payload) body.team_id = payload.team_id ?? null;
 
   try {
@@ -76,14 +85,24 @@ export async function updateChat(
     return { data: data!, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
-      const parsed = parseApiError(error.responseBody ?? '', 'Failed to update chat');
-      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to update chat',
+      );
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
     }
     throw error;
   }
 }
 
-export async function updateChatTitle(id: number, title: string): Promise<void> {
+export async function updateChatTitle(
+  id: number,
+  title: string,
+): Promise<void> {
   const result = await updateChat(id, { title });
   if (result.error) throw new Error(result.error);
 }

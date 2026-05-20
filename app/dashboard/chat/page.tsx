@@ -8,10 +8,8 @@ import { getOrganizations } from '@/features/organization';
  * @returns JSX element.
  */
 export default async function ChatPage() {
-  const [{ data: chats, totalCount }, { data: organizations }] = await Promise.all([
-    getChats(0, 20),
-    getOrganizations(),
-  ]);
+  const [{ data: chats, totalCount }, { data: organizations }] =
+    await Promise.all([getChats(0, 20), getOrganizations()]);
 
   return (
     <div className='flex h-full rounded-[var(--radius-card)] overflow-hidden border border-border bg-card '>

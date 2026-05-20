@@ -51,9 +51,8 @@ export const MEETING_SUMMARY_DEFAULT_SECTIONS: MeetingSummarySection[] = [
   'tasks',
 ];
 
-export const MEETING_SUMMARY_DEFAULT_VISIBLE_SECTIONS: MeetingSummarySection[] = [
-  'key_points',
-];
+export const MEETING_SUMMARY_DEFAULT_VISIBLE_SECTIONS: MeetingSummarySection[] =
+  ['key_points'];
 
 export interface MeetingSummaryTemplate {
   id: number;

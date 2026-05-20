@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import type { PropsWithChildren } from 'react';
 
 import { attachCalendar } from '@/features/calendar/api/calendar';
+
+import type { PropsWithChildren } from 'react';
 
 interface Props {
   organizationId: number;
@@ -49,7 +50,9 @@ export function AttachCalendarButton({
       {pendingText !== undefined && isPending && (
         <p className='text-sm mt-4 text-muted-foreground'>{pendingText}</p>
       )}
-      {error !== null && <p className='text-sm text-destructive mt-1'>{error}</p>}
+      {error !== null && (
+        <p className='text-sm text-destructive mt-1'>{error}</p>
+      )}
     </>
   );
 }

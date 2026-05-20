@@ -4,9 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { getMeetingsList } from '../api/meetings';
-import {
-  type MeetingsListFilters,
-} from '../model/filters';
+import { type MeetingsListFilters } from '../model/filters';
+
 import { MeetingCard } from './meeting-card';
 
 import type { CalendarEventListItem } from '../model/types';
@@ -49,12 +48,16 @@ export function MeetingsListClient({
         offset: items.length,
         limit: pageSize,
       });
-      setItems((prev) => [...prev, ...next.data]);
+      setItems((prev) => {
+        return [...prev, ...next.data];
+      });
       setTotalCount(next.totalCount);
-      setHasMore(prev => prev && next.hasMore);
-    } catch (err) {
+      setHasMore((prev) => {
+        return prev && next.hasMore;
+      });
+    } catch (error) {
       const message =
-        err instanceof Error ? err.message : 'Failed to load more meetings';
+        error instanceof Error ? error.message : 'Failed to load more meetings';
       toast.error(message);
     } finally {
       setIsLoadingMore(false);
@@ -78,9 +81,9 @@ export function MeetingsListClient({
       </p>
 
       <div className='flex flex-col gap-2'>
-        {items.map((meeting) => (
-          <MeetingCard key={meeting.id} meeting={meeting} />
-        ))}
+        {items.map((meeting) => {
+          return <MeetingCard key={meeting.id} meeting={meeting} />;
+        })}
       </div>
 
       {hasMore && (

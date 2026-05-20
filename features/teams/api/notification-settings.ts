@@ -50,10 +50,10 @@ export async function createTeamNotificationSetting(
     }
 
     return { data, error: null };
-  } catch (err) {
-    if (err instanceof ServerError) {
+  } catch (error) {
+    if (error instanceof ServerError) {
       const parsed = parseApiError(
-        err.responseBody ?? '',
+        error.responseBody ?? '',
         'Failed to create notification setting',
       );
       return {
@@ -62,7 +62,7 @@ export async function createTeamNotificationSetting(
         fieldErrors: parsed.fieldErrors,
       };
     }
-    throw err;
+    throw error;
   }
 }
 
@@ -91,10 +91,10 @@ export async function updateTeamNotificationSetting(
     }
 
     return { data, error: null };
-  } catch (err) {
-    if (err instanceof ServerError) {
+  } catch (error) {
+    if (error instanceof ServerError) {
       const parsed = parseApiError(
-        err.responseBody ?? '',
+        error.responseBody ?? '',
         'Failed to update notification setting',
       );
       return {
@@ -103,7 +103,7 @@ export async function updateTeamNotificationSetting(
         fieldErrors: parsed.fieldErrors,
       };
     }
-    throw err;
+    throw error;
   }
 }
 
@@ -123,10 +123,10 @@ export async function deleteTeamNotificationSetting(
     revalidatePath('/dashboard/teams', 'page');
 
     return { data: null, error: null };
-  } catch (err) {
-    if (err instanceof ServerError) {
+  } catch (error) {
+    if (error instanceof ServerError) {
       const parsed = parseApiError(
-        err.responseBody ?? '',
+        error.responseBody ?? '',
         'Failed to delete notification setting',
       );
       return {
@@ -135,6 +135,6 @@ export async function deleteTeamNotificationSetting(
         fieldErrors: parsed.fieldErrors,
       };
     }
-    throw err;
+    throw error;
   }
 }

@@ -108,7 +108,9 @@ export function ChartArtifactView({ data }: { data: ChartArtifact['data'] }) {
             outerRadius={80}
           >
             {pieData.map((_, i) => {
-              return <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />;
+              return (
+                <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+              );
             })}
           </Pie>
           <Tooltip
