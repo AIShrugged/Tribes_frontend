@@ -16,6 +16,7 @@ import {
   EpicChildIssues,
 } from '@/features/issues';
 import { IssueAuditLogSection } from '@/features/issues/ui/issue-audit-log-section';
+import { IssueDodProgress } from '@/features/issues/ui/issue-dod-progress';
 import { getOrganizations } from '@/features/organization';
 import { getUser } from '@/features/user';
 import { ROUTES } from '@/shared/lib/routes';
@@ -102,6 +103,7 @@ export default async function IssueDetailPage({
             <div className='overflow-y-auto'>
               <CardBody>
                 <IssueForm
+                  key={issue.id}
                   issue={issue}
                   organizations={organizationsResponse.data ?? []}
                   persons={persons}
@@ -112,6 +114,15 @@ export default async function IssueDetailPage({
               </CardBody>
             </div>
           </Card>
+
+          {issue.dod && issue.dod.length > 0 && (
+            <Card>
+              <CardBody>
+                <IssueDodProgress dod={issue.dod} />
+              </CardBody>
+            </Card>
+          )}
+
           <IssueLinkedTask issue={issue} />
 
           {issue.type === 'epic' && (

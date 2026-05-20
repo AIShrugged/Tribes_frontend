@@ -82,9 +82,10 @@ export function buildIssuesQuery(filters: IssueFilters = {}) {
 
   if (filters.status) params.set('status', filters.status);
 
+  const VALID_BACKEND_TYPES = new Set(['epic', 'development', 'organization']);
   if (filters.type === 'task') {
     params.set('exclude_type', 'epic');
-  } else if (filters.type) {
+  } else if (filters.type && VALID_BACKEND_TYPES.has(filters.type)) {
     params.set('type', filters.type);
   }
 

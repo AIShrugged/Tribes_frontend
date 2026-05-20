@@ -115,6 +115,7 @@ export interface Issue {
   created_at: string;
   updated_at: string;
   attachments?: IssueAttachment[];
+  dod?: DoDItem[] | null;
 }
 
 export interface IssueAttachment {

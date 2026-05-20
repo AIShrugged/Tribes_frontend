@@ -159,7 +159,7 @@ export function IssueForm({
       author_id: defaultAuthorId,
       due_date: issue?.due_date ?? defaultDueDate(),
       priority: String(issue?.priority ?? 0),
-      dod: (issue as (Issue & { dod?: DoDItem[] }) | undefined)?.dod ?? [],
+      dod: issue?.dod ?? [],
     };
   }, [defaultOrganizationId, issue, defaultAuthorId]);
 
