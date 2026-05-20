@@ -52,6 +52,8 @@ export interface IssueAuditEvent {
   created_at: string;
 }
 
+export const VALID_ISSUE_BACKEND_TYPES = new Set(['epic', 'development', 'organization']);
+
 export const PRIORITY_LEVELS = [
   { value: 500, label: 'Critical', color: 'text-red-500' },
   { value: 100, label: 'High', color: 'text-orange-400' },

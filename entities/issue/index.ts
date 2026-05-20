@@ -9,4 +9,4 @@ export type {
   IssueAuditEvent,
   IssueAuditField,
 } from './model/types';
-export { getPriorityLevel, PRIORITY_LEVELS } from './model/types';
+export { getPriorityLevel, PRIORITY_LEVELS, VALID_ISSUE_BACKEND_TYPES } from './model/types';

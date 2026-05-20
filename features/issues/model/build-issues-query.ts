@@ -1,6 +1,5 @@
+import { VALID_ISSUE_BACKEND_TYPES } from '@/entities/issue';
 import type { IssueFilters } from '@/features/issues/model/types';
-
-const VALID_BACKEND_TYPES = new Set(['epic', 'development', 'organization']);
 
 export function buildIssuesQuery(filters: IssueFilters = {}) {
   const params = new URLSearchParams();
@@ -9,7 +8,7 @@ export function buildIssuesQuery(filters: IssueFilters = {}) {
 
   if (filters.type === 'task') {
     params.set('exclude_type', 'epic');
-  } else if (filters.type && VALID_BACKEND_TYPES.has(filters.type)) {
+  } else if (filters.type && VALID_ISSUE_BACKEND_TYPES.has(filters.type)) {
     params.set('type', filters.type);
   }
 

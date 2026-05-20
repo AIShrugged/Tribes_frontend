@@ -5,6 +5,7 @@ import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { getAuthHeaders } from '@/shared/lib/getAuthToken';
 
+import { VALID_ISSUE_BACKEND_TYPES } from '@/entities/issue';
 import type { IssueStatus } from '@/entities/issue';
 import type { KanbanCard, KanbanFilters } from '@/features/kanban/model/types';
 import type { ApiResponse } from '@/shared/types/common';
@@ -26,7 +27,9 @@ function buildKanbanQuery(filters: KanbanFilters = {}): string {
     params.set('team_id', String(filters.team_id));
   }
 
-  if (filters.type) {
+  if (filters.type === 'task') {
+    params.set('exclude_type', 'epic');
+  } else if (filters.type && VALID_ISSUE_BACKEND_TYPES.has(filters.type)) {
     params.set('type', filters.type);
   }
 
