@@ -1,8 +1,9 @@
 'use client';
 
+import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { getTeams } from '@/entities/team/api/team';
@@ -22,6 +23,8 @@ import { PendingAttachmentUploader } from '@/features/issues/ui/pending-attachme
 import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
+import { ButtonIcon } from '@/shared/ui/button/button-icon';
+import Checkbox from '@/shared/ui/input/Checkbox';
 import Input from '@/shared/ui/input/Input';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 import InputTextarea from '@/shared/ui/input/InputTextarea';
@@ -31,6 +34,7 @@ import { Modal } from '@/shared/ui/modal/modal';
 import type { OrganizationProps } from '@/entities/organization';
 import type { UserBasicProps } from '@/entities/user';
 import type {
+  DoDItem,
   EpicOption,
   Issue,
   IssueAttachment,
@@ -63,6 +67,7 @@ interface IssueFormValues {
   author_id: string;
   due_date: string;
   priority: string;
+  dod: DoDItem[];
 }
 
 function defaultDueDate(): string {
@@ -107,10 +112,7 @@ export function IssueForm({
 
   const availableTasks = useMemo(() => {
     return tasks.filter((t) => {
-      return (
-        t.epic_id === null ||
-        (issue?.id !== undefined && t.epic_id === issue.id)
-      );
+      return !t.epic_id || (issue?.id !== undefined && t.epic_id === issue.id);
     });
   }, [tasks, issue]);
 
@@ -157,6 +159,7 @@ export function IssueForm({
       author_id: defaultAuthorId,
       due_date: issue?.due_date ?? defaultDueDate(),
       priority: String(issue?.priority ?? 0),
+      dod: (issue as (Issue & { dod?: DoDItem[] }) | undefined)?.dod ?? [],
     };
   }, [defaultOrganizationId, issue, defaultAuthorId]);
 
@@ -175,6 +178,13 @@ export function IssueForm({
     reValidateMode: 'onChange',
   });
 
+  const { fields: dodFields, append: dodAppend, remove: dodRemove } = useFieldArray({
+    control,
+    name: 'dod',
+  });
+
+  const dodRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const watchedType = useWatch({ control, name: 'type' });
 
   const personOptions = [
@@ -188,6 +198,27 @@ export function IssueForm({
   ];
 
   const statusOptions = ISSUE_STATUS_OPTIONS;
+
+  function handleDodKeyDown(
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number,
+  ) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.currentTarget.value.trim() === '') return;
+      dodAppend({ id: crypto.randomUUID(), text: '', completed: false });
+      requestAnimationFrame(() => {
+        dodRefs.current[index + 1]?.focus();
+      });
+    }
+    if (e.key === 'Backspace' && e.currentTarget.value === '') {
+      e.preventDefault();
+      dodRemove(index);
+      requestAnimationFrame(() => {
+        if (index > 0) dodRefs.current[index - 1]?.focus();
+      });
+    }
+  }
 
   const onSubmit = (values: IssueFormValues) => {
     setRootError('');
@@ -228,6 +259,9 @@ export function IssueForm({
         due_date: values.due_date || null,
         priority: Number(values.priority) || 0,
         upload_token: issue ? null : uploadToken,
+        dod: values.dod.filter((item) => {
+          return item.text.trim().length > 0;
+        }),
       };
       const result = issue
         ? await updateIssue(issue.id, payload)
@@ -459,6 +493,65 @@ export function IssueForm({
           }}
           error={errors.priority?.message}
         />
+      </div>
+
+      <div className='flex flex-col gap-2'>
+        <span className='text-sm font-medium text-foreground'>
+          Definition of Done
+        </span>
+        {dodFields.length > 0 && (
+          <ul className='flex flex-col gap-1'>
+            {dodFields.map((field, index) => {
+              return (
+                <li
+                  key={field.id}
+                  className='flex items-center gap-2 rounded-[var(--radius-button)] px-2 py-1 hover:bg-muted/60 transition-colors group'
+                >
+                  <Checkbox
+                    {...register(`dod.${index}.completed`)}
+                    defaultChecked={field.completed}
+                  />
+                  <input
+                    type='text'
+                    {...register(`dod.${index}.text`)}
+                    ref={(el) => {
+                      register(`dod.${index}.text`).ref(el);
+                      dodRefs.current[index] = el;
+                    }}
+                    onKeyDown={(e) => {
+                      return handleDodKeyDown(e, index);
+                    }}
+                    placeholder='Acceptance criterion...'
+                    className='flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground'
+                  />
+                  <ButtonIcon
+                    icon={<X size={14} />}
+                    aria-label={`Remove criterion ${index + 1}`}
+                    onClickAction={() => {
+                      return dodRemove(index);
+                    }}
+                    className='opacity-0 group-hover:opacity-100 transition-opacity'
+                    size='sm'
+                    variant='ghost'
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <button
+          type='button'
+          onClick={() => {
+            return dodAppend({
+              id: crypto.randomUUID(),
+              text: '',
+              completed: false,
+            });
+          }}
+          className='self-start text-sm text-muted-foreground hover:text-foreground transition-colors'
+        >
+          + Add criterion
+        </button>
       </div>
 
       {!issue && (

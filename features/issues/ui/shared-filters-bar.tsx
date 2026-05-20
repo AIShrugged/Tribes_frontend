@@ -27,6 +27,7 @@ interface SharedFiltersBarProps {
   epics: EpicOption[];
   onChange: (patch: Partial<SharedFilters>) => void;
   disabled?: boolean;
+  hasTypeToggle?: boolean;
 }
 
 const STATUS_OPTIONS = [
@@ -51,6 +52,7 @@ export function SharedFiltersBar({
   epics,
   onChange,
   disabled,
+  hasTypeToggle = false,
 }: SharedFiltersBarProps) {
   const typeOptions = [
     { value: '', label: 'Any type' },
@@ -158,15 +160,17 @@ export function SharedFiltersBar({
           }}
           disabled={disabled}
         />
-        <InputDropdown
-          label='Type'
-          options={typeOptions}
-          value={filters.type}
-          onChange={(value) => {
-            onChange({ type: value as string });
-          }}
-          disabled={disabled}
-        />
+        {!hasTypeToggle && (
+          <InputDropdown
+            label='Type'
+            options={typeOptions}
+            value={filters.type}
+            onChange={(value) => {
+              onChange({ type: value as string });
+            }}
+            disabled={disabled}
+          />
+        )}
       </div>
 
       <CollapsibleSection

@@ -246,6 +246,7 @@ export function IssuesLayoutClient({
               persons={persons}
               epics={epics}
               onChange={handleFiltersChange}
+              hasTypeToggle
             />
           </CollapsibleSection>
         </div>

@@ -77,7 +77,7 @@ function normalizeIssueAttachment(
  * @param filters - filters.
  * @returns query string.
  */
-function buildIssuesQuery(filters: IssueFilters = {}) {
+export function buildIssuesQuery(filters: IssueFilters = {}) {
   const params = new URLSearchParams();
 
   if (filters.status) params.set('status', filters.status);

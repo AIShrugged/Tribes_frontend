@@ -1,5 +1,6 @@
 import { differenceInDays } from 'date-fns';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 import {
   getIssue,
@@ -14,6 +15,7 @@ import {
   IssueLinkedTask,
   EpicChildIssues,
 } from '@/features/issues';
+import { IssueAuditLogSection } from '@/features/issues/ui/issue-audit-log-section';
 import { getOrganizations } from '@/features/organization';
 import { getUser } from '@/features/user';
 import { ROUTES } from '@/shared/lib/routes';
@@ -124,6 +126,18 @@ export default async function IssueDetailPage({
                 initialComments={comments}
                 currentUserId={currentUserId}
               />
+            </CardBody>
+          </Card>
+
+          <Card className='flex flex-col'>
+            <CardBody>
+              <Suspense
+                fallback={
+                  <div className='h-8 animate-pulse rounded bg-muted' />
+                }
+              >
+                <IssueAuditLogSection issueId={issueId} />
+              </Suspense>
             </CardBody>
           </Card>
         </div>
