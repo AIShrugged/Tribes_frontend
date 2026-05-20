@@ -20,7 +20,7 @@ jest.mock('next/navigation', () => {
 });
 
 jest.mock('@/shared/api/session', () => {
-  return { clearSession: jest.fn().mockResolvedValue(undefined) };
+  return { clearSession: jest.fn().mockResolvedValue() };
 });
 
 const makeResponse = (

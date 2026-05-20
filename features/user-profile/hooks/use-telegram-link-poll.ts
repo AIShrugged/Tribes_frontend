@@ -55,7 +55,7 @@ export function useTelegramLinkPoll(
       try {
         const identities = await fetchIdentities();
         if (stoppedRef.current) return;
-        const telegram = identities.find((i) => i.channel === 'telegram');
+        const telegram = identities.find((i) => {return i.channel === 'telegram'});
         if (telegram) {
           stoppedRef.current = true;
           onLinkedRef.current(telegram);
@@ -88,5 +88,5 @@ export function useTelegramLinkPoll(
       if (timerId !== null) clearTimeout(timerId);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [enabled]);  
 }

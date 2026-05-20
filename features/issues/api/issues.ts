@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 
 import { buildIssuesQuery } from '@/features/issues/model/build-issues-query';
 import { parseApiError } from '@/shared/lib/apiError';
@@ -354,10 +355,12 @@ export async function linkIssuesToEpic(
 
 /**
  * getEpics fetches open/in-progress issues of type 'epic' for use in dropdowns.
+ * Wrapped with React.cache() to deduplicate within a single render pass
+ * (e.g. when both layout.tsx and page.tsx call it with the same args).
  * @param organizationId - optional organization scope.
  * @returns epics list.
  */
-export async function getEpics(
+export const getEpics = cache(async function getEpics(
   organizationId?: number | null,
 ): Promise<Issue[]> {
   try {
@@ -373,6 +376,49 @@ export async function getEpics(
     return result.data;
   } catch {
     return [];
+  }
+});
+
+/**
+ * linkTaskToEpic sets epic_id on a single task.
+ * @param epicId - id of the parent epic.
+ * @param taskId - id of the task to link.
+ * @returns updated issue or error.
+ */
+export async function linkTaskToEpic(
+  epicId: number,
+  taskId: number,
+): Promise<ActionResult<Issue>> {
+  if (
+    !Number.isInteger(epicId) ||
+    epicId <= 0 ||
+    !Number.isInteger(taskId) ||
+    taskId <= 0
+  ) {
+    return { data: null, error: 'Invalid task or epic ID' };
+  }
+
+  try {
+    const { data } = await httpClient<Issue>(`${API_URL}/issues/${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ epic_id: epicId }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    revalidatePath('/dashboard/issues', 'layout');
+
+    return { data: data!, error: null };
+  } catch (error) {
+    if (error instanceof ServerError) {
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to link task',
+      );
+
+      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+    }
+
+    throw error;
   }
 }
 

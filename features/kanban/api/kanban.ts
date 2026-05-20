@@ -1,11 +1,11 @@
 'use server';
 
+import { VALID_ISSUE_BACKEND_TYPES } from '@/entities/issue';
 import { clearSession } from '@/shared/api/session';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { getAuthHeaders } from '@/shared/lib/getAuthToken';
 
-import { VALID_ISSUE_BACKEND_TYPES } from '@/entities/issue';
 import type { IssueStatus } from '@/entities/issue';
 import type { KanbanCard, KanbanFilters } from '@/features/kanban/model/types';
 import type { ApiResponse } from '@/shared/types/common';

@@ -1,4 +1,5 @@
 import { VALID_ISSUE_BACKEND_TYPES } from '@/entities/issue';
+
 import type { IssueFilters } from '@/features/issues/model/types';
 
 export function buildIssuesQuery(filters: IssueFilters = {}) {

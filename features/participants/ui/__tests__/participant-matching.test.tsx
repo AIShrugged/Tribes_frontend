@@ -4,7 +4,7 @@ import React from 'react';
 
 jest.mock('@/features/participants/api/participants', () => {
   return {
-    setProfile: jest.fn().mockResolvedValue(undefined),
+    setProfile: jest.fn().mockResolvedValue(),
   };
 });
 

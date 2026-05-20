@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { PropsWithChildren } from 'react';
+
 
 import { FilterPresetsPanel } from '@/features/issues/ui/filter-presets-panel';
 
 import type { SharedFilters } from '@/features/issues/model/types';
+import type { PropsWithChildren } from 'react';
 
 const defaultFilters: SharedFilters = {
   organization_id: '1',

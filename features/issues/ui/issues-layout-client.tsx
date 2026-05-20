@@ -6,13 +6,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { IssueCreateButton } from '@/features/issues';
 import { FiltersContext } from '@/features/issues/model/filters-context';
-import { FilterPresetsPanel } from '@/features/issues/ui/filter-presets-panel';
 import {
   isIssueStatus,
   isIssueSortField,
   isSortOrder,
   isIssueType,
 } from '@/features/issues/model/types';
+import { FilterPresetsPanel } from '@/features/issues/ui/filter-presets-panel';
 import { SharedFiltersBar } from '@/features/issues/ui/shared-filters-bar';
 import { CollapsibleSection } from '@/shared/ui/layout/collapsible-section';
 

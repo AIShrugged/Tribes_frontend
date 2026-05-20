@@ -50,7 +50,7 @@ export function FilterPresetsPanel({
   currentFilters,
   onApply,
 }: FilterPresetsPanelProps) {
-  const [presets, setPresets] = useState<FilterPreset[]>(() => loadPresets());
+  const [presets, setPresets] = useState<FilterPreset[]>(() => {return loadPresets()});
   const [open, setOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);

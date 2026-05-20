@@ -9,6 +9,7 @@ export {
   getPersons,
   getEpics,
   linkIssuesToEpic,
+  linkTaskToEpic,
   getTasksForEpicForm,
   getIssueAttachments,
   uploadIssueAttachment,

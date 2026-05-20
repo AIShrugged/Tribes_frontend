@@ -1,6 +1,7 @@
-import type { ProfileIdentity } from '@/entities/user';
 import { API_URL } from '@/shared/lib/config';
 import { getAuthHeaders } from '@/shared/lib/getAuthToken';
+
+import type { ProfileIdentity } from '@/entities/user';
 
 interface ApiEnvelope<T> {
   success: boolean;

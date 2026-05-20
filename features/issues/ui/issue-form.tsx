@@ -336,7 +336,7 @@ export function IssueForm({
       <div className='flex flex-col gap-1'>
         <span className='text-xs text-muted-foreground'>Type</span>
         <div className='flex rounded-[var(--radius-button)] bg-muted p-0.5 gap-0.5'>
-          {FORM_TYPE_OPTIONS.map((opt) => (
+          {FORM_TYPE_OPTIONS.map((opt) => {return (
             <button
               key={opt.value}
               type='button'
@@ -352,7 +352,7 @@ export function IssueForm({
             >
               {opt.label}
             </button>
-          ))}
+          )})}
         </div>
         {errors.type?.message ? (
           <span className='text-xs text-destructive'>{errors.type.message}</span>

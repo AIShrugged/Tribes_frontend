@@ -1,11 +1,12 @@
 'use server';
 
+import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
-import { parseApiError } from '@/shared/lib/apiError';
 import { httpClient } from '@/shared/lib/httpClient';
-import type { ActionResult } from '@/shared/types/server-action';
+
 import type { TelegramLinkData } from '@/features/user-profile/model/types';
+import type { ActionResult } from '@/shared/types/server-action';
 
 export async function generateTelegramLink(): Promise<
   ActionResult<TelegramLinkData>

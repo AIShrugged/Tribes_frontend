@@ -2,11 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 
-import type { ProfileIdentity } from '@/entities/user';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
 import { httpClient } from '@/shared/lib/httpClient';
 import { ROUTES } from '@/shared/lib/routes';
+
+import type { ProfileIdentity } from '@/entities/user';
 import type { ActionResult } from '@/shared/types/server-action';
 
 export async function getIdentities(): Promise<ProfileIdentity[]> {

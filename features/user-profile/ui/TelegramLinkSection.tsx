@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-import type { ProfileIdentity } from '@/entities/user';
 import { unlinkIdentity } from '@/features/user-profile/api/identities';
 import { generateTelegramLink } from '@/features/user-profile/api/telegram-link';
 import { useTelegramLinkPoll } from '@/features/user-profile/hooks/use-telegram-link-poll';
-import type { TelegramLinkData } from '@/features/user-profile/model/types';
 import { Button } from '@/shared/ui/button/Button';
+
+import type { ProfileIdentity } from '@/entities/user';
+import type { TelegramLinkData } from '@/features/user-profile/model/types';
 
 type LinkState = 'idle' | 'awaiting' | 'connected' | 'expired';
 
@@ -102,7 +103,7 @@ export function TelegramLinkSection({
     const intervalId = setInterval(tick, 1000);
     tick();
 
-    return () => clearInterval(intervalId);
+    return () => {return clearInterval(intervalId)};
   }, [state, linkData, transition]);
 
   function handleGenerate() {

@@ -28,7 +28,7 @@ describe('getAuthHeaders', () => {
   });
 
   it('throws Unauthorized when token is absent', async () => {
-    mockCookiesGet.mockReturnValue(undefined);
+    mockCookiesGet.mockReturnValue();
 
     await expect(getAuthHeaders()).rejects.toThrow('Unauthorized');
   });
