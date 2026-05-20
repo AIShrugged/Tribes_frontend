@@ -5,4 +5,5 @@ export type {
   UserMenuPreferences,
   MenuItemPreference,
   Theme,
+  ProfileIdentity,
 } from './model/types';

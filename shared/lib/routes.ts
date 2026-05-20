@@ -32,6 +32,7 @@ export const ROUTES = {
     PROFILE_ACCOUNT: '/dashboard/profile/account',
     PROFILE_CALENDAR: '/dashboard/profile/calendar',
     PROFILE_PREFERENCES: '/dashboard/profile/preferences',
+    PROFILE_INTEGRATIONS: '/dashboard/profile/integrations',
     PROFILE_ONBOARDING: '/dashboard/profile/onboarding',
     PROFILE_TELEGRAM: '/dashboard/profile/telegram',
     SUMMARY: '/dashboard/summary',

@@ -33,3 +33,10 @@ export interface UserBasicProps {
   name: string;
   email: string;
 }
+
+export interface ProfileIdentity {
+  id: number;
+  channel: string | null;
+  channel_identifier: string;
+  user_id: number | null;
+}

@@ -1,3 +1,4 @@
+export { TelegramLinkSection } from './ui/TelegramLinkSection';
 export { ProfileForm } from './ui/ProfileForm';
 export { ChangePasswordForm } from './ui/ChangePasswordForm';
 export { ProfileAccountSection } from './ui/ProfileAccountSection';
