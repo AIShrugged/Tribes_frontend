@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { getTeams } from '@/entities/team/api/team';
 import { ISSUE_STATUS_OPTIONS } from '@/features/issues/model/types';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
-import { CollapsibleSection } from '@/shared/ui/layout/collapsible-section';
 import { TenantScopeFields } from '@/shared/ui/input/tenant-scope-fields';
 
 import type { EpicOption } from '@/entities/issue';
@@ -38,7 +37,7 @@ const STATUS_OPTIONS = [
  * @param props.filters - current filter values.
  * @param props.organizations - organizations list.
  * @param props.persons - persons list for assignee dropdown.
- * @param props.onChange - called when any filter changes.
+ * @param props.onChange - called when any filter changes. Must be a stable reference (useCallback).
  * @param props.disabled - disables all controls when true.
  * @returns JSX element.
  */
@@ -68,28 +67,22 @@ export function SharedFiltersBar({
     return () => {
       clearTimeout(timer);
     };
-  }, [searchValue]);
+  }, [searchValue, onChange]);
+
+  const mappedPersons = persons.map((person) => {
+    return {
+      value: String(person.id),
+      label: person.email ? `${person.name} (${person.email})` : person.name,
+    };
+  });
 
   const personOptions = [
     { value: '', label: 'All' },
     { value: 'unassigned', label: 'Unassigned' },
-    ...persons.map((person) => {
-      return {
-        value: String(person.id),
-        label: person.email ? `${person.name} (${person.email})` : person.name,
-      };
-    }),
+    ...mappedPersons,
   ];
 
-  const authorOptions = [
-    { value: '', label: 'Any author' },
-    ...persons.map((person) => {
-      return {
-        value: String(person.id),
-        label: person.email ? `${person.name} (${person.email})` : person.name,
-      };
-    }),
-  ];
+  const authorOptions = [{ value: '', label: 'Any author' }, ...mappedPersons];
 
   const epicOptions = [
     { value: '', label: 'Any epic' },
@@ -97,13 +90,6 @@ export function SharedFiltersBar({
       return { value: String(epic.id), label: epic.name };
     }),
   ];
-
-  const hasAdvancedFilters =
-    filters.author_id.length > 0 || filters.epic_id.length > 0;
-
-  const advancedIndicator = hasAdvancedFilters ? (
-    <span className='h-1.5 w-1.5 rounded-full bg-primary' />
-  ) : null;
 
   return (
     <div className='flex flex-col gap-4'>
@@ -171,34 +157,28 @@ export function SharedFiltersBar({
         )}
       </div>
 
-      <CollapsibleSection
-        label='Advanced filters'
-        defaultOpen={hasAdvancedFilters}
-        extraContent={advancedIndicator}
-      >
-        <div className='grid gap-2 sm:grid-cols-2 xl:grid-cols-4'>
-          <InputDropdown
-            label='Author'
-            options={authorOptions}
-            value={filters.author_id}
-            onChange={(value) => {
-              onChange({ author_id: value as string });
-            }}
-            searchable
-            disabled={disabled}
-          />
-          <InputDropdown
-            label='Epic'
-            options={epicOptions}
-            value={filters.epic_id}
-            onChange={(value) => {
-              onChange({ epic_id: value as string });
-            }}
-            searchable
-            disabled={disabled}
-          />
-        </div>
-      </CollapsibleSection>
+      <div className='grid gap-2 sm:grid-cols-2 xl:grid-cols-4'>
+        <InputDropdown
+          label='Author'
+          options={authorOptions}
+          value={filters.author_id}
+          onChange={(value) => {
+            onChange({ author_id: value as string });
+          }}
+          searchable
+          disabled={disabled}
+        />
+        <InputDropdown
+          label='Epic'
+          options={epicOptions}
+          value={filters.epic_id}
+          onChange={(value) => {
+            onChange({ epic_id: value as string });
+          }}
+          searchable
+          disabled={disabled}
+        />
+      </div>
     </div>
   );
 }

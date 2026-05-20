@@ -52,6 +52,8 @@ export function IssuesKanbanTab({
     let cancelled = false;
 
     const run = async () => {
+      // author_id and epic_id are visible in the filter bar but not forwarded here —
+      // the kanban API does not yet support these params (see issue #018).
       const result = await fetchKanbanIssues({
         organization_id: filters.organization_id
           ? Number(filters.organization_id)

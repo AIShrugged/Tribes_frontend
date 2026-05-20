@@ -216,6 +216,9 @@ export function IssuesLayoutClient({
     handleFiltersChange,
   ]);
 
+  const hasAdvancedFilters =
+    filters.author_id.length > 0 || filters.epic_id.length > 0;
+
   return (
     <FiltersContext.Provider value={contextValue}>
       <div className='flex flex-col'>
@@ -225,6 +228,9 @@ export function IssuesLayoutClient({
             icon={<SlidersHorizontal className='h-3.5 w-3.5' />}
             extraContent={
               <div className='flex items-center gap-2'>
+                {hasAdvancedFilters && (
+                  <span className='h-1.5 w-1.5 rounded-full bg-primary' />
+                )}
                 <FilterPresetsPanel
                   currentFilters={filters}
                   onApply={handleFiltersChange}
