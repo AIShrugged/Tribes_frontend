@@ -20,9 +20,8 @@ export async function getMessages(
   const result = await httpClientList<Message>(
     `${API_URL}/chats/${chatId}/messages?offset=${offset}&limit=${limit}`,
   );
-  // Preserve offset-based hasMore formula
   return {
-    data: result.data,
+    data: [...result.data].sort((a, b) => a.id - b.id),
     totalCount: result.totalCount,
     hasMore: offset + result.data.length < result.totalCount,
   };
