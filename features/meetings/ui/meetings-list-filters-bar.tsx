@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 
-import { getTeams, getTeamUsers } from '@/features/teams/api/team';
+import { getTeams, getTeamUsers } from '@/entities/team/api/team';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 
 import {
@@ -19,6 +19,7 @@ import type { DropdownOption } from '@/shared/ui/input/InputDropdown';
 interface Props {
   filters: MeetingsListFilters;
   organizations: OrganizationProps[];
+  cookieOrgId: string;
 }
 
 const SCOPE_OPTIONS: DropdownOption[] = [
@@ -27,15 +28,13 @@ const SCOPE_OPTIONS: DropdownOption[] = [
   { value: 'past', label: 'Past' },
 ];
 
-export function MeetingsListFiltersBar({ filters, organizations }: Props) {
+export function MeetingsListFiltersBar({ filters, organizations, cookieOrgId }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const defaultOrgId =
-    organizations[0]?.id == null ? '' : String(organizations[0].id);
-  const [organizationId, setOrganizationId] = useState<string>(defaultOrgId);
+  const [organizationId, setOrganizationId] = useState<string>(cookieOrgId);
   const [teams, setTeams] = useState<TeamProps[]>([]);
   const [teamUsers, setTeamUsers] = useState<TeamUserRecord[]>([]);
 
@@ -172,7 +171,13 @@ export function MeetingsListFiltersBar({ filters, organizations }: Props) {
             options={orgOptions}
             value={organizationId}
             onChange={(value) => {
-              return setOrganizationId(value as string);
+              setOrganizationId(value as string);
+              startTransition(() => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.delete('team_id');
+                params.delete('user_id');
+                router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+              });
             }}
             disabled={isPending}
           />

@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import {
   getMeetingsForDate,
   getMeetingsList,
@@ -11,6 +13,7 @@ import { MeetingsListClient } from '@/features/meetings/ui/meetings-list-client'
 import { MeetingsListFiltersBar } from '@/features/meetings/ui/meetings-list-filters-bar';
 import { getOrganizations } from '@/features/organization';
 import { formatDateLabel, toDateParam } from '@/shared/lib/date-nav';
+import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { Card } from '@/shared/ui/card';
 
 /**
@@ -38,8 +41,22 @@ export default async function MeetingsListPage({
   const filters = parseFilters(spLike);
   const filtersActive = hasActiveFilters(filters);
 
-  const organizationsResponse = await getOrganizations();
-  const organizations = organizationsResponse.data ?? [];
+  const [orgsResponse, cookieOrgId] = await Promise.all([
+    getOrganizations(),
+    getOrganizationId(),
+  ]);
+  const organizations = orgsResponse.data ?? [];
+
+  const filtersBar = (
+    <Suspense fallback={<div className='h-14 border-b border-border bg-card' />}>
+      <MeetingsListFiltersBar
+        key={cookieOrgId}
+        cookieOrgId={cookieOrgId}
+        filters={filters}
+        organizations={organizations}
+      />
+    </Suspense>
+  );
 
   if (filtersActive) {
     const initialPage = await getMeetingsList({
@@ -50,10 +67,7 @@ export default async function MeetingsListPage({
 
     return (
       <Card className='h-full flex flex-col overflow-hidden'>
-        <MeetingsListFiltersBar
-          filters={filters}
-          organizations={organizations}
-        />
+        {filtersBar}
         <div className='flex-1 overflow-y-auto'>
           <MeetingsListClient
             filters={filters}
@@ -89,7 +103,7 @@ export default async function MeetingsListPage({
 
   return (
     <Card className='h-full flex flex-col'>
-      <MeetingsListFiltersBar filters={filters} organizations={organizations} />
+      {filtersBar}
       <MeetingsColumnView
         yesterday={yesterday}
         today={today}
