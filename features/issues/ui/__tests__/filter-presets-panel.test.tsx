@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-
 import { FilterPresetsPanel } from '@/features/issues/ui/filter-presets-panel';
 
 import type { SharedFilters } from '@/features/issues/model/types';
@@ -21,10 +20,7 @@ const defaultFilters: SharedFilters = {
 
 jest.mock('@/shared/ui/popup/Popup', () => {
   return {
-    Popup: ({
-      open,
-      children,
-    }: PropsWithChildren<{ open: boolean }>) => {
+    Popup: ({ open, children }: PropsWithChildren<{ open: boolean }>) => {
       return open ? <div data-testid='popup'>{children}</div> : null;
     },
   };
@@ -42,7 +38,9 @@ describe('FilterPresetsPanel', () => {
         onApply={jest.fn()}
       />,
     );
-    expect(screen.getByRole('button', { name: /saved/i, hidden: true })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /saved/i, hidden: true }),
+    ).toBeInTheDocument();
   });
 
   it('opens popup when button is clicked', async () => {
@@ -92,7 +90,10 @@ describe('FilterPresetsPanel', () => {
       />,
     );
     await user.click(screen.getByLabelText('Saved filters'));
-    await user.type(screen.getByPlaceholderText('Preset name...'), 'Persistent');
+    await user.type(
+      screen.getByPlaceholderText('Preset name...'),
+      'Persistent',
+    );
     await user.click(screen.getByLabelText('Save current filters'));
     const stored = localStorage.getItem('issues_filter_presets_v1');
     expect(stored).toContain('Persistent');
@@ -143,9 +144,7 @@ describe('FilterPresetsPanel', () => {
     const localUser = userEvent.setup();
     const envelope = {
       version: 1,
-      presets: [
-        { id: 'abc', name: 'Saved preset', filters: defaultFilters },
-      ],
+      presets: [{ id: 'abc', name: 'Saved preset', filters: defaultFilters }],
     };
     localStorage.setItem('issues_filter_presets_v1', JSON.stringify(envelope));
 

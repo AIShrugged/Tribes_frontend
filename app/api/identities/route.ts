@@ -23,7 +23,10 @@ export async function GET() {
   });
 
   if (!res.ok) {
-    return Response.json({ error: 'Failed to fetch identities' }, { status: res.status });
+    return Response.json(
+      { error: 'Failed to fetch identities' },
+      { status: res.status },
+    );
   }
 
   const json: ApiEnvelope<ProfileIdentity[]> = await res.json();

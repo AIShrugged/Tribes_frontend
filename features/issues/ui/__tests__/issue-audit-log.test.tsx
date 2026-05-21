@@ -29,7 +29,9 @@ describe('IssueAuditLog', () => {
   });
 
   it('displays user name', () => {
-    render(<IssueAuditLog events={[makeEvent({ user: { id: 2, name: 'Bob' } })]} />);
+    render(
+      <IssueAuditLog events={[makeEvent({ user: { id: 2, name: 'Bob' } })]} />,
+    );
     expect(screen.getByText('Bob')).toBeInTheDocument();
   });
 
@@ -60,7 +62,11 @@ describe('IssueAuditLog', () => {
   it('shows all events after clicking Show more', async () => {
     const user = userEvent.setup();
     const events = Array.from({ length: 12 }, (_, i) => {
-      return makeEvent({ id: i + 1, old_value: `old${i}`, new_value: `new${i}` });
+      return makeEvent({
+        id: i + 1,
+        old_value: `old${i}`,
+        new_value: `new${i}`,
+      });
     });
     render(<IssueAuditLog events={events} />);
     await user.click(screen.getByText('Show 2 more'));

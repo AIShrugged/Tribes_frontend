@@ -10,7 +10,12 @@ dependencies: []
 
 ## Problem Statement
 
-The planned `features/user-profile/api/identities.ts` imports `parseApiError` from `@/shared/lib/apiError` but the function is inconsistently used: some error branches use it, others return plain strings. In some plan code excerpts, `parseApiError` is imported but not called at all (the error message is hardcoded inline). This will cause an ESLint `no-unused-vars` / `@typescript-eslint/no-unused-vars` lint error and a pre-commit hook failure.
+The planned `features/user-profile/api/identities.ts` imports `parseApiError`
+from `@/shared/lib/apiError` but the function is inconsistently used: some error
+branches use it, others return plain strings. In some plan code excerpts,
+`parseApiError` is imported but not called at all (the error message is
+hardcoded inline). This will cause an ESLint `no-unused-vars` /
+`@typescript-eslint/no-unused-vars` lint error and a pre-commit hook failure.
 
 ## Findings
 
@@ -21,25 +26,34 @@ From `architecture-strategist`:
 'use server';
 import { parseApiError } from '@/shared/lib/apiError'; // ← imported
 
-export async function unlinkIdentity(profileId: number): Promise<ActionResult<void>> {
+export async function unlinkIdentity(
+  profileId: number,
+): Promise<ActionResult<void>> {
   try {
     // ...
   } catch (error) {
     if (error instanceof ServerError) {
       if (error.status === 403) {
-        return { data: null, error: 'You can only unlink your own identities.' }; // ← plain string
+        return {
+          data: null,
+          error: 'You can only unlink your own identities.',
+        }; // ← plain string
       }
       if (error.status === 404) {
         return { data: null, error: 'Identity not found.' }; // ← plain string
       }
-      return { data: null, error: parseApiError(error.responseBody ?? '', '...').message }; // ← used here
+      return {
+        data: null,
+        error: parseApiError(error.responseBody ?? '', '...').message,
+      }; // ← used here
     }
     throw error;
   }
 }
 ```
 
-In some plan excerpts only the hardcoded strings are used, making `parseApiError` unused entirely.
+In some plan excerpts only the hardcoded strings are used, making
+`parseApiError` unused entirely.
 
 ## Proposed Solutions
 
@@ -51,7 +65,11 @@ In some plan excerpts only the hardcoded strings are used, making `parseApiError
 import { parseApiError } from '@/shared/lib/apiError';
 
 // Used for the generic ServerError fallback:
-return { data: null, error: parseApiError(error.responseBody ?? '', 'Failed to unlink Telegram').message };
+return {
+  data: null,
+  error: parseApiError(error.responseBody ?? '', 'Failed to unlink Telegram')
+    .message,
+};
 ```
 
 Ensure this branch is present and `parseApiError` is called at least once.
@@ -72,14 +90,14 @@ export async function unlinkIdentity(...) {
 }
 ```
 
-**Pros:** No unused import. ESLint clean.
-**Cons:** Slightly less structured error message for unexpected status codes.
-**Effort:** Trivial.
-**Risk:** None.
+**Pros:** No unused import. ESLint clean. **Cons:** Slightly less structured
+error message for unexpected status codes. **Effort:** Trivial. **Risk:** None.
 
 ## Recommended Action
 
-Use `parseApiError` for the generic ServerError fallback and ensure the import is needed. If the fallback uses `error.message` directly, remove the import. Either way is fine — the key is consistency so lint passes.
+Use `parseApiError` for the generic ServerError fallback and ensure the import
+is needed. If the fallback uses `error.message` directly, remove the import.
+Either way is fine — the key is consistency so lint passes.
 
 ## Technical Details
 
@@ -96,4 +114,5 @@ Use `parseApiError` for the generic ServerError fallback and ensure the import i
 
 ## Work Log
 
-- 2026-05-20: Found by architecture-strategist during review of Telegram account linking plan.
+- 2026-05-20: Found by architecture-strategist during review of Telegram account
+  linking plan.

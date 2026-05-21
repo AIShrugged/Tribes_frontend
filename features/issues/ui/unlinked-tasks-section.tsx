@@ -28,9 +28,9 @@ export async function UnlinkedTasksSection({
     offset: 0,
   });
 
-  const unlinked = result.data.filter(
-    (t) => {return t.type !== 'epic' && t.epic_id === null},
-  );
+  const unlinked = result.data.filter((t) => {
+    return t.type !== 'epic' && t.epic_id === null;
+  });
 
   if (unlinked.length === 0) return null;
 
@@ -52,23 +52,25 @@ export async function UnlinkedTasksSection({
       </div>
 
       <ul className='divide-y divide-[var(--border)]/50'>
-        {unlinked.map((task) => {return (
-          <li
-            key={task.id}
-            className='flex items-center justify-between gap-2 px-4 py-2 hover:bg-[var(--surface-2)] transition-colors'
-          >
-            <Link
-              href={`${ROUTES.DASHBOARD.ISSUES}/${task.id.toString()}`}
-              className='flex-1 truncate text-xs text-[var(--foreground)] hover:underline'
+        {unlinked.map((task) => {
+          return (
+            <li
+              key={task.id}
+              className='flex items-center justify-between gap-2 px-4 py-2 hover:bg-[var(--surface-2)] transition-colors'
             >
-              #{task.id} {task.name}
-            </Link>
-            <div className='flex shrink-0 items-center gap-2'>
-              <IssueStatusBadge status={task.status} />
-              <LinkToEpicButton taskId={task.id} epics={epics} />
-            </div>
-          </li>
-        )})}
+              <Link
+                href={`${ROUTES.DASHBOARD.ISSUES}/${task.id.toString()}`}
+                className='flex-1 truncate text-xs text-[var(--foreground)] hover:underline'
+              >
+                #{task.id} {task.name}
+              </Link>
+              <div className='flex shrink-0 items-center gap-2'>
+                <IssueStatusBadge status={task.status} />
+                <LinkToEpicButton taskId={task.id} epics={epics} />
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

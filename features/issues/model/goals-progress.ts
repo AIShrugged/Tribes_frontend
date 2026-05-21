@@ -24,7 +24,9 @@ const ACTIVE_STATUSES = new Set<IssueStatus>([
  * @returns GoalProgress snapshot.
  */
 export function computeProgress(tasks: Issue[]): GoalProgress {
-  const nonEpicTasks = tasks.filter((t) => {return t.type !== 'epic'});
+  const nonEpicTasks = tasks.filter((t) => {
+    return t.type !== 'epic';
+  });
 
   const counts: Partial<Record<IssueStatus, number>> = {};
 
@@ -34,7 +36,9 @@ export function computeProgress(tasks: Issue[]): GoalProgress {
 
   const total = nonEpicTasks.length;
   const done = counts.done ?? 0;
-  const active = nonEpicTasks.filter((t) => {return ACTIVE_STATUSES.has(t.status)}).length;
+  const active = nonEpicTasks.filter((t) => {
+    return ACTIVE_STATUSES.has(t.status);
+  }).length;
   const open = counts.open ?? 0;
 
   return {

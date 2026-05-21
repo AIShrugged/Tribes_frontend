@@ -5,7 +5,10 @@ import { useState } from 'react';
 
 import { Popup } from '@/shared/ui/popup/Popup';
 
-import type { FilterPreset, SharedFilters } from '@/features/issues/model/types';
+import type {
+  FilterPreset,
+  SharedFilters,
+} from '@/features/issues/model/types';
 
 const STORAGE_KEY = 'issues_filter_presets_v1';
 const STORAGE_VERSION = 1;
@@ -50,7 +53,9 @@ export function FilterPresetsPanel({
   currentFilters,
   onApply,
 }: FilterPresetsPanelProps) {
-  const [presets, setPresets] = useState<FilterPreset[]>(() => {return loadPresets()});
+  const [presets, setPresets] = useState<FilterPreset[]>(() => {
+    return loadPresets();
+  });
   const [open, setOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);

@@ -10,9 +10,17 @@ dependencies: [021]
 
 ## Problem Statement
 
-The plan mentions "pause polling when tab is hidden" as a performance optimization. The planned implementation checks `document.visibilityState === 'hidden'` inside the `poll()` function and schedules the next poll (reschedules anyway) rather than pausing. This means the timer is still firing every 5 seconds even when the tab is hidden — it just doesn't fetch. The actual optimization (not scheduling at all when hidden) requires a `visibilitychange` listener to resume polling when the tab becomes visible again.
+The plan mentions "pause polling when tab is hidden" as a performance
+optimization. The planned implementation checks
+`document.visibilityState === 'hidden'` inside the `poll()` function and
+schedules the next poll (reschedules anyway) rather than pausing. This means the
+timer is still firing every 5 seconds even when the tab is hidden — it just
+doesn't fetch. The actual optimization (not scheduling at all when hidden)
+requires a `visibilitychange` listener to resume polling when the tab becomes
+visible again.
 
-This is a P3 nice-to-have. The current plan's implementation partially solves the problem (skips the fetch) but doesn't eliminate the timer firing.
+This is a P3 nice-to-have. The current plan's implementation partially solves
+the problem (skips the fetch) but doesn't eliminate the timer firing.
 
 ## Findings
 
@@ -30,7 +38,8 @@ async function poll() {
 }
 ```
 
-**Correct behavior:** When tab is hidden, cancel the timer entirely. When tab becomes visible again, immediately poll + restart the interval.
+**Correct behavior:** When tab is hidden, cancel the timer entirely. When tab
+becomes visible again, immediately poll + restart the interval.
 
 ## Proposed Solution
 
@@ -82,11 +91,14 @@ useEffect(() => {
 
 ## Acceptance Criteria
 
-- [ ] No `setTimeout` calls are made while `document.visibilityState === 'hidden'`
+- [ ] No `setTimeout` calls are made while
+      `document.visibilityState === 'hidden'`
 - [ ] When tab becomes visible, poll fires immediately (no 5s wait)
 - [ ] `visibilitychange` listener is removed in effect cleanup
-- [ ] Test: hide tab (mock `visibilityState`) → verify no additional timers scheduled; show tab → verify immediate poll
+- [ ] Test: hide tab (mock `visibilityState`) → verify no additional timers
+      scheduled; show tab → verify immediate poll
 
 ## Work Log
 
-- 2026-05-20: Found by julik-frontend-races-reviewer during review of Telegram account linking plan.
+- 2026-05-20: Found by julik-frontend-races-reviewer during review of Telegram
+  account linking plan.

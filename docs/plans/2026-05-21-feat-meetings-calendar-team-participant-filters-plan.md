@@ -1,7 +1,7 @@
 ---
 title: 'feat: Add Team / Participant Filters to Meetings Calendar'
 type: feat
-status: active
+status: completed
 date: 2026-05-21
 deepened: 2026-05-21
 ---

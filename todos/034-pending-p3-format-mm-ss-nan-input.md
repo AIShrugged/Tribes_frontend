@@ -10,7 +10,12 @@ dependencies: []
 
 ## Problem Statement
 
-The planned `formatMmSs` helper in `TelegramLinkSection.tsx` uses `Math.max(0, ms)` to clamp negative values, but `Math.max(0, NaN)` returns `NaN`, not `0`. If `expires_at` cannot be parsed as a date (see todo 035 for unparseable `expires_at`), the remaining time calculation would produce `NaN`, and `formatMmSs(NaN)` would render "NaN:NaN" in the countdown — visible to the user.
+The planned `formatMmSs` helper in `TelegramLinkSection.tsx` uses
+`Math.max(0, ms)` to clamp negative values, but `Math.max(0, NaN)` returns
+`NaN`, not `0`. If `expires_at` cannot be parsed as a date (see todo 035 for
+unparseable `expires_at`), the remaining time calculation would produce `NaN`,
+and `formatMmSs(NaN)` would render "NaN:NaN" in the countdown — visible to the
+user.
 
 ## Findings
 
@@ -50,4 +55,5 @@ function formatMmSs(ms: number): string {
 
 ## Work Log
 
-- 2026-05-20: Found by kieran-typescript-reviewer during review of Telegram account linking plan.
+- 2026-05-20: Found by kieran-typescript-reviewer during review of Telegram
+  account linking plan.

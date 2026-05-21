@@ -415,7 +415,11 @@ export async function linkTaskToEpic(
         'Failed to link task',
       );
 
-      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
     }
 
     throw error;

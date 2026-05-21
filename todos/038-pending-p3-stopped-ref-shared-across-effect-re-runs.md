@@ -10,9 +10,17 @@ dependencies: [021]
 
 ## Problem Statement
 
-The planned `use-telegram-link-poll.ts` uses a single `stoppedRef = useRef(false)` that is never reset between effect re-runs. If `enabled` toggles from `true → false → true`, the cleanup sets `stoppedRef.current = true`, but when the next effect run starts, `stoppedRef.current` is still `true` from the previous cleanup. The new poll immediately exits on the first `if (stoppedRef.current) return;` check, making it a no-op.
+The planned `use-telegram-link-poll.ts` uses a single
+`stoppedRef = useRef(false)` that is never reset between effect re-runs. If
+`enabled` toggles from `true → false → true`, the cleanup sets
+`stoppedRef.current = true`, but when the next effect run starts,
+`stoppedRef.current` is still `true` from the previous cleanup. The new poll
+immediately exits on the first `if (stoppedRef.current) return;` check, making
+it a no-op.
 
-In practice this scenario may not occur in the Telegram linking UX (the component is mounted once per session), but the bug is latent if the component is reused or if `enabled` is derived from reactive state.
+In practice this scenario may not occur in the Telegram linking UX (the
+component is mounted once per session), but the bug is latent if the component
+is reused or if `enabled` is derived from reactive state.
 
 ## Findings
 
@@ -41,13 +49,14 @@ useEffect(() => {
 
 ## Proposed Solution
 
-Reset `stoppedRef.current = false` at the top of the effect body (after the `!enabled` guard):
+Reset `stoppedRef.current = false` at the top of the effect body (after the
+`!enabled` guard):
 
 ```typescript
 useEffect(() => {
   if (!enabled) return;
   stoppedRef.current = false; // ← reset for this run
-  attemptsRef.current = 0;    // also reset attempts (see todo 029)
+  attemptsRef.current = 0; // also reset attempts (see todo 029)
 
   let timerId: ReturnType<typeof setTimeout>;
 
@@ -68,9 +77,12 @@ useEffect(() => {
 
 ## Acceptance Criteria
 
-- [ ] `stoppedRef.current = false` is set at the top of the effect body (after `if (!enabled) return`)
-- [ ] Test: toggle `enabled` `true → false → true` → verify poll runs on second enable
+- [ ] `stoppedRef.current = false` is set at the top of the effect body (after
+      `if (!enabled) return`)
+- [ ] Test: toggle `enabled` `true → false → true` → verify poll runs on second
+      enable
 
 ## Work Log
 
-- 2026-05-20: Found by julik-frontend-races-reviewer during review of Telegram account linking plan.
+- 2026-05-20: Found by julik-frontend-races-reviewer during review of Telegram
+  account linking plan.

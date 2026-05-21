@@ -95,9 +95,7 @@ describe('getSources', () => {
   it('returns empty array when data is null', async () => {
     globalThis.fetch = jest
       .fn()
-      .mockResolvedValue(
-        makeResponse(200, { success: true, data: null }),
-      );
+      .mockResolvedValue(makeResponse(200, { success: true, data: null }));
 
     const result = await getSources();
 

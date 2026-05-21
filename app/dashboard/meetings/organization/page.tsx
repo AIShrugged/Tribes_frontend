@@ -21,9 +21,9 @@ export default async function OrganizationCalendarPage({
     getSources(),
     getOrganizationId(),
   ]);
-  const isCalendarAttached = sources.some(
-    (s) => {return s.is_connected === '1' || s.is_connected === true},
-  );
+  const isCalendarAttached = sources.some((s) => {
+    return s.is_connected === '1' || s.is_connected === true;
+  });
 
   if (!isCalendarAttached) {
     return <OnboardingTrigger organizationId={+orgId} />;
