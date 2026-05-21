@@ -10,6 +10,12 @@ jest.mock('@/features/event/lib/get-weekday-and-day', () => {
   };
 });
 
+jest.mock('@/shared/lib/dateFormatter', () => {
+  return {
+    formatDate: (s: string) => {return s.slice(11, 16)},
+  };
+});
+
 jest.mock('@/shared/ui/button/button-close', () => {
   return {
     __esModule: true,
@@ -75,16 +81,22 @@ describe('EventPopupAll', () => {
     expect(close).toHaveBeenCalledTimes(1);
   });
 
-  it('renders an item row for each event', () => {
-    const { container } = render(
+  it('renders a title row for each event', () => {
+    render(
       <EventPopupAll
         list={[makeEvent(1), makeEvent(2), makeEvent(3)]}
         close={jest.fn()}
       />,
     );
-    // EventPopupAll renders a <div key={event.id} /> per event
-    const eventRows = container.querySelectorAll('.p-4 > div');
+    expect(screen.getByText('Event 1')).toBeInTheDocument();
+    expect(screen.getByText('Event 2')).toBeInTheDocument();
+    expect(screen.getByText('Event 3')).toBeInTheDocument();
+  });
 
-    expect(eventRows).toHaveLength(3);
+  it('returns null when list is empty', () => {
+    const { container } = render(
+      <EventPopupAll list={[]} close={jest.fn()} />,
+    );
+    expect(container.firstChild).toBeNull();
   });
 });

@@ -1,54 +1,45 @@
 import { endOfMonth, format, startOfMonth } from 'date-fns';
 import { redirect } from 'next/navigation';
 
-import {
-  getOrgCalendarEvents,
-  OrgCalendarView,
-  type CalendarEventListItem,
-} from '@/features/meetings';
+import { getSources, OnboardingTrigger } from '@/features/calendar';
+import { getAllOrgCalendarEvents, OrgCalendarView } from '@/features/meetings';
+import { getOrganizationId } from '@/shared/lib/getOrganizationId';
+import { ROUTES } from '@/shared/lib/routes';
 
-const PAGE_SIZE = 100;
+const MONTH_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 interface PageProps {
   searchParams: Promise<{ month?: string }>;
 }
 
-/**
- * Organization Calendar tab — shows all org meetings where the bot was added,
- * rendered as a monthly calendar grid.
- */
 export default async function OrganizationCalendarPage({
   searchParams,
 }: PageProps) {
   const params = await searchParams;
 
-  if (!params.month) {
+  const [sources, orgId] = await Promise.all([
+    getSources(),
+    getOrganizationId(),
+  ]);
+  const isCalendarAttached = sources.some(
+    (s) => {return s.is_connected === '1' || s.is_connected === true},
+  );
+
+  if (!isCalendarAttached) {
+    return <OnboardingTrigger organizationId={+orgId} />;
+  }
+
+  if (!params.month || !MONTH_RE.test(params.month)) {
     const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-01');
-    redirect(`/dashboard/meetings/organization?month=${currentMonth}`);
+    redirect(`${ROUTES.DASHBOARD.MEETINGS_ORGANIZATION}?month=${currentMonth}`);
   }
 
   const currentMonth = params.month;
-
-  const monthStart = startOfMonth(currentMonth);
+  const monthStart = startOfMonth(new Date(currentMonth));
   const dateFrom = format(monthStart, 'yyyy-MM-dd');
   const dateTo = format(endOfMonth(monthStart), 'yyyy-MM-dd');
 
-  const allMeetings: CalendarEventListItem[] = [];
-  let offset = 0;
-
-  while (true) {
-    const { data = [], totalCount } = await getOrgCalendarEvents(
-      offset,
-      PAGE_SIZE,
-      dateFrom,
-      dateTo,
-    );
-
-    allMeetings.push(...data);
-    offset += data.length;
-
-    if (offset >= totalCount || data.length === 0) break;
-  }
+  const allMeetings = await getAllOrgCalendarEvents(dateFrom, dateTo);
 
   return (
     <div className='h-full flex flex-col overflow-hidden'>

@@ -17,7 +17,7 @@ import type { ApiResponse, PaginatedResult } from '@/shared/types/common';
 export async function httpClient<T>(
   url: string,
   options: RequestInit = {},
-): Promise<ApiResponse<T>> {
+): Promise<{ data: T }> {
   const authHeaders = await getAuthHeaders();
 
   // When the body is FormData, let fetch set Content-Type automatically
@@ -55,7 +55,7 @@ export async function httpClient<T>(
     throw new ServerError(json.error ?? 'Invalid API response', { url });
   }
 
-  return { data: json.data };
+  return { data: json.data as T };
 }
 
 // ------------------------------

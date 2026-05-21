@@ -11,8 +11,6 @@ import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import SpinLoader from '@/shared/ui/layout/spin-loader';
 import { CalendarPage } from '@/widgets/calendar-view';
 
-import type { EventProps } from '@/entities/event';
-
 /**
  * Meetings personal calendar tab.
  * Fetches all events for the selected month via parallel per-day requests.
@@ -57,7 +55,7 @@ export default async function MeetingsCalendarPage({
           </div>
         }
       >
-        <CalendarPage currentMonth={month} events={events as EventProps[]} />
+        <CalendarPage currentMonth={month} events={events} />
       </Suspense>
     </div>
   );

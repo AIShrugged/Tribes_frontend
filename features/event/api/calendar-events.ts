@@ -5,8 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
-import { getAuthHeaders } from '@/shared/lib/getAuthToken';
-import { httpClient } from '@/shared/lib/httpClient';
+import { httpClient, httpClientList } from '@/shared/lib/httpClient';
 import { ROUTES } from '@/shared/lib/routes';
 
 import type { EventProps } from '@/entities/event';
@@ -15,147 +14,40 @@ import type {
   CalendarEventDetailResponse,
   CalendarEventListItem,
 } from '@/features/meetings/model/types';
-import type { ApiResponse } from '@/shared/types/common';
 import type { ActionResult } from '@/shared/types/server-action';
 
-/**
- * getEvent.
- * @param id - id.
- * @returns Promise.
- */
 export async function getEvent(id: string) {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/calendar-events/${id}`, {
-    method: 'GET',
-    headers: {
-      ...authHeaders,
-    },
-    cache: 'no-store',
-  });
+  const { data } = await httpClient<EventProps>(
+    `${API_URL}/calendar-events/${id}`,
+  );
 
-  if (!res.ok) {
-    throw new Error('Failed to getSummary');
-  }
-
-  const json: ApiResponse<EventProps> = await res.json();
-
-  if (!json.success || !json.data) {
-    throw new Error(json.error ?? 'Invalid API response');
-  }
-
-  return {
-    data: json.data,
-    status: json.status,
-  };
+  return { data };
 }
 
-/**
- * getEvents.
- * @returns Promise.
- */
 export async function getEvents() {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/calendar-events?limit=50`, {
-    method: 'GET',
-    headers: {
-      ...authHeaders,
-    },
-    cache: 'no-store',
-  });
+  const { data } = await httpClient<EventProps[]>(
+    `${API_URL}/calendar-events?limit=50`,
+  );
 
-  if (!res.ok) {
-    throw new Error('Failed to getEvents');
-  }
-
-  const json: ApiResponse<EventProps[]> = await res.json();
-
-  if (!json.success || !json.data) {
-    throw new Error(json.error ?? 'Invalid API response');
-  }
-
-  return {
-    data: json.data,
-    status: json.status,
-  };
+  return { data };
 }
 
-/**
- * getCalendarEvents.
- * @param offset - offset.
- * @param limit - limit.
- * @returns Promise.
- */
 export async function getCalendarEvents(offset = 0, limit = 20) {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(
+  const { data, totalCount } = await httpClientList<CalendarEventListItem>(
     `${API_URL}/calendar-events?offset=${offset}&limit=${limit}`,
-    {
-      method: 'GET',
-      headers: {
-        ...authHeaders,
-      },
-      cache: 'no-store',
-    },
   );
 
-  if (!res.ok) {
-    throw new Error('Failed to getCalendarEvents');
-  }
-
-  const json: ApiResponse<CalendarEventListItem[]> = await res.json();
-  const totalCount = Number(res.headers.get('Items-Count') ?? '0');
-
-  if (!json.success || !json.data) {
-    throw new Error(json.error ?? 'Invalid API response');
-  }
-
-  return {
-    data: json.data,
-    totalCount,
-    status: json.status,
-  };
+  return { data, totalCount };
 }
 
-/**
- * getCalendarEventDetail.
- * @param calendarEventId - calendarEventId.
- * @returns Promise.
- */
 export async function getCalendarEventDetail(calendarEventId: string | number) {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(
+  const { data } = await httpClient<CalendarEventDetailResponse>(
     `${API_URL}/calendar-events/${calendarEventId}/detail`,
-    {
-      method: 'GET',
-      headers: {
-        ...authHeaders,
-      },
-      cache: 'no-store',
-    },
   );
 
-  if (!res.ok) {
-    throw new Error('Failed to getCalendarEventDetail');
-  }
-
-  const json: ApiResponse<CalendarEventDetailResponse> = await res.json();
-
-  if (!json.success || !json.data) {
-    throw new Error(json.error ?? 'Invalid API response');
-  }
-
-  return {
-    data: json.data,
-    status: json.status,
-  };
+  return { data };
 }
 
-/**
- * switchBot.
- * @param eventId - eventId.
- * @param botRequired - botRequired.
- * @returns Promise.
- */
 export async function switchBot(
   eventId: number,
   botRequired: boolean,
@@ -174,7 +66,7 @@ export async function switchBot(
       return { data: null, error: 'Invalid API response' };
     }
 
-    revalidatePath(ROUTES.DASHBOARD.CALENDAR);
+    revalidatePath(ROUTES.DASHBOARD.MEETINGS_CALENDAR);
     revalidatePath(ROUTES.DASHBOARD.MEETINGS_LIST);
     revalidatePath(ROUTES.DASHBOARD.MEETINGS_ORGANIZATION);
 
@@ -191,28 +83,12 @@ export async function switchBot(
   }
 }
 
-/**
- * getMeetingTasks — fetches AI-extracted tasks for a calendar event.
- * @param calendarEventId - The calendar event ID.
- * @returns Array of MeetingTask objects.
- */
 export async function getMeetingTasks(
   calendarEventId: string,
 ): Promise<MeetingTask[]> {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(
+  const { data } = await httpClient<MeetingTask[]>(
     `${API_URL}/calendar-events/${calendarEventId}/tasks`,
-    {
-      headers: { ...authHeaders },
-      cache: 'no-store',
-    },
   );
 
-  if (!res.ok) {
-    throw new Error(`Failed to load tasks: ${res.status}`);
-  }
-
-  const json: ApiResponse<MeetingTask[]> = await res.json();
-
-  return json.data ?? [];
+  return data ?? [];
 }

@@ -28,9 +28,8 @@ export function OrgCalendarView({
 }: OrgCalendarViewProps) {
   const { open, close } = useModal();
 
-  const mappedEvents: EventProps[] = events.map((item) => {
-    return toEventProps(item);
-  });
+  const eventById = new Map(events.map((e) => {return [e.id, e]}));
+  const mappedEvents: EventProps[] = events.map((item) => {return toEventProps(item)});
 
   const handleShowAll = (dayEvents: EventProps[]) => {
     if (open) open(<EventPopupAll list={dayEvents} close={close} />);
@@ -41,9 +40,7 @@ export function OrgCalendarView({
       events={mappedEvents}
       currentMonth={currentMonth}
       renderEvent={(event) => {
-        const original = events.find((e) => {
-          return e.id === event.id;
-        });
+        const original = eventById.get(event.id);
 
         if (!original) return null;
 
