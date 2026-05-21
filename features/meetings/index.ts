@@ -37,7 +37,7 @@ export {
   getCalendarEventsForMonth,
   getMeetingsList,
 } from './api/meetings';
-export { getOrgCalendarEvents } from './api/org-calendar';
+export { getOrgCalendarEvents, getAllOrgCalendarEvents } from './api/org-calendar';
 export {
   type MeetingScope,
   type MeetingsListFilters,

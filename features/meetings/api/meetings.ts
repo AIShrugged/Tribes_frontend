@@ -1,7 +1,9 @@
 'use server';
 
+import { toEventProps } from '@/features/meetings/model/utils';
 import { API_URL } from '@/shared/lib/config';
 import { httpClientList } from '@/shared/lib/httpClient';
+
 
 import type { EventProps } from '@/entities/event';
 import type { MeetingsListFilters } from '@/features/meetings/model/filters';
@@ -102,18 +104,21 @@ export async function getMeetingsList(
 export async function getCalendarEventsForMonth(
   month: string,
 ): Promise<EventProps[]> {
-  const base = new Date(month);
-  const year = base.getFullYear();
-  const monthIndex = base.getMonth();
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  // Parse the month string arithmetically to avoid timezone-dependent Date construction.
+  const [yearStr, monthStr] = month.split('-');
+  const year = Number(yearStr);
+  const monthNum = Number(monthStr);
+  const daysInMonth = new Date(year, monthNum, 0).getDate();
 
   const dayRequests = Array.from({ length: daysInMonth }, (_, i) => {
-    const day = new Date(year, monthIndex, i + 1);
+    const dayStr = String(i + 1).padStart(2, '0');
+    const monStr = String(monthNum).padStart(2, '0');
+    const dateStr = `${year}-${monStr}-${dayStr}`;
 
-    return getMeetingsForDate(day) as Promise<EventProps[]>;
+    return getMeetingsForDate(new Date(`${dateStr}T00:00:00`));
   });
 
   const results = await Promise.all(dayRequests);
 
-  return results.flat();
+  return results.flat().map((item) => {return toEventProps(item)});
 }

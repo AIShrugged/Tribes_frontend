@@ -36,4 +36,20 @@ describe('getWeekdayAndDay', () => {
 
     expect(weekday).toHaveLength(3);
   });
+
+  it('handles ISO 8601 format with Z suffix', () => {
+    // 2024-03-11 is a Monday
+    const result = getWeekdayAndDay('2024-03-11T09:00:00.000000Z');
+
+    expect(result.weekday).toBe('Mon');
+    expect(result.day).toBe('11');
+  });
+
+  it('handles ISO 8601 format without microseconds', () => {
+    // 2024-03-15 is a Friday
+    const result = getWeekdayAndDay('2024-03-15T14:30:00Z');
+
+    expect(result.weekday).toBe('Fri');
+    expect(result.day).toBe('15');
+  });
 });

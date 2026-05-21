@@ -20,7 +20,7 @@ export default function NotFound() {
             The page you are looking for does not exist or has been moved.
           </p>
           <div className='flex gap-4'>
-            <Link href={ROUTES.DASHBOARD.CALENDAR} className='cursor-pointer'>
+            <Link href={ROUTES.DASHBOARD.MEETINGS_CALENDAR} className='cursor-pointer'>
               <Button>Go to Calendar</Button>
             </Link>
             <Link href={ROUTES.AUTH.LOGIN} className='cursor-pointer'>

@@ -1,6 +1,6 @@
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 
-const DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss';
+import { parseEventDate } from '@/shared/lib/dateFormatter';
 
 /**
  * getWeekdayAndDay.
@@ -8,7 +8,7 @@ const DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss';
  * @returns Result.
  */
 export function getWeekdayAndDay(dateString: string) {
-  const date = parse(dateString, DATE_FORMAT, new Date());
+  const date = parseEventDate(dateString);
 
   return {
     weekday: format(date, 'eee'),

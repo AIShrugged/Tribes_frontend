@@ -39,15 +39,10 @@ function makeResponse(status: number, body: unknown): Response {
     ok: status >= 200 && status < 300,
     status,
     statusText: status === 200 ? 'OK' : 'Error',
-    /**
-     *
-     */
+    headers: { get: (_name: string) => null },
     text: () => {
       return Promise.resolve(text);
     },
-    /**
-     *
-     */
     json: () => {
       return Promise.resolve(
         typeof body === 'string' ? JSON.parse(text) : body,
@@ -80,7 +75,7 @@ describe('getSources', () => {
 
     globalThis.fetch = jest
       .fn()
-      .mockResolvedValue(makeResponse(200, { data: sources }));
+      .mockResolvedValue(makeResponse(200, { success: true, data: sources }));
 
     const result = await getSources();
 
@@ -100,7 +95,9 @@ describe('getSources', () => {
   it('returns empty array when data is null', async () => {
     globalThis.fetch = jest
       .fn()
-      .mockResolvedValue(makeResponse(200, { data: null }));
+      .mockResolvedValue(
+        makeResponse(200, { success: true, data: null }),
+      );
 
     const result = await getSources();
 
@@ -122,7 +119,7 @@ describe('detachCalendar', () => {
 
     globalThis.fetch = jest
       .fn()
-      .mockResolvedValue(makeResponse(200, { success: true }));
+      .mockResolvedValue(makeResponse(200, { success: true, data: null }));
 
     await detachCalendar(42);
 
@@ -130,23 +127,26 @@ describe('detachCalendar', () => {
       'https://api.test/sources/42',
       expect.objectContaining({ method: 'DELETE' }),
     );
-    expect(redirect).toHaveBeenCalledWith('/dashboard/calendar');
+    expect(redirect).toHaveBeenCalledWith('/dashboard/meetings/calendar');
   });
 
-  it('calls revalidatePath for calendar and profile on success', async () => {
+  it('calls revalidatePath for meetings calendar and profile calendar on success', async () => {
     const { revalidatePath } = await import('next/cache');
 
     globalThis.fetch = jest
       .fn()
-      .mockResolvedValue(makeResponse(200, { success: true }));
+      .mockResolvedValue(makeResponse(200, { success: true, data: null }));
 
     await detachCalendar(1);
 
     expect(revalidatePath).toHaveBeenCalledWith(
-      '/dashboard/calendar',
+      '/dashboard/meetings/calendar',
       'layout',
     );
-    expect(revalidatePath).toHaveBeenCalledWith('/dashboard/profile', 'layout');
+    expect(revalidatePath).toHaveBeenCalledWith(
+      '/dashboard/profile/calendar',
+      'layout',
+    );
   });
 
   it('returns error result on 404', async () => {
