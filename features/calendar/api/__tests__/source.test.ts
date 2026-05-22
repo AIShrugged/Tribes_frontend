@@ -39,7 +39,7 @@ function makeResponse(status: number, body: unknown): Response {
     ok: status >= 200 && status < 300,
     status,
     statusText: status === 200 ? 'OK' : 'Error',
-    headers: { get: (_name: string) => null },
+    headers: { get: (_name: string) => {return null} },
     text: () => {
       return Promise.resolve(text);
     },

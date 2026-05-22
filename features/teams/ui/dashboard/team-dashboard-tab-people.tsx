@@ -422,7 +422,7 @@ function PendingInviteRow({ invite, teamId }: PendingInviteRowProps) {
 
   // Parse once, use for both expiry check and display label.
   // new Date(null) = Unix epoch (1970) — the null guard prevents that false positive.
-  const expiresDate = invite.expires_at !== null ? new Date(invite.expires_at) : null;
+  const expiresDate = invite.expires_at === null ? null : new Date(invite.expires_at);
   const isPastExpiry = expiresDate !== null && expiresDate < new Date();
 
   const badge = isPastExpiry ? INVITE_STATUS_BADGE['expired'] : INVITE_STATUS_BADGE[invite.status];

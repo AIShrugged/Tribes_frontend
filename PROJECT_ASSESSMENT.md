@@ -1,177 +1,232 @@
 # Оценка проекта AI Ask Wanda Frontend
 
-**Дата:** 18 марта 2026 _(предыдущая: 13 марта 2026)_
+**Дата:** 22 мая 2026 _(предыдущая: 18 марта 2026)_
 
 ## Общие данные
 
-| Метрика       | 13.03.2026                         | 18.03.2026                         | Δ       |
-| ------------- | ---------------------------------- | ---------------------------------- | ------- |
-| Стек          | Next.js 16 + React 19 + TypeScript | Next.js 16 + React 19 + TypeScript | —       |
-| Архитектура   | Feature Sliced Design (FSD)        | Feature Sliced Design (FSD)        | —       |
-| Файлов TS/TSX | ~514                               | **530**                            | +16     |
-| Строк кода    | ~35,000                            | **~40,200**                        | +5,200  |
-| Features      | 19 модулей                         | 19 модулей                         | —       |
-| Unit-тесты    | 161 suite / 1,022 tests ✅         | **169 suite / 1,158 tests** ✅     | +8/+136 |
-| E2E тесты     | 3 spec-файла                       | **15 spec-файлов**                 | +12     |
-| TS-ошибки     | 41 (в тестах)                      | **38 (в тестах)**                  | −3      |
+| Метрика        | 18.03.2026                         | 22.05.2026                         | Δ        |
+| -------------- | ---------------------------------- | ---------------------------------- | -------- |
+| Стек           | Next.js 16 + React 19 + TypeScript | Next.js 16 + React 19 + TypeScript | —        |
+| Архитектура    | Feature Sliced Design (FSD)        | Feature Sliced Design (FSD)        | —        |
+| Файлов TS/TSX  | ~530                               | **782**                            | +252     |
+| Строк кода     | ~40,200                            | **~64,700**                        | +24,500  |
+| Features       | 19 модулей                         | **22 модуля**                      | +3       |
+| Entities       | 5                                  | **9**                              | +4       |
+| Widgets        | 2                                  | **4**                              | +2       |
+| Коммиты всего  | ~221                               | **774**                            | +553     |
+| Unit-тесты     | 169 suite / 1,158 tests ✅         | **144 suite / 1,004 tests** ✅     | −25/−154 |
+| TS-ошибки      | 38 (в тестах)                      | **9 (в тестах)**                   | −29      |
+| ESLint ошибки  | ? (npm run lint сломан)            | **4 ошибки**                       | фикс     |
+| loading.tsx    | 20                                 | **51**                             | +31      |
+| Custom agents  | 8                                  | **12**                             | +4       |
+
+---
+
+## История оценок
+
+| Дата       | Файлов | LOC    | Features | Unit-тестов | TS ошибок | Общая оценка |
+| ---------- | ------ | ------ | -------- | ----------- | --------- | ------------ |
+| 13.03.2026 | ~514   | ~35k   | 19       | 1,022       | 41        | ⭐⭐⭐⭐     |
+| 18.03.2026 | ~530   | ~40k   | 19       | 1,158       | 38        | ⭐⭐⭐⭐½    |
+| 22.05.2026 | **782**| **~65k** | **22** | **1,004**   | **9**     | ⭐⭐⭐⭐½    |
+
+---
 
 ---
 
 ## 🟢 Сильные стороны
 
-### 1. Архитектура — отлично
+### 1. Архитектура — отлично, рост без деградации
 
-- **FSD** реализован грамотно: 19 feature-модулей с чёткой изоляцией (ui/, api/,
-  model/, types.ts, index.ts)
-- Все 19 features имеют `index.ts` — публичный API соблюдён
-- `shared/` хорошо структурирован: ui-кит (16 компонентов), lib (утилиты),
-  hooks, types, store
-- `entities/` выделены правильно (event, organization, participant, team, user)
+- **FSD** выдержан при масштабировании с 19 до 22 features: чёткая изоляция
+  (ui/, api/, model/, types.ts, index.ts) соблюдена во всех модулях
+- Все 22 features имеют `index.ts` — публичный API соблюдён
+- **Entities** выросли с 5 до 9: добавлены `artifact`, `issue`, `source`,
+  `telegram` — правильное место для cross-feature доменных типов
+- **Widgets** выросли с 2 до 4: `calendar-view`, `dashboard-chat`, `layout`,
+  `meeting` — крупные composite-секции вынесены из features
+- `shared/ui/` имеет 16 подпапок UI-кита (badge, button, card, input, modal,
+  navigation, popup, stats, table, typography и др.)
 
-### 2. Тестирование — значительно улучшилось
+### 2. TypeScript — значительно улучшилось
 
-- **1,158 unit-тестов — все зелёные** ✅ (было 1,022; +136 за неделю)
-- **+8 новых test suites** покрывают Server Actions и API-модули: auth, chat
-  (chats/messages/artifacts), teams, user-profile, organization
-- **E2E: 15 spec-файлов** (было 3) — покрыты auth, chat, teams, calendar,
-  meeting, profile, dashboard, follow-ups, summary, landing, organization
-- Jest + Testing Library — правильный выбор
-
-### 3. Качество кода
-
+- **TS ошибки сократились с 38 до 9** (все в тестовых файлах, не в
+  production-коде)
+- `httpClient` возвращаемый тип сужен до `{ data: T }` — устранена проверка
+  `data ?? undefined` у всех вызывающих
 - **Ноль `any`** в продакшн-коде — строгая типизация соблюдена
+- Новые backend contracts синхронизированы: agents, teams, calendar, meetings
+
+### 3. Инфраструктура Next.js — масштабная
+
+- **51 loading.tsx** (+31 от прошлой оценки) — каждый маршрут имеет скелетон
+- **3 error boundaries** (app, dashboard, global-error) — ошибки обработаны
+- React Compiler включён, `optimizePackageImports` на 7 тяжёлых пакетах
+- Security headers: HSTS, X-Frame-Options, X-Content-Type-Options, CSP
+- SSR-first: **197 client-компонентов**, **46 server-actions файлов** — баланс
+  сохранён несмотря на рост
+- Redirects в `next.config.ts` для устаревших маршрутов
+
+### 4. Новые возможности (март–май 2026)
+
+- **`features/issues/`** — полный issue tracker: list/kanban/goals/progress/detail
+- **`features/agents/`** — AI agent profiles/tasks/activity с memories tab
+- **`features/meetings/`** — бот-присутствие (BotPillIndicator), team/participant фильтры в календаре
+- **`features/telegram/`** — привязка Telegram аккаунта через deep-link
+- **`features/today-briefing/`** — Today дашборд с task stats, activity feed
+- **`features/decisions/`**, **`features/onboarding/`** — новые модули
+- **Mobile**: FAB + bottom-sheet drawer для chat на мобильных
+- **`entities/artifact/`** — все 8 типов артефактов изолированы в entity
+
+### 5. Code quality
+
 - **0 TODO/FIXME/HACK** — чистая кодовая база
-- ESLint конфиг серьёзный: security, sonarjs, unicorn, jsdoc, import order,
-  cognitive complexity
-- Husky + lint-staged — защита от грязных коммитов
+- ESLint конфиг: security, sonarjs, unicorn, jsdoc, import order, complexity
+- Husky + lint-staged + pre-push pipeline с TypeScript check и Jest CI
+- **npm run lint теперь работает** (4 ошибки — не сломан как раньше)
+- Telegram уведомления о пуше (коммиты, файлы, строки +/−, время)
 
-### 4. Инфраструктура Next.js
+### 6. Агентная система — расширена
 
-- **20 loading.tsx** — все маршруты имеют скелетоны загрузки
-- **3 error boundaries** (app, dashboard, global) — ошибки обработаны
-- React Compiler включён
-- Security headers настроены (HSTS, X-Frame-Options, CSP)
-- SSR-first подход: 76 client-компонентов, 20 server-actions — разумный баланс
-
-### 5. Pre-push pipeline
-
-- `scripts/pre-push-checks.sh` — автоматический eslint+prettier фикс перед
-  пушем, TypeScript check, Jest CI, Telegram уведомления
-- Статистика пуша: количество коммитов, файлов, строк +/−, время выполнения
-
-### 6. Backend contract
-
-- TypeScript типы приведены в соответствие с Laravel Resources/DTOs в 9 доменах:
-  auth, user, team, organization, participant, follow-up, summary и др.
-- Исправлена критическая ошибка: `organization_id` передавался строкой вместо
-  integer
-
-### 7. Агентная система
-
-- 8 специализированных Claude-агентов: `fsd-boundary-guard`,
-  `backend-contract-validator`, `unit-test-booster`, `performance-auditor`,
-  `changelog-writer`, `e2e-coverage-agent`, `mr-reviewer`, `design-guardian`
-- Покрывают: FSD аудит, контракты, тесты, перформанс, код-ревью, E2E
+- **12 Claude-агентов** (было 8): добавлены `artifact-sync`,
+  `code-quality-guardian`, `frontend-architect`, `wanda-backend-navigator`
+- Охват: FSD аудит, контракты, тесты, перформанс, код-ревью, E2E, дизайн,
+  artifact sync, quality, архитектура, backend навигация
 
 ---
 
 ## 🟡 Замечания (средний приоритет)
 
-### 1. TypeScript ошибки — 38 ошибок (в тестах)
+### 1. TypeScript ошибки — 9 (в тестах, прогресс)
 
-Снизились с 41 до 38, но по-прежнему только в **тестовых файлах**. Тесты
-запускаются через Jest (без type-check), поэтому сами по себе проходят. Но
-`tsc --noEmit` падает.
+Снизились с 38 до **9**, только в тестовых файлах. `tsc --noEmit` проходит в
+production-коде чисто. Оставшиеся сосредоточены в 5 файлах:
+`button-copy.test.tsx`, `user-menu-popup.test.tsx`, `getAuthToken.test.ts`,
+`getOrganizationId.test.ts`, `httpClient.test.ts` — все с паттерном
+"Expected 1 arguments, but got 0" из-за изменения сигнатуры функций.
 
-Оставшиеся: `button-copy.test.tsx` (неверные аргументы),
-`InputTextarea.test.tsx` (отсутствует обязательный prop `value`).
+### 2. Дублирование зависимостей motion — не исправлено
 
-### 2. Дублирование зависимостей motion
+`framer-motion@^12.23.26` и `motion@^12.23.24` оба в `dependencies` — одно и
+то же (motion — ребрендинг framer-motion). Лишние ~484 КБ в бандле.
 
-В `package.json` стоят **и `framer-motion` (3 МБ), и `motion` (484 КБ)** — это
-одно и то же (motion — ребрендинг framer-motion). В коде используется только
-`framer-motion`. Пакет `motion` лишний.
+### 3. `eslint-plugin-jsdoc` в dependencies — не исправлено
 
-### 3. `eslint-plugin-jsdoc` в dependencies
+По-прежнему в `dependencies` вместо `devDependencies`.
 
-Стоит в `dependencies` вместо `devDependencies` — попадает в продакшн-бандл.
+### 4. `react-hooks/exhaustive-deps: 'off'` — не исправлено
 
-### 4. `react-hooks/exhaustive-deps: 'off'`
+Отключённое правило — потенциальный источник stale closure багов в hooks.
+Особенно критично с 197 client-компонентами.
 
-Отключённое правило exhaustive-deps — источник потенциальных багов с
-useEffect/useMemo/useCallback. Стоит включить хотя бы `warn`.
+### 5. Unit-тесты — регрессия по количеству
 
-### 5. Мобильная адаптация — частично
+**144 suite / 1,004 тестов** против 169/1,158 ранее (−25 suite, −154 тестов).
+При этом кодовая база выросла на 60%. Причина — вероятно, тест-файлы для
+features `analysis`, `demo`, `follow-up`, `participants`, `transcript` были
+удалены или перемещены при рефакторинге. Новые features (issues, agents,
+today-briefing, kanban, decisions, telegram) слабо покрыты тестами.
 
-Landing-страница адаптирована (шапка, отступы для ≤768px и ≤400px). Остальные
-страницы дашборда (teams, chat) не проверялись на мобильных breakpoints.
+### 6. Новые features без тестов
+
+`kanban` — 0 тестов, `decisions` — 0 тестов, `telegram` — 0 тестов,
+`today-briefing` — 0 тестов. Итого 4 features без единого test suite.
+
+### 7. ESLint — 4 ошибки в незакоммиченных файлах
+
+Текущий статус ветки `feat/agents-new-backend-contracts` имеет 4 ESLint ошибки
+(2× unused import `TeamProps`, 1× `Array#sort` → `toSorted`, 1× setState в
+effect). Нужен `npm run lint:fix` перед коммитом.
 
 ---
 
 ## 🔴 Проблемы (высокий приоритет)
 
-### 1. Lint сломан (не изменилось)
+### ~~1. Lint сломан~~ — ✅ исправлено (22.05.2026)
 
-```
-next lint → "Invalid project directory provided, no such directory: .../lint"
-```
-
-ESLint не запускается через `npm run lint`. Pre-push hook использует
-`npx eslint` напрямую — это обходит проблему, но `npm run lint` по-прежнему не
-работает.
+`npm run lint` теперь работает. 316 проблем (4 ошибки, 312 предупреждений) —
+ESLint отрабатывает, но есть ошибки в незакоммиченных изменениях.
 
 ### ~~2. `NODE_TLS_REJECT_UNAUTHORIZED = '0'`~~ — ✅ исправлено 18.03.2026
 
-Строка удалена из `next.config.ts` — бэкенд `dev-api.shrugged.ai` получил
-валидный TLS-сертификат.
+### 1. Тест-покрытие деградировало при росте кода
 
-### 3. Path alias — расхождение документации (исправлено в CLAUDE.md)
+**−154 теста** при +24k строк кода. Новые major features (kanban, decisions,
+today-briefing, telegram) без единого тест-файла. Риск: при такой динамике
+coverage threshold упадёт ниже 20% branches.
 
-Реально `@/*` → `./*` (корень), не `src/`. CLAUDE.md уже исправлен, расхождения
-нет.
+### 2. 312 ESLint предупреждений — технический долг
+
+Sonarjs/no-duplicate-string, complexity >8, unused vars. Не блокируют сборку,
+но снижают полезность линтера.
+
+### 3. `framer-motion` + `motion` — дубль в prod-зависимостях (не исправлено)
 
 ---
 
-## Структура features
+## Структура features (22.05.2026)
 
-| Feature      | api | ui  | model | hooks | tests  | index |
-| ------------ | --- | --- | ----- | ----- | ------ | ----- |
-| analysis     | ✗   | ✓   | ✓     | ✗     | 14     | ✓     |
-| auth         | ✓   | ✓   | ✓     | ✗     | **18** | ✓     |
-| calendar     | ✓   | ✓   | ✗     | ✗     | 11     | ✓     |
-| chat         | ✓   | ✓   | ✓     | ✓     | **21** | ✓     |
-| dashboard    | ✓   | ✓   | ✗     | ✗     | 2      | ✓     |
-| demo         | ✓   | ✓   | ✗     | ✗     | 1      | ✓     |
-| event        | ✓   | ✓   | ✓     | ✗     | 4      | ✓     |
-| follow-up    | ✓   | ✓   | ✓     | ✗     | **5**  | ✓     |
-| landing      | ✗   | ✓   | ✓     | ✗     | 4      | ✓     |
-| meeting      | ✗   | ✓   | ✗     | ✗     | 2      | ✓     |
-| menu         | ✗   | ✓   | ✓     | ✗     | 3      | ✓     |
-| organization | ✓   | ✓   | ✓     | ✗     | **10** | ✓     |
-| participants | ✓   | ✓   | ✓     | ✗     | 5      | ✓     |
-| summary      | ✓   | ✓   | ✗     | ✗     | 6      | ✓     |
-| teams        | ✓   | ✓   | ✓     | ✗     | **14** | ✓     |
-| transcript   | ✓   | ✓   | ✓     | ✗     | 5      | ✓     |
-| user-profile | ✓   | ✓   | ✗     | ✗     | **4**  | ✓     |
-| user         | ✓   | ✓   | ✓     | ✗     | 5      | ✓     |
+| Feature        | api | ui  | model | hooks | tests | index | Изменение     |
+| -------------- | --- | --- | ----- | ----- | ----- | ----- | ------------- |
+| agents         | ✓   | ✓   | ✓     | ✓     | 3     | ✓     | 🆕 новый      |
+| auth           | ✓   | ✓   | ✓     | ✗     | 6     | ✓     | −12 тестов    |
+| calendar       | ✓   | ✓   | ✗     | ✗     | 16    | ✓     | +5 тестов     |
+| chat           | ✓   | ✓   | ✓     | ✓     | 14    | ✓     | −7 тестов     |
+| decisions      | ✓   | ✓   | ✓     | ✗     | 0     | ✓     | 🆕 новый      |
+| event          | ✓   | ✓   | ✓     | ✗     | 4     | ✓     | —             |
+| issues         | ✓   | ✓   | ✓     | ✓     | 5     | ✓     | 🆕 новый      |
+| kanban         | ✓   | ✓   | ✓     | ✓     | 0     | ✓     | 🆕 без тестов |
+| landing        | ✗   | ✓   | ✓     | ✗     | 4     | ✓     | —             |
+| meeting        | ✗   | ✓   | ✓     | ✗     | 1     | ✓     | —             |
+| meetings       | ✓   | ✓   | ✓     | ✗     | 4     | ✓     | переименован  |
+| menu           | ✗   | ✓   | ✓     | ✗     | 3     | ✓     | —             |
+| onboarding     | ✓   | ✓   | ✓     | ✓     | 2     | ✓     | 🆕 новый      |
+| organization   | ✓   | ✓   | ✓     | ✗     | 8     | ✓     | −2 тестов     |
+| participants   | ✓   | ✓   | ✓     | ✗     | 5     | ✓     | —             |
+| summary        | ✓   | ✓   | ✓     | ✗     | 6     | ✓     | —             |
+| teams          | ✓   | ✓   | ✓     | ✗     | 4     | ✓     | −10 тестов    |
+| telegram       | ✓   | ✓   | ✓     | ✗     | 0     | ✓     | 🆕 без тестов |
+| today-briefing | ✓   | ✓   | ✓     | ✗     | 0     | ✓     | 🆕 без тестов |
+| transcript     | ✓   | ✓   | ✓     | ✗     | 6     | ✓     | —             |
+| user-profile   | ✓   | ✓   | ✓     | ✓     | 3     | ✓     | —             |
+| user           | ✓   | ✓   | ✓     | ✗     | 5     | ✓     | —             |
 
-_Жирным — изменились с предыдущей оценки._
+_Удалены: `analysis`, `dashboard` (переименован в `today-briefing`), `demo`,
+`follow-up` (вошёл в meetings), `participants` — существует, но переименован._
+
+---
+
+## Структура entities (22.05.2026)
+
+| Entity       | model | ui  | Описание                              |
+| ------------ | ----- | --- | ------------------------------------- |
+| artifact     | ✓     | ✓   | 8 типов артефактов с рендерерами      |
+| event        | ✓     | ✓   | Доменные типы событий                 |
+| issue        | ✓     | ✓   | Issue/Epic типы                       |
+| organization | ✓     | ✓   | Организация                           |
+| participant  | ✓     | ✓   | Участник встречи                      |
+| source       | ✓     | ✓   | Источники (calendar sources)          |
+| team         | ✓     | ✓   | Команда                               |
+| telegram     | ✓     | ✗   | Telegram integration types            |
+| user         | ✓     | ✓   | Пользователь                          |
 
 ---
 
 ## Итоговая оценка
 
-| Категория    | 13.03.2026                         | 18.03.2026                                |
-| ------------ | ---------------------------------- | ----------------------------------------- |
-| Архитектура  | ⭐⭐⭐⭐⭐                         | ⭐⭐⭐⭐⭐                                |
-| Типизация    | ⭐⭐⭐⭐½ (тесты отстают)          | ⭐⭐⭐⭐½ (38 ошибок осталось в тестах)   |
-| Тестирование | ⭐⭐⭐⭐ (unit отлично, E2E слабо) | ⭐⭐⭐⭐½ (unit +136, E2E ×5)             |
-| Code Quality | ⭐⭐⭐⭐                           | ⭐⭐⭐⭐                                  |
-| DevOps/CI    | ⭐⭐⭐ (lint сломан)               | ⭐⭐⭐½ (pre-push pipeline, lint всё ещё) |
-| Security     | ⭐⭐⭐ (TLS, но headers хорошие)   | ⭐⭐⭐⭐ (TLS починен, headers хорошие)   |
-| **Общая**    | **⭐⭐⭐⭐ из 5**                  | **⭐⭐⭐⭐½ из 5**                        |
+| Категория    | 13.03.2026                         | 18.03.2026                                | 22.05.2026                                    |
+| ------------ | ---------------------------------- | ----------------------------------------- | --------------------------------------------- |
+| Архитектура  | ⭐⭐⭐⭐⭐                         | ⭐⭐⭐⭐⭐                                | ⭐⭐⭐⭐⭐ (22 features, выдержано FSD)        |
+| Типизация    | ⭐⭐⭐⭐½ (тесты отстают)          | ⭐⭐⭐⭐½ (38 ошибок в тестах)            | ⭐⭐⭐⭐½ (9 ошибок, prod чист)               |
+| Тестирование | ⭐⭐⭐⭐ (unit отлично, E2E слабо) | ⭐⭐⭐⭐½ (unit +136, E2E ×5)             | ⭐⭐⭐½ (−154 тестов при +60% кода)           |
+| Code Quality | ⭐⭐⭐⭐                           | ⭐⭐⭐⭐                                  | ⭐⭐⭐⭐ (0 any, 0 TODO, но 312 lint warns)    |
+| DevOps/CI    | ⭐⭐⭐ (lint сломан)               | ⭐⭐⭐½ (pipeline, lint всё ещё сломан)   | ⭐⭐⭐⭐ (lint работает, pipeline, 4 ошибки)  |
+| Security     | ⭐⭐⭐ (TLS, headers хорошие)      | ⭐⭐⭐⭐ (TLS починен)                    | ⭐⭐⭐⭐ (без изменений)                      |
+| **Общая**    | **⭐⭐⭐⭐ из 5**                  | **⭐⭐⭐⭐½ из 5**                        | **⭐⭐⭐⭐½ из 5**                            |
 
-**Резюме:** За 5 дней заметный прогресс — +136 unit-тестов, E2E покрытие выросло
-с 3 до 15 спеков, бэкенд-контракт починен в 9 доменах, появился полноценный
-pre-push pipeline, исправлен TLS. Основные нерешённые проблемы: сломанный
-`npm run lint`, оставшиеся TS-ошибки в тестах (38 штук).
+**Резюме (22.05.2026):** За 65 дней — масштабный рост: +252 файла, +24k LOC,
++3 features, +553 коммита. Архитектура выдержала масштабирование. TS-ошибки
+снизились с 38 до 9. Lint починен. Главный регресс — тест-покрытие: −154
+теста при росте кодовой базы на 60%. 4 новых features без тестов. Ключевая
+задача следующего цикла: вернуть тесты для kanban, decisions, today-briefing,
+telegram и покрыть новые API actions.
