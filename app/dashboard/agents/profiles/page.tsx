@@ -8,7 +8,7 @@ import {
 } from '@/features/agents';
 import { ROUTES } from '@/shared/lib/routes';
 import { ButtonLink } from '@/shared/ui/button';
-import { Card } from '@/shared/ui/card';
+import { Card, CardBody } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/feedback/empty-state';
 
 export const metadata = { title: 'Agent Profiles' };
@@ -26,14 +26,17 @@ export default async function AgentProfilesPage() {
 
   return (
     <Card>
-      <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
-        <p className='text-sm text-muted-foreground'>
-          Configure reusable agent profiles and backend-constrained tool access.
-        </p>
-        <ButtonLink href={ROUTES.DASHBOARD.AGENT_PROFILES_NEW}>
-          New profile
-        </ButtonLink>
-      </div>
+      <CardBody>
+        <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
+          <p className='text-sm text-muted-foreground'>
+            Configure reusable agent profiles and backend-constrained tool
+            access.
+          </p>
+          <ButtonLink href={ROUTES.DASHBOARD.AGENT_PROFILES_NEW}>
+            New profile
+          </ButtonLink>
+        </div>
+      </CardBody>
       {profilesData.data.length > 0 ? (
         <AgentProfilesList profiles={profilesData.data} />
       ) : (
