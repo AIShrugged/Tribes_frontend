@@ -17,9 +17,9 @@ function UnlinkedTasksSkeleton() {
   return (
     <div className='rounded-[var(--r-lg)] border border-dashed border-[var(--border)] bg-[var(--surface-1)]/50 p-4 space-y-2'>
       <Skeleton className='h-4 w-40' />
-      {[1, 2, 3].map((i) => {return (
-        <Skeleton key={i} className='h-8 w-full' />
-      )})}
+      {[1, 2, 3].map((i) => {
+        return <Skeleton key={i} className='h-8 w-full' />;
+      })}
     </div>
   );
 }
@@ -28,7 +28,9 @@ export default async function GoalsPage() {
   const cookieOrgId = await getOrganizationId();
   const orgId = Number(cookieOrgId);
 
-  const epics = await getEpics(Number.isFinite(orgId) && orgId > 0 ? orgId : null);
+  const epics = await getEpics(
+    Number.isFinite(orgId) && orgId > 0 ? orgId : null,
+  );
 
   if (epics.length === 0) {
     return (
@@ -44,11 +46,13 @@ export default async function GoalsPage() {
 
   return (
     <div className='space-y-4 p-6'>
-      {epics.map((epic) => {return (
-        <Suspense key={epic.id} fallback={<EpicGoalCardSkeleton />}>
-          <EpicGoalCard epic={epic} />
-        </Suspense>
-      )})}
+      {epics.map((epic) => {
+        return (
+          <Suspense key={epic.id} fallback={<EpicGoalCardSkeleton />}>
+            <EpicGoalCard epic={epic} />
+          </Suspense>
+        );
+      })}
 
       <Suspense fallback={<UnlinkedTasksSkeleton />}>
         <UnlinkedTasksSection

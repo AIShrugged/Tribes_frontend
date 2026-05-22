@@ -37,15 +37,22 @@ export {
   getCalendarEventsForMonth,
   getMeetingsList,
 } from './api/meetings';
-export { getOrgCalendarEvents, getAllOrgCalendarEvents } from './api/org-calendar';
+export {
+  getOrgCalendarEvents,
+  getAllOrgCalendarEvents,
+} from './api/org-calendar';
 export {
   type MeetingScope,
   type MeetingsListFilters,
+  type MeetingsCalendarFilters,
   DEFAULT_MEETINGS_FILTERS,
   parseFilters,
   serializeFilters,
   hasActiveFilters,
+  parseCalendarFilters,
+  hasActiveCalendarFilters,
 } from './model/filters';
 export { MeetingsListFiltersBar } from './ui/meetings-list-filters-bar';
+export { MeetingsCalendarFiltersBar } from './ui/meetings-calendar-filters-bar';
 export { MeetingsListClient } from './ui/meetings-list-client';
 export { MeetingDecisionsSection } from './ui/meeting-decisions-section';

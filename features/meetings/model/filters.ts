@@ -48,3 +48,25 @@ export function serializeFilters(f: MeetingsListFilters): URLSearchParams {
 export function hasActiveFilters(f: MeetingsListFilters): boolean {
   return f.scope !== 'all' || f.team_id != null || f.user_id != null;
 }
+
+// Narrow subset of MeetingsListFilters for the calendar view (no scope/offset/limit).
+export type MeetingsCalendarFilters = Pick<
+  MeetingsListFilters,
+  'team_id' | 'user_id'
+>;
+
+export function parseCalendarFilters(sp: {
+  team_id?: string | string[];
+  user_id?: string | string[];
+}): MeetingsCalendarFilters {
+  const rawTeam = Array.isArray(sp.team_id) ? sp.team_id[0] : sp.team_id;
+  const rawUser = Array.isArray(sp.user_id) ? sp.user_id[0] : sp.user_id;
+  return {
+    team_id: parseIntParam(rawTeam ?? null),
+    user_id: parseIntParam(rawUser ?? null),
+  };
+}
+
+export function hasActiveCalendarFilters(f: MeetingsCalendarFilters): boolean {
+  return f.team_id != null || f.user_id != null;
+}

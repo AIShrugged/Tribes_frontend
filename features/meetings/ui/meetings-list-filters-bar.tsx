@@ -28,7 +28,11 @@ const SCOPE_OPTIONS: DropdownOption[] = [
   { value: 'past', label: 'Past' },
 ];
 
-export function MeetingsListFiltersBar({ filters, organizations, cookieOrgId }: Props) {
+export function MeetingsListFiltersBar({
+  filters,
+  organizations,
+  cookieOrgId,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -176,7 +180,9 @@ export function MeetingsListFiltersBar({ filters, organizations, cookieOrgId }: 
                 const params = new URLSearchParams(searchParams.toString());
                 params.delete('team_id');
                 params.delete('user_id');
-                router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+                router.replace(`${pathname}?${params.toString()}`, {
+                  scroll: false,
+                });
               });
             }}
             disabled={isPending}

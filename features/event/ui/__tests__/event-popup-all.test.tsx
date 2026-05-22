@@ -12,7 +12,9 @@ jest.mock('@/features/event/lib/get-weekday-and-day', () => {
 
 jest.mock('@/shared/lib/dateFormatter', () => {
   return {
-    formatDate: (s: string) => {return s.slice(11, 16)},
+    formatDate: (s: string) => {
+      return s.slice(11, 16);
+    },
   };
 });
 
@@ -94,9 +96,7 @@ describe('EventPopupAll', () => {
   });
 
   it('returns null when list is empty', () => {
-    const { container } = render(
-      <EventPopupAll list={[]} close={jest.fn()} />,
-    );
+    const { container } = render(<EventPopupAll list={[]} close={jest.fn()} />);
     expect(container.firstChild).toBeNull();
   });
 });

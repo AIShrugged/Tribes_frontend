@@ -4,9 +4,11 @@ import { toEventProps } from '@/features/meetings/model/utils';
 import { API_URL } from '@/shared/lib/config';
 import { httpClientList } from '@/shared/lib/httpClient';
 
-
 import type { EventProps } from '@/entities/event';
-import type { MeetingsListFilters } from '@/features/meetings/model/filters';
+import type {
+  MeetingsCalendarFilters,
+  MeetingsListFilters,
+} from '@/features/meetings/model/filters';
 import type { CalendarEventListItem } from '@/features/meetings/model/types';
 import type { PaginatedResult } from '@/shared/types/common';
 
@@ -24,9 +26,12 @@ function toDateParam(date: Date): string {
  */
 export async function getMeetingsForDate(
   date: Date,
+  filters?: MeetingsCalendarFilters,
 ): Promise<CalendarEventListItem[]> {
   const dateParam = toDateParam(date);
   const params = new URLSearchParams({ date: dateParam, limit: '50' });
+  if (filters?.team_id != null) params.set('team_id', String(filters.team_id));
+  if (filters?.user_id != null) params.set('user_id', String(filters.user_id));
   const result = await httpClientList<CalendarEventListItem>(
     `${API_URL}/calendar-events?${params.toString()}`,
   );
@@ -103,6 +108,7 @@ export async function getMeetingsList(
  */
 export async function getCalendarEventsForMonth(
   month: string,
+  filters?: MeetingsCalendarFilters,
 ): Promise<EventProps[]> {
   // Parse the month string arithmetically to avoid timezone-dependent Date construction.
   const [yearStr, monthStr] = month.split('-');
@@ -115,10 +121,12 @@ export async function getCalendarEventsForMonth(
     const monStr = String(monthNum).padStart(2, '0');
     const dateStr = `${year}-${monStr}-${dayStr}`;
 
-    return getMeetingsForDate(new Date(`${dateStr}T00:00:00`));
+    return getMeetingsForDate(new Date(`${dateStr}T00:00:00`), filters);
   });
 
   const results = await Promise.all(dayRequests);
 
-  return results.flat().map((item) => {return toEventProps(item)});
+  return results.flat().map((item) => {
+    return toEventProps(item);
+  });
 }

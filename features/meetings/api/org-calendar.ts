@@ -54,9 +54,9 @@ export async function getAllOrgCalendarEvents(
   }
 
   const pages = await Promise.allSettled(
-    remainingOffsets.map((offset) =>
-      {return getOrgCalendarEvents(offset, PAGE_SIZE, dateFrom, dateTo)},
-    ),
+    remainingOffsets.map((offset) => {
+      return getOrgCalendarEvents(offset, PAGE_SIZE, dateFrom, dateTo);
+    }),
   );
 
   for (const page of pages) {

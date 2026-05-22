@@ -83,9 +83,7 @@ export default async function IssuesListPage({
     type: typeParam,
     assignee: resolvedAssignee,
     author_id:
-      rawAuthorId !== null &&
-      Number.isFinite(rawAuthorId) &&
-      rawAuthorId > 0
+      rawAuthorId !== null && Number.isFinite(rawAuthorId) && rawAuthorId > 0
         ? rawAuthorId
         : null,
     epic_id:

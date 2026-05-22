@@ -1,5 +1,5 @@
 ---
-id: "048"
+id: '048'
 priority: P3
 status: pending
 area: meetings
@@ -16,13 +16,15 @@ The plan proposes extracting the org change handler into a named function:
 function onOrgChange(value: string) { ... }
 ```
 
-All other `onChange` handlers in `meetings-list-filters-bar.tsx` are inline arrows:
+All other `onChange` handlers in `meetings-list-filters-bar.tsx` are inline
+arrows:
 
 ```tsx
 onChange={(value) => { ... }}
 ```
 
-Introducing a named handler for one control breaks the file's consistent style without any benefit — the function is not reused and not tested independently.
+Introducing a named handler for one control breaks the file's consistent style
+without any benefit — the function is not reused and not tested independently.
 
 ## Required Fix
 

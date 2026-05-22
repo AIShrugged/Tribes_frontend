@@ -10,18 +10,28 @@ dependencies: [021]
 
 ## Problem Statement
 
-The plan's security checklist mentions "limit poll to 120 attempts" but the planned `use-telegram-link-poll.ts` implementation does not include `attemptsRef`. The poll will run as long as `enabled === true`, which is until the countdown expires (10 minutes = ~120 polls at 5s interval) or the user navigates away. However if the countdown timer has a bug (see todo 023) or the `expires_at` timestamp is unparseable, the poll could theoretically run indefinitely without a hard stop.
+The plan's security checklist mentions "limit poll to 120 attempts" but the
+planned `use-telegram-link-poll.ts` implementation does not include
+`attemptsRef`. The poll will run as long as `enabled === true`, which is until
+the countdown expires (10 minutes = ~120 polls at 5s interval) or the user
+navigates away. However if the countdown timer has a bug (see todo 023) or the
+`expires_at` timestamp is unparseable, the poll could theoretically run
+indefinitely without a hard stop.
 
-Additionally, there is no explicit resource cleanup if the device goes offline — the poll silently continues making failed fetch calls every 5 seconds.
+Additionally, there is no explicit resource cleanup if the device goes offline —
+the poll silently continues making failed fetch calls every 5 seconds.
 
 ## Findings
 
-From `security-sentinel`, `architecture-strategist`, `julik-frontend-races-reviewer`, `pattern-recognition-specialist`:
+From `security-sentinel`, `architecture-strategist`,
+`julik-frontend-races-reviewer`, `pattern-recognition-specialist`:
 
 The plan's security checklist states:
+
 > "Limit poll to 120 attempts (10 minutes at 5s interval)"
 
 But the planned hook:
+
 ```typescript
 export function useTelegramLinkPoll({ enabled, ... }) {
   useEffect(() => {
@@ -81,30 +91,35 @@ export function useTelegramLinkPoll({ enabled, onExpired, ... }) {
 }
 ```
 
-**Pros:** Implements the documented security requirement. Provides a hard stop independent of the countdown timer (defense in depth). Simple to test.
-**Cons:** None.
-**Effort:** Small (add `attemptsRef`, `MAX_POLL_ATTEMPTS`, increment in poll).
-**Risk:** None.
+**Pros:** Implements the documented security requirement. Provides a hard stop
+independent of the countdown timer (defense in depth). Simple to test. **Cons:**
+None. **Effort:** Small (add `attemptsRef`, `MAX_POLL_ATTEMPTS`, increment in
+poll). **Risk:** None.
 
 ### Option B — Rely on countdown timer alone
 
 Trust that the countdown stops `enabled` before 120 attempts.
 
-**Pros:** Simpler.
-**Cons:** Doesn't implement the documented security requirement. Relies on countdown correctness (which has its own bug — see todo 023). No independent safeguard.
-**Effort:** None (do nothing).
-**Risk:** Medium — if countdown has a bug, poll runs indefinitely.
+**Pros:** Simpler. **Cons:** Doesn't implement the documented security
+requirement. Relies on countdown correctness (which has its own bug — see todo
+023). No independent safeguard. **Effort:** None (do nothing). **Risk:** Medium
+— if countdown has a bug, poll runs indefinitely.
 
 ## Recommended Action
 
-**Option A.** Implement `attemptsRef` as specified in the plan's own security checklist. This is a 5-line addition that closes the gap between the documented spec and the actual implementation.
+**Option A.** Implement `attemptsRef` as specified in the plan's own security
+checklist. This is a 5-line addition that closes the gap between the documented
+spec and the actual implementation.
 
 ## Technical Details
 
-- **Affected file (planned):** `features/user-profile/hooks/use-telegram-link-poll.ts`
+- **Affected file (planned):**
+  `features/user-profile/hooks/use-telegram-link-poll.ts`
 - **Constant:** `MAX_POLL_ATTEMPTS = 120` (export it so tests can override)
-- **On max attempts reached:** call `onExpired()` callback — same as countdown expiry
-- **Reset:** `attemptsRef.current = 0` on each `enabled → true` transition (in `useEffect` body before first poll)
+- **On max attempts reached:** call `onExpired()` callback — same as countdown
+  expiry
+- **Reset:** `attemptsRef.current = 0` on each `enabled → true` transition (in
+  `useEffect` body before first poll)
 
 ## Acceptance Criteria
 
@@ -113,8 +128,12 @@ Trust that the countdown stops `enabled` before 120 attempts.
 - [ ] `attemptsRef.current` incremented before each fetch
 - [ ] Poll stops and calls `onExpired()` when attempts >= `MAX_POLL_ATTEMPTS`
 - [ ] `attemptsRef.current` resets to 0 on each `enabled` flip
-- [ ] Test: fast-forward past 120 ticks → verify `onExpired` called and poll stops
+- [ ] Test: fast-forward past 120 ticks → verify `onExpired` called and poll
+      stops
 
 ## Work Log
 
-- 2026-05-20: Found by security-sentinel, architecture-strategist, julik-frontend-races-reviewer, pattern-recognition-specialist during review of Telegram account linking plan. The security checklist in the plan itself documents this requirement, but the implementation steps don't include it.
+- 2026-05-20: Found by security-sentinel, architecture-strategist,
+  julik-frontend-races-reviewer, pattern-recognition-specialist during review of
+  Telegram account linking plan. The security checklist in the plan itself
+  documents this requirement, but the implementation steps don't include it.

@@ -30,7 +30,9 @@ function EpicTaskRow({ task }: { task: Issue }) {
 
 async function EpicTasksList({ epicId }: { epicId: number }) {
   const result = await getIssues({ epic_id: epicId, limit: 100, offset: 0 });
-  const tasks = result.data.filter((t) => {return t.type !== 'epic'});
+  const tasks = result.data.filter((t) => {
+    return t.type !== 'epic';
+  });
   const progress = computeProgress(tasks);
   const barColor = getProgressColor(progress);
 
@@ -82,18 +84,16 @@ function EpicGoalCardContent({
             {progress.active > 0 && (
               <span>{progress.active.toString()} active</span>
             )}
-            {progress.open > 0 && (
-              <span>{progress.open.toString()} open</span>
-            )}
+            {progress.open > 0 && <span>{progress.open.toString()} open</span>}
           </div>
         )}
       </div>
 
       {tasks.length > 0 && (
         <ul className='border-t border-[var(--border)] divide-y divide-[var(--border)]/50'>
-          {tasks.map((task) => {return (
-            <EpicTaskRow key={task.id} task={task} />
-          )})}
+          {tasks.map((task) => {
+            return <EpicTaskRow key={task.id} task={task} />;
+          })}
         </ul>
       )}
     </>
@@ -109,9 +109,9 @@ function EpicTasksListSkeleton() {
       </div>
       <Skeleton className='h-1.5 w-full' />
       <div className='mt-3 space-y-2'>
-        {[1, 2, 3].map((i) => {return (
-          <Skeleton key={i} className='h-8 w-full' />
-        )})}
+        {[1, 2, 3].map((i) => {
+          return <Skeleton key={i} className='h-8 w-full' />;
+        })}
       </div>
     </div>
   );

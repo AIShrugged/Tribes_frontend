@@ -18,7 +18,10 @@ const ALLOWED_TELEGRAM_HOSTS = new Set(['t.me', 'telegram.me']);
 function validateTelegramUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'https:' && ALLOWED_TELEGRAM_HOSTS.has(parsed.hostname);
+    return (
+      parsed.protocol === 'https:' &&
+      ALLOWED_TELEGRAM_HOSTS.has(parsed.hostname)
+    );
   } catch {
     return false;
   }
@@ -54,7 +57,9 @@ export function TelegramLinkSection({
   const [statusMessage, setStatusMessage] = useState('');
   const [isPending, startTransition] = useTransition();
 
-  const stateRef = useRef<LinkState>(initialTelegramIdentity ? 'connected' : 'idle');
+  const stateRef = useRef<LinkState>(
+    initialTelegramIdentity ? 'connected' : 'idle',
+  );
 
   const transition = useCallback((next: LinkState) => {
     stateRef.current = next;
@@ -103,7 +108,9 @@ export function TelegramLinkSection({
     const intervalId = setInterval(tick, 1000);
     tick();
 
-    return () => {return clearInterval(intervalId)};
+    return () => {
+      return clearInterval(intervalId);
+    };
   }, [state, linkData, transition]);
 
   function handleGenerate() {
@@ -114,7 +121,9 @@ export function TelegramLinkSection({
         return;
       }
       setLinkData(result.data);
-      setStatusMessage('Telegram link generated. Open Telegram to complete linking.');
+      setStatusMessage(
+        'Telegram link generated. Open Telegram to complete linking.',
+      );
       transition('awaiting');
     });
   }
@@ -151,7 +160,9 @@ export function TelegramLinkSection({
     return (
       <div className='space-y-4'>
         <div>
-          <p className='text-sm font-medium text-[var(--foreground)]'>Telegram</p>
+          <p className='text-sm font-medium text-[var(--foreground)]'>
+            Telegram
+          </p>
           <p className='text-sm text-[var(--muted-foreground)] mt-0.5'>
             Your personal Telegram account is linked.
           </p>
@@ -160,7 +171,9 @@ export function TelegramLinkSection({
           <div className='flex items-center gap-2 min-w-0'>
             <span className='text-green-500 text-sm shrink-0'>✓</span>
             <div className='min-w-0'>
-              <p className='text-sm font-medium text-[var(--foreground)]'>Telegram Connected</p>
+              <p className='text-sm font-medium text-[var(--foreground)]'>
+                Telegram Connected
+              </p>
               <p className='text-xs text-[var(--muted-foreground)] truncate'>
                 Account ID: {identity.channel_identifier}
               </p>
@@ -189,8 +202,12 @@ export function TelegramLinkSection({
     if (!linkData) {
       return (
         <div className='space-y-2'>
-          <p className='text-sm font-medium text-[var(--foreground)]'>Telegram</p>
-          <p className='text-sm text-[var(--muted-foreground)]'>Generating link…</p>
+          <p className='text-sm font-medium text-[var(--foreground)]'>
+            Telegram
+          </p>
+          <p className='text-sm text-[var(--muted-foreground)]'>
+            Generating link…
+          </p>
         </div>
       );
     }
@@ -198,7 +215,9 @@ export function TelegramLinkSection({
     if (!validateTelegramUrl(linkData.link_url)) {
       return (
         <div className='space-y-4'>
-          <p className='text-sm font-medium text-[var(--foreground)]'>Telegram</p>
+          <p className='text-sm font-medium text-[var(--foreground)]'>
+            Telegram
+          </p>
           <div
             role='alert'
             className='p-3 rounded-[var(--radius)] border border-destructive/50 bg-destructive/10 text-sm text-destructive'
@@ -219,9 +238,12 @@ export function TelegramLinkSection({
     return (
       <div className='space-y-4'>
         <div>
-          <p className='text-sm font-medium text-[var(--foreground)]'>Telegram</p>
+          <p className='text-sm font-medium text-[var(--foreground)]'>
+            Telegram
+          </p>
           <p className='text-sm text-[var(--muted-foreground)] mt-0.5'>
-            Open the link in Telegram to complete linking. The bot will confirm automatically.
+            Open the link in Telegram to complete linking. The bot will confirm
+            automatically.
           </p>
         </div>
         <div className='p-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--secondary)] space-y-3'>
@@ -265,7 +287,9 @@ export function TelegramLinkSection({
     return (
       <div className='space-y-4'>
         <div>
-          <p className='text-sm font-medium text-[var(--foreground)]'>Telegram</p>
+          <p className='text-sm font-medium text-[var(--foreground)]'>
+            Telegram
+          </p>
           <p className='text-sm text-[var(--muted-foreground)] mt-0.5'>
             Connect your personal Telegram account.
           </p>
@@ -301,7 +325,8 @@ export function TelegramLinkSection({
       <div>
         <p className='text-sm font-medium text-[var(--foreground)]'>Telegram</p>
         <p className='text-sm text-[var(--muted-foreground)] mt-0.5'>
-          Connect your personal Telegram account to receive notifications and interact with Tribes via Telegram.
+          Connect your personal Telegram account to receive notifications and
+          interact with Tribes via Telegram.
         </p>
       </div>
       <div className='w-auto'>

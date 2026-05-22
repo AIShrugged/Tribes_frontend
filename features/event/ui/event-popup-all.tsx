@@ -29,19 +29,21 @@ export const EventPopupAll = ({
       </div>
 
       <div className='p-4 flex flex-col gap-1'>
-        {list.map((event) => {return (
-          <div
-            key={event.id}
-            className='flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/20 transition-colors'
-          >
-            <span className='text-sm font-medium truncate flex-1'>
-              {event.title}
-            </span>
-            <span className='text-xs text-muted-foreground shrink-0'>
-              {formatDate(event.starts_at)}
-            </span>
-          </div>
-        )})}
+        {list.map((event) => {
+          return (
+            <div
+              key={event.id}
+              className='flex items-center justify-between gap-3 px-3 py-2 rounded-md hover:bg-muted/20 transition-colors'
+            >
+              <span className='text-sm font-medium truncate flex-1'>
+                {event.title}
+              </span>
+              <span className='text-xs text-muted-foreground shrink-0'>
+                {formatDate(event.starts_at)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -50,9 +50,7 @@ export default async function IssuesKanbanPage({
         ? rawAssigneeId
         : null,
     author_id:
-      rawAuthorId !== null &&
-      Number.isFinite(rawAuthorId) &&
-      rawAuthorId > 0
+      rawAuthorId !== null && Number.isFinite(rawAuthorId) && rawAuthorId > 0
         ? rawAuthorId
         : null,
     epic_id:

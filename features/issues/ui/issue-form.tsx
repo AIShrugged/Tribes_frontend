@@ -1,7 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -215,7 +222,11 @@ export function IssueForm({
         savedEpicIdRef.current = watch('epic_id');
         setValue('epic_id', '', { shouldDirty: true });
         clearErrors('epic_id');
-      } else if (!isNowEpic && wasEpic && savedEpicIdRef.current !== undefined) {
+      } else if (
+        !isNowEpic &&
+        wasEpic &&
+        savedEpicIdRef.current !== undefined
+      ) {
         setValue('epic_id', savedEpicIdRef.current, { shouldDirty: true });
         savedEpicIdRef.current = undefined;
       }
@@ -336,26 +347,30 @@ export function IssueForm({
       <div className='flex flex-col gap-1'>
         <span className='text-xs text-muted-foreground'>Type</span>
         <div className='flex rounded-[var(--radius-button)] bg-muted p-0.5 gap-0.5'>
-          {FORM_TYPE_OPTIONS.map((opt) => {return (
-            <button
-              key={opt.value}
-              type='button'
-              onClick={() => {
-                handleTypeChange(opt.value);
-              }}
-              className={[
-                'flex-1 rounded-[var(--radius-button)] px-3 py-1 text-xs font-medium transition-all',
-                watchedType === opt.value
-                  ? 'bg-card border border-white/8 text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              ].join(' ')}
-            >
-              {opt.label}
-            </button>
-          )})}
+          {FORM_TYPE_OPTIONS.map((opt) => {
+            return (
+              <button
+                key={opt.value}
+                type='button'
+                onClick={() => {
+                  handleTypeChange(opt.value);
+                }}
+                className={[
+                  'flex-1 rounded-[var(--radius-button)] px-3 py-1 text-xs font-medium transition-all',
+                  watchedType === opt.value
+                    ? 'bg-card border border-white/8 text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                ].join(' ')}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
         {errors.type?.message ? (
-          <span className='text-xs text-destructive'>{errors.type.message}</span>
+          <span className='text-xs text-destructive'>
+            {errors.type.message}
+          </span>
         ) : null}
       </div>
 

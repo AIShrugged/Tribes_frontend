@@ -48,7 +48,9 @@ export default async function MeetingsListPage({
   const organizations = orgsResponse.data ?? [];
 
   const filtersBar = (
-    <Suspense fallback={<div className='h-14 border-b border-border bg-card' />}>
+    <Suspense
+      fallback={<div className='h-14 border-b border-border bg-card' />}
+    >
       <MeetingsListFiltersBar
         key={cookieOrgId}
         cookieOrgId={cookieOrgId}

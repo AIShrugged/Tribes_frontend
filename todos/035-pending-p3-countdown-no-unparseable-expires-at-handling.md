@@ -10,7 +10,13 @@ dependencies: [034]
 
 ## Problem Statement
 
-The planned countdown calculates `remaining = new Date(linkData.expires_at).getTime() - Date.now()`. If `expires_at` is an invalid ISO 8601 string or null/undefined (e.g., backend sends wrong format), `new Date(...)` returns `Invalid Date` whose `.getTime()` is `NaN`. The countdown then feeds `NaN` into `formatMmSs` (see todo 034) and comparison `if (remaining <= 0)` also evaluates to `false` (since `NaN <= 0` is false), causing the countdown to never expire.
+The planned countdown calculates
+`remaining = new Date(linkData.expires_at).getTime() - Date.now()`. If
+`expires_at` is an invalid ISO 8601 string or null/undefined (e.g., backend
+sends wrong format), `new Date(...)` returns `Invalid Date` whose `.getTime()`
+is `NaN`. The countdown then feeds `NaN` into `formatMmSs` (see todo 034) and
+comparison `if (remaining <= 0)` also evaluates to `false` (since `NaN <= 0` is
+false), causing the countdown to never expire.
 
 ## Findings
 
@@ -59,11 +65,15 @@ useEffect(() => {
 
 ## Acceptance Criteria
 
-- [ ] Invalid `expires_at` (e.g., `"not-a-date"`, `""`, `null`) transitions to `'expired'` immediately
+- [ ] Invalid `expires_at` (e.g., `"not-a-date"`, `""`, `null`) transitions to
+      `'expired'` immediately
 - [ ] Valid `expires_at` countdown works as before
-- [ ] `setCountdownMs(0)` is called before transitioning to expired (shows "00:00" before hiding timer)
-- [ ] Unit test: set `expires_at` to `"invalid"` → verify `'expired'` state transition
+- [ ] `setCountdownMs(0)` is called before transitioning to expired (shows
+      "00:00" before hiding timer)
+- [ ] Unit test: set `expires_at` to `"invalid"` → verify `'expired'` state
+      transition
 
 ## Work Log
 
-- 2026-05-20: Found during edge case analysis of Telegram account linking plan review.
+- 2026-05-20: Found during edge case analysis of Telegram account linking plan
+  review.
