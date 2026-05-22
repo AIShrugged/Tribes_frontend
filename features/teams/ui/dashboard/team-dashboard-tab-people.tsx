@@ -22,7 +22,7 @@ import { BUTTON_SIZE, BUTTON_VARIANT } from '@/shared/types/button';
 import { Button, ButtonIcon } from '@/shared/ui/button';
 import Avatar from '@/shared/ui/common/avatar';
 
-import type { TeamInvite, TeamProps } from '@/entities/team';
+import type { TeamInvite, TeamMember, TeamProps } from '@/entities/team';
 import type { TelegramChatRegistration } from '@/entities/telegram';
 import type {
   PersonInsightCategoryValue,
@@ -255,7 +255,7 @@ function InsightSection({
 // ─── Member row ───────────────────────────────────────────────────────────────
 
 interface MemberRowProps {
-  member: TeamProps['members'][number];
+  member: TeamMember;
   analytics: PersonMember | null;
   teamId: number;
   isManager: boolean;
@@ -482,7 +482,7 @@ function PendingInviteRow({ invite, teamId }: PendingInviteRowProps) {
 
 interface TeamDashboardTabPeopleProps {
   analyticsData: TabPeople | null;
-  members: TeamProps['members'];
+  members: TeamMember[];
   pendingInvites: TeamInvite[];
   teamId: number;
   isManager: boolean;

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import { RefreshCw } from 'lucide-react';
+
 import { getAgendaTemplate } from '@/features/teams/api/agenda-template';
 import { getMeetingSummaryTemplate } from '@/features/teams/api/meeting-summary-template';
 import {
@@ -23,6 +25,7 @@ export function TemplatesTab({ teamId, isReadOnly }: Props) {
   );
   const [agenda, setAgenda] = useState<AgendaTemplateResolved | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,13 +49,24 @@ export function TemplatesTab({ teamId, isReadOnly }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [teamId]);
+  }, [teamId, retryCount]);
 
   if (loadError) {
     return (
-      <p role='alert' className='text-sm text-destructive py-6 text-center'>
-        {loadError}
-      </p>
+      <div
+        role='alert'
+        className='flex flex-col items-center gap-3 py-10 text-center'
+      >
+        <p className='text-sm text-destructive'>{loadError}</p>
+        <button
+          type='button'
+          onClick={() => { setRetryCount(c => c + 1); }}
+          className='inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors'
+        >
+          <RefreshCw className='size-3.5' />
+          Retry
+        </button>
+      </div>
     );
   }
 

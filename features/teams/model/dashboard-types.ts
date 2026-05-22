@@ -90,7 +90,7 @@ export interface ReadinessCheck {
 
 export interface TabMeetingReadiness {
   status: 'ready' | 'attention' | 'none';
-  score: number;
+  score?: number;
   meeting: DashboardMeetingCard | null;
   checks: ReadinessCheck[];
   notes: string[];

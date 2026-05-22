@@ -89,8 +89,9 @@ export default async function Page({
   // Falls back to false for org-level managers not explicitly in the members list.
   // Full fix requires backend to expose viewer.is_manager in TeamDashboardService.
   const viewerId = dashboard?.viewer.id ?? null;
+  const teamMembers = team.members ?? [];
   const viewerMember = viewerId
-    ? (team.members.find((m) => {
+    ? (teamMembers.find((m) => {
         return m.id === viewerId;
       }) ?? null)
     : null;

@@ -20,7 +20,7 @@ import type {
   TabRisks,
   TabStatus,
 } from '../../model/dashboard-types';
-import type { TeamInvite, TeamProps } from '@/entities/team';
+import type { TeamInvite, TeamMember, TeamProps } from '@/entities/team';
 import type { TelegramChatRegistration } from '@/entities/telegram';
 import type { TeamNotificationSetting } from '@/features/teams/model/types';
 
@@ -48,7 +48,7 @@ interface TeamDashboardTabsProps {
   currentTab: string;
   tabs: DashboardTabs | null;
   teamId: number;
-  members: TeamProps['members'];
+  members: TeamMember[];
   pendingInvites: TeamInvite[];
   isManager: boolean;
   settings: TeamNotificationSetting[];

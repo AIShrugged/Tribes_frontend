@@ -79,7 +79,7 @@ export default function TeamsPageClient({
               currentTab={currentTab}
               tabs={dashboard.tabs}
               teamId={team.id}
-              members={team.members}
+              members={team.members ?? []}
               pendingInvites={pendingInvites}
               isManager={isManager}
               settings={settings}
@@ -122,7 +122,7 @@ export default function TeamsPageClient({
               currentTab={currentTab}
               tabs={null}
               teamId={team.id}
-              members={team.members}
+              members={team.members ?? []}
               pendingInvites={pendingInvites}
               isManager={isManager}
               settings={settings}

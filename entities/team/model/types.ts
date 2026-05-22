@@ -9,7 +9,7 @@ export interface TeamProps extends TeamCreateDTO {
   id: number;
   slug: string;
   employee_count: number;
-  members: TeamMember[];
+  members?: TeamMember[];
 }
 
 export interface TeamCreateDTO {
@@ -28,6 +28,12 @@ export interface TeamUserRecord {
     id: number;
     name: string;
     email: string;
+  };
+  teams: {
+    id: number;
+    name: string;
+    slug: string;
+    employee_count: number;
   };
 }
 
