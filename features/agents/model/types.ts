@@ -31,11 +31,12 @@ export interface AgentProfile {
   default_model: string | null;
   enabled: boolean;
   metadata: Record<string, unknown> | null;
+  version: number;
   created_at: string;
   updated_at: string;
 }
 
-export interface AgentProfilePayload {
+export interface AgentProfileCreatePayload {
   key: string;
   name: string;
   description: string | null;
@@ -49,6 +50,33 @@ export interface AgentProfilePayload {
   default_model: string | null;
   enabled: boolean;
   metadata: Record<string, unknown> | null;
+}
+
+export interface AgentProfileUpdatePayload {
+  name: string;
+  description: string | null;
+  system_prompt: string | null;
+  config_schema: Record<string, unknown> | null;
+  task_payload_schema: Record<string, unknown> | null;
+  execution_mode: AgentExecutionMode | null;
+  sandbox_profile: string | null;
+  allowed_outbound_hosts: string[];
+  default_model: string | null;
+  enabled: boolean;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface AgentProfileTool extends AgentToolDefinition {
+  description: string;
+  parameters: Record<string, unknown>;
+}
+
+export interface AgentProfilePromptVersion {
+  id: number;
+  agent_profile_id: number;
+  version: number;
+  system_prompt: string | null;
+  created_at: string;
 }
 
 export interface AgentMemory {

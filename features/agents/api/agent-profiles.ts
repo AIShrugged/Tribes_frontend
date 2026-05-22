@@ -11,7 +11,10 @@ import { httpClient, httpClientAction, httpClientList } from '@/shared/lib/httpC
 import type {
   AgentMemory,
   AgentProfile,
-  AgentProfilePayload,
+  AgentProfileCreatePayload,
+  AgentProfilePromptVersion,
+  AgentProfileTool,
+  AgentProfileUpdatePayload,
   AgentTasksMeta,
   AgentToolDefinition,
 } from '@/features/agents/model/types';
@@ -43,7 +46,7 @@ export const getAgentProfile = cache(async (id: number) => {
   return data;
 });
 
-export async function createAgentProfile(payload: AgentProfilePayload) {
+export async function createAgentProfile(payload: AgentProfileCreatePayload) {
   const result = await httpClientAction<AgentProfile>(
     `${API_URL}/agent-profiles`,
     { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
@@ -59,7 +62,7 @@ export async function createAgentProfile(payload: AgentProfilePayload) {
 
 export async function updateAgentProfile(
   id: number,
-  payload: Partial<AgentProfilePayload>,
+  payload: AgentProfileUpdatePayload,
 ) {
   const result = await httpClientAction<AgentProfile>(
     `${API_URL}/agent-profiles/${id}`,
@@ -122,6 +125,46 @@ export const getAgentTools = cache(async () => {
 
   return data ?? [];
 });
+
+export const getAgentProfileTools = cache(async (id: number): Promise<AgentProfileTool[]> => {
+  if (!Number.isInteger(id) || id <= 0) return [];
+  const { data } = await httpClient<AgentProfileTool[]>(`${API_URL}/agent-profiles/${id}/tools`);
+
+  return data ?? [];
+});
+
+export async function getAgentProfilePromptVersions(id: number): Promise<AgentProfilePromptVersion[]> {
+  if (!Number.isInteger(id) || id <= 0) return [];
+  const { data } = await httpClient<AgentProfilePromptVersion[]>(
+    `${API_URL}/agent-profiles/${id}/prompt-versions`,
+  );
+
+  return data ?? [];
+}
+
+export async function restoreAgentProfilePromptVersion(
+  profileId: number,
+  versionNumber: number,
+): Promise<ActionResult<AgentProfile>> {
+  if (
+    !Number.isInteger(profileId) || profileId <= 0 ||
+    !Number.isInteger(versionNumber) || versionNumber <= 0
+  ) {
+    return { data: null, error: 'Invalid profile or version' };
+  }
+
+  const result = await httpClientAction<AgentProfile>(
+    `${API_URL}/agent-profiles/${profileId}/prompt-versions/${versionNumber}/restore`,
+    { method: 'POST' },
+    'Failed to restore prompt version',
+  );
+
+  if (result.error === null) {
+    revalidatePath(`/dashboard/agents/profiles/${profileId}`, 'layout');
+  }
+
+  return result;
+}
 
 export async function getProfileMemories(
   profileId: number,
