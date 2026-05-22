@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import React, { type PropsWithChildren } from 'react';
+import React, { type PropsWithChildren, Suspense } from 'react';
 
 import { ThemeProvider } from '@/app/providers/ThemeProvider';
 import { MenuSidebar, SidebarFooter } from '@/features/menu';
@@ -12,6 +12,7 @@ import { TribesLogo } from '@/shared/ui/brand';
 import {
   DashboardChatColumn,
   DashboardChatLoader,
+  MobileChatDrawerLoader,
 } from '@/widgets/dashboard-chat';
 import MobileSidebar from '@/widgets/layout/ui/mobile-sidebar';
 
@@ -108,6 +109,11 @@ export default async function Layout({ children }: PropsWithChildren) {
           <DashboardChatLoader />
         </DashboardChatColumn>
       </div>
+
+      {/* Mobile chat FAB + bottom-sheet drawer — parallel stream, never blocks page render */}
+      <Suspense fallback={null}>
+        <MobileChatDrawerLoader />
+      </Suspense>
     </ThemeProvider>
   );
 }

@@ -6,9 +6,8 @@ import { type PropsWithChildren, Suspense } from 'react';
 
 import { CollapsedSidePanel } from '@/shared/ui/layout/collapsed-side-panel';
 import { Skeleton } from '@/shared/ui/layout/skeleton';
+import { isChatColumnHidden } from '@/widgets/dashboard-chat/model/chat-column-config';
 import { useDashboardChatColumnStore } from '@/widgets/dashboard-chat/model/dashboard-chat-column-store';
-
-const HIDDEN_ON_PATHS = ['/dashboard/chat'];
 
 /**
  * DashboardChatColumn — wraps the chat panel in the dashboard layout.
@@ -22,10 +21,7 @@ export function DashboardChatColumn({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const { isCollapsed, setCollapsed } = useDashboardChatColumnStore();
 
-  const isHidden = HIDDEN_ON_PATHS.some((p) => {
-    return pathname.startsWith(p);
-  });
-  if (isHidden) return null;
+  if (isChatColumnHidden(pathname)) return null;
 
   return (
     <div
