@@ -1,4 +1,4 @@
-import { getAgentTasks } from '@/features/agents/api/agents';
+import { getAgentTasks } from '@/features/agents/api/agent-tasks';
 
 const mockRedirect = jest.fn();
 

@@ -1,5 +1,3 @@
-import { Bot } from 'lucide-react';
-
 import {
   getAgentTasksMeta,
   getAgentTools,
@@ -11,14 +9,10 @@ import {
 } from '@/features/agents';
 import { ServerError } from '@/shared/lib/errors';
 import { Card, CardBody } from '@/shared/ui/card';
-import { EmptyState } from '@/shared/ui/feedback/empty-state';
 import PageHeader from '@/widgets/layout/ui/page-header';
 
 import type { AgentTasksMeta } from '@/features/agents';
 
-/**
- *
- */
 export default async function NewAgentProfilePage() {
   const { canManageAgents } = await getAgentAccessContext();
 
@@ -35,14 +29,12 @@ export default async function NewAgentProfilePage() {
 
   let accessDenied = false;
   let meta = {} as AgentTasksMeta;
-  let tools = [] as Awaited<ReturnType<typeof getAgentTools>>;
+  let tools: Awaited<ReturnType<typeof getAgentTools>> = [];
 
   try {
     [meta, tools] = await Promise.all([
-      getAgentTasksMeta().catch(() => {
-        return {} as AgentTasksMeta;
-      }),
-      getAgentTools(),
+      getAgentTasksMeta().catch((): AgentTasksMeta => {return {}}),
+      getAgentTools().catch(() => {return []}),
     ]);
   } catch (error) {
     if (error instanceof ServerError && error.status === 403) {
@@ -65,26 +57,17 @@ export default async function NewAgentProfilePage() {
 
   const toolOptions = normalizeToolOptions(tools);
 
-  if (toolOptions.length === 0) {
-    return (
-      <Card className='h-full flex flex-col'>
-        <PageHeader hasButtonBack title='New Agent Profile' />
-        <CardBody>
-          <EmptyState
-            icon={Bot}
-            title='No agent tools available'
-            description='The backend returned an empty /api/v1/agent-tools response, so profile creation is limited.'
-          />
-        </CardBody>
-      </Card>
-    );
-  }
-
   return (
     <Card className='h-full flex flex-col'>
       <PageHeader hasButtonBack title='New Agent Profile' />
       <div className='h-full overflow-y-auto'>
         <CardBody>
+          {toolOptions.length === 0 ? (
+            <div className='mb-4 rounded-[var(--radius-card)] border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning'>
+              The backend returned no available tools. You can still create a
+              profile, but the allowed tools selector will be empty.
+            </div>
+          ) : null}
           <AgentProfileForm
             sandboxOptions={normalizeMetaOptions(meta.sandbox_profiles)}
             toolOptions={toolOptions}

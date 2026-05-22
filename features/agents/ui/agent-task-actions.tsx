@@ -4,12 +4,12 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
+import { deleteAgentProfile } from '@/features/agents/api/agent-profiles';
 import {
-  deleteAgentProfile,
   deleteAgentTask,
   dispatchAgentTask,
   updateAgentTask,
-} from '@/features/agents/api/agents';
+} from '@/features/agents/api/agent-tasks';
 import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button, ButtonLink } from '@/shared/ui/button';
@@ -87,7 +87,7 @@ export function AgentTaskActions({
   const router = useRouter();
   const [isDispatchPending, startDispatch] = useTransition();
   const [isTogglePending, startToggle] = useTransition();
-  const [isDeletePending, setIsDeletePending] = useState(false);
+  const [isDeletePending, startDelete] = useTransition();
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   return (
@@ -153,26 +153,19 @@ export function AgentTaskActions({
             return;
           }
 
-          setIsDeletePending(true);
-          deleteAgentTask(id)
-            .then((result) => {
-              if (result.error) {
-                toast.error(result.error);
+          startDelete(async () => {
+            const result = await deleteAgentTask(id);
 
-                return;
-              }
-
-              toast.success('Agent task deleted');
-              router.push(backHref);
-              router.refresh();
-            })
-            .catch(() => {
-              toast.error('Failed to delete agent task');
-            })
-            .finally(() => {
+            if (result.error) {
+              toast.error(result.error);
               setIsConfirmingDelete(false);
-              setIsDeletePending(false);
-            });
+
+              return;
+            }
+
+            toast.success('Agent task deleted');
+            router.push(backHref);
+          });
         }}
       >
         {isConfirmingDelete ? 'Confirm delete' : 'Delete'}

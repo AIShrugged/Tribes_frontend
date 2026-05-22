@@ -1,48 +1,45 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useMemo, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useMemo, useRef, useTransition } from 'react';
+import { useController, useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import {
   createAgentProfile,
   updateAgentProfile,
   validateAgentProfilePayload,
-} from '@/features/agents/api/agents';
+} from '@/features/agents/api/agent-profiles';
 import { normalizeAllowedTools } from '@/features/agents/lib/format';
 import { parseJsonInput, stringifyJson } from '@/features/agents/lib/json';
+import {
+  agentProfileCreateSchema,
+  agentProfileEditSchema,
+} from '@/features/agents/model/schemas';
+import { AGENT_EXECUTION_MODES } from '@/features/agents/model/types';
 import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/input';
 import Input from '@/shared/ui/input/Input';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 import InputTextarea from '@/shared/ui/input/InputTextarea';
 
+import type { AgentProfileCreateValues } from '@/features/agents/model/schemas';
 import type {
   AgentProfile,
   AgentSelectOption,
 } from '@/features/agents/model/types';
 
-interface AgentProfileFormValues {
-  name: string;
-  description: string;
-  system_prompt: string;
-  metadata: string;
-  sandbox_profile: string;
-  allowed_tools: string[];
-  model: string;
-  config: string;
-  validation_payload: string;
-}
+type FormValues = AgentProfileCreateValues & { validation_payload: string };
 
-/**
- *
- * @param root0
- * @param root0.profile
- * @param root0.sandboxOptions
- * @param root0.toolOptions
- */
+const EXECUTION_MODE_OPTIONS = AGENT_EXECUTION_MODES.map((mode) => {return {
+  value: mode,
+  label: mode.charAt(0).toUpperCase() + mode.slice(1),
+}});
+
 export function AgentProfileForm({
   profile,
   sandboxOptions,
@@ -53,21 +50,38 @@ export function AgentProfileForm({
   toolOptions: AgentSelectOption[];
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isSavePending, startSave] = useTransition();
+  const [isValidatePending, startValidate] = useTransition();
   const isEdit = Boolean(profile?.id);
-  const defaultValues = useMemo<AgentProfileFormValues>(() => {
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  const defaultValues = useMemo<FormValues>(() => {
     return {
+      key: profile?.key ?? '',
       name: profile?.name ?? '',
       description: profile?.description ?? '',
       system_prompt: profile?.system_prompt ?? '',
-      metadata: stringifyJson(profile?.metadata),
       sandbox_profile: profile?.sandbox_profile ?? '',
       allowed_tools: normalizeAllowedTools(profile?.allowed_tools),
-      model: profile?.model ?? '',
-      config: stringifyJson(profile?.config),
+      allowed_outbound_hosts: (profile?.allowed_outbound_hosts ?? []).join('\n'),
+      execution_mode: profile?.execution_mode ?? null,
+      default_model: profile?.default_model ?? '',
+      enabled: profile?.enabled ?? true,
+      config_schema: stringifyJson(profile?.config_schema),
+      task_payload_schema: stringifyJson(profile?.task_payload_schema),
+      metadata: stringifyJson(profile?.metadata),
       validation_payload: '',
     };
   }, [profile]);
+
+  const schema = isEdit ? agentProfileEditSchema : agentProfileCreateSchema;
+
   const {
     register,
     watch,
@@ -75,25 +89,72 @@ export function AgentProfileForm({
     setValue,
     setError,
     clearErrors,
+    control,
     formState: { errors, isDirty },
-  } = useForm<AgentProfileFormValues>({
+  } = useForm<FormValues>({
     defaultValues,
+    resolver: zodResolver(schema) as unknown as Resolver<FormValues>,
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
-  /**
-   *
-   * @param values
-   */
-  const onSubmit = (values: AgentProfileFormValues) => {
-    startTransition(async () => {
-      let config: Record<string, unknown> | null = null;
+
+  const { fieldState: { isDirty: isKeyDirty } } = useController({
+    name: 'key',
+    control,
+  });
+
+  const nameValue = watch('name');
+
+  useEffect(() => {
+    if (!isEdit && !isKeyDirty) {
+      const slug = nameValue
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9]+/g, '-')
+        .replaceAll(/^-|-$/g, '');
+      setValue('key', slug, { shouldDirty: false });
+    }
+  }, [nameValue, isEdit, isKeyDirty, setValue]);
+
+  const onSubmit = (values: FormValues) => {
+    if (isValidatePending) return;
+
+    startSave(async () => {
+      const ac = new AbortController();
+      abortRef.current = ac;
+
+      const hostsRaw = values.allowed_outbound_hosts;
+      const hosts = hostsRaw
+        .split('\n')
+        .map((h) => {return h.trim()})
+        .filter(Boolean);
+      const hostnameRegex =
+        /^(\*\.)?([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+      const invalid = hosts.filter((h) => {return !hostnameRegex.test(h)});
+
+      if (invalid.length > 0) {
+        setError('allowed_outbound_hosts', {
+          message: `Invalid hostnames: ${invalid.join(', ')}`,
+        });
+
+        return;
+      }
+
+      let config_schema: Record<string, unknown> | null = null;
+      let task_payload_schema: Record<string, unknown> | null = null;
       let metadata: Record<string, unknown> | null = null;
 
       try {
-        config = parseJsonInput(values.config);
+        config_schema = parseJsonInput(values.config_schema);
       } catch (error) {
-        setError('config', { message: (error as Error).message });
+        setError('config_schema', { message: (error as Error).message });
+
+        return;
+      }
+
+      try {
+        task_payload_schema = parseJsonInput(values.task_payload_schema);
+      } catch (error) {
+        setError('task_payload_schema', { message: (error as Error).message });
 
         return;
       }
@@ -106,27 +167,35 @@ export function AgentProfileForm({
         return;
       }
 
-      const payload = {
+      const basePayload = {
         name: values.name.trim(),
         description: values.description.trim() || null,
         system_prompt: values.system_prompt.trim() || null,
-        metadata,
         sandbox_profile: values.sandbox_profile || null,
         allowed_tools: values.allowed_tools,
-        ...(values.model.trim() ? { model: values.model.trim() } : {}),
-        ...(config ? { config } : {}),
+        allowed_outbound_hosts: hosts,
+        execution_mode: values.execution_mode ?? null,
+        default_model: values.default_model.trim() || null,
+        enabled: values.enabled,
+        config_schema,
+        task_payload_schema,
+        metadata,
       };
+
       const result =
         isEdit && profile
-          ? await updateAgentProfile(profile.id, payload)
-          : await createAgentProfile(payload);
+          ? await updateAgentProfile(profile.id, basePayload)
+          : await createAgentProfile({
+              ...basePayload,
+              key: (values as AgentProfileCreateValues).key,
+            });
+
+      if (ac.signal.aborted) return;
 
       if (result.error !== null) {
-        for (const [field, message] of Object.entries(
-          result.fieldErrors ?? {},
-        )) {
+        for (const [field, message] of Object.entries(result.fieldErrors ?? {})) {
           if (field in defaultValues) {
-            setError(field as keyof AgentProfileFormValues, { message });
+            setError(field as keyof FormValues, { message });
           }
         }
         toast.error(result.error);
@@ -135,13 +204,13 @@ export function AgentProfileForm({
       }
 
       toast.success(isEdit ? 'Agent profile updated' : 'Agent profile created');
-      router.push(`${ROUTES.DASHBOARD.AGENT_PROFILES}/${result.data.id}`);
-      router.refresh();
+      router.push(ROUTES.DASHBOARD.AGENT_PROFILE_OVERVIEW(result.data.id));
     });
   };
 
   return (
-    <form className='flex flex-col gap-4' onSubmit={handleSubmit(onSubmit)}>
+    <form className='flex flex-col gap-6' onSubmit={handleSubmit(onSubmit)}>
+      {/* Section 1 — Identity */}
       <div className='grid gap-4 md:grid-cols-2'>
         <Input
           {...register('name')}
@@ -149,75 +218,146 @@ export function AgentProfileForm({
           value={watch('name')}
           error={errors.name?.message}
         />
-        <Input
-          {...register('model')}
-          label='Model'
-          value={watch('model')}
-          error={errors.model?.message}
+        {isEdit ? (
+          <div className='flex flex-col gap-1'>
+            <p className='text-xs text-muted-foreground'>Key</p>
+            <code className='font-mono text-sm text-foreground'>{profile?.key}</code>
+          </div>
+        ) : (
+          <Input
+            {...register('key')}
+            label='Key'
+            value={watch('key')}
+            error={errors.key?.message}
+            placeholder='auto-generated from name'
+          />
+        )}
+      </div>
+
+      {/* Section 2 — Behavior */}
+      <div className='flex flex-col gap-4 border-t border-border pt-4'>
+        <InputTextarea
+          {...register('description')}
+          label='Description'
+          value={watch('description')}
+          error={errors.description?.message}
+        />
+
+        <InputTextarea
+          {...register('system_prompt')}
+          label='System Prompt'
+          value={watch('system_prompt')}
+          error={errors.system_prompt?.message}
+          rows={6}
+        />
+
+        <div className='grid gap-4 md:grid-cols-2'>
+          <InputDropdown
+            label='Execution mode'
+            options={[{ value: '', label: '— none —' }, ...EXECUTION_MODE_OPTIONS]}
+            value={watch('execution_mode') ?? ''}
+            onChange={(value) => {
+              const v = value as string;
+              setValue(
+                'execution_mode',
+                AGENT_EXECUTION_MODES.includes(v as (typeof AGENT_EXECUTION_MODES)[number])
+                  ? (v as (typeof AGENT_EXECUTION_MODES)[number])
+                  : null,
+                { shouldDirty: true },
+              );
+            }}
+            error={errors.execution_mode?.message}
+          />
+          <Input
+            {...register('default_model')}
+            label='Default model'
+            value={watch('default_model')}
+            error={errors.default_model?.message}
+            placeholder='e.g. claude-sonnet-4-6'
+          />
+        </div>
+
+        <Checkbox
+          {...register('enabled')}
+          label='Enabled'
+          checked={watch('enabled')}
+          onChange={(e) => {
+            setValue('enabled', e.target.checked, { shouldDirty: true });
+          }}
         />
       </div>
 
-      <InputTextarea
-        {...register('description')}
-        label='Description'
-        value={watch('description')}
-        error={errors.description?.message}
-      />
-
-      <InputTextarea
-        {...register('system_prompt')}
-        label='System Prompt'
-        value={watch('system_prompt')}
-        error={errors.system_prompt?.message}
-      />
-
-      <InputTextarea
-        {...register('metadata')}
-        label='Metadata JSON'
-        value={watch('metadata')}
-        error={errors.metadata?.message}
-      />
-
-      <div className='grid gap-4 md:grid-cols-2'>
-        <InputDropdown
-          label='Sandbox profile'
-          options={sandboxOptions}
-          value={watch('sandbox_profile')}
-          onChange={(value) => {
-            setValue('sandbox_profile', value as string, { shouldDirty: true });
-            clearErrors('sandbox_profile');
-          }}
-          error={errors.sandbox_profile?.message}
-          searchable
-        />
-        <InputDropdown
-          label='Allowed tools'
-          options={toolOptions.map((tool) => {
-            return {
+      {/* Section 3 — Access & Tools */}
+      <div className='flex flex-col gap-4 border-t border-border pt-4'>
+        <div className='grid gap-4 md:grid-cols-2'>
+          <InputDropdown
+            label='Sandbox profile'
+            options={sandboxOptions}
+            value={watch('sandbox_profile')}
+            onChange={(value) => {
+              setValue('sandbox_profile', value as string, { shouldDirty: true });
+              clearErrors('sandbox_profile');
+            }}
+            error={errors.sandbox_profile?.message}
+            searchable
+          />
+          <InputDropdown
+            label='Allowed tools'
+            options={toolOptions.map((tool) => {return {
               value: tool.value,
               label: tool.description
                 ? `${tool.label} — ${tool.description}`
                 : tool.label,
-            };
-          })}
-          value={watch('allowed_tools')}
-          onChange={(value) => {
-            setValue('allowed_tools', value as string[], { shouldDirty: true });
-            clearErrors('allowed_tools');
-          }}
-          error={errors.allowed_tools?.message}
-          searchable
-          multiple
+            }})}
+            value={watch('allowed_tools')}
+            onChange={(value) => {
+              setValue('allowed_tools', value as string[], { shouldDirty: true });
+              clearErrors('allowed_tools');
+            }}
+            error={errors.allowed_tools?.message}
+            searchable
+            multiple
+          />
+        </div>
+
+        <InputTextarea
+          {...register('allowed_outbound_hosts')}
+          label='Allowed outbound hosts (one per line)'
+          value={watch('allowed_outbound_hosts')}
+          error={errors.allowed_outbound_hosts?.message}
+          placeholder={'api.example.com\n*.partner.io'}
+          rows={3}
         />
       </div>
 
-      <InputTextarea
-        {...register('config')}
-        label='Config JSON'
-        value={watch('config')}
-        error={errors.config?.message}
-      />
+      {/* Section 4 — Schemas & Metadata */}
+      <div className='flex flex-col gap-4 border-t border-border pt-4'>
+        <InputTextarea
+          {...register('config_schema')}
+          label='Config Schema JSON'
+          value={watch('config_schema')}
+          error={errors.config_schema?.message}
+          rows={4}
+        />
 
+        <InputTextarea
+          {...register('task_payload_schema')}
+          label='Task Payload Schema JSON'
+          value={watch('task_payload_schema')}
+          error={errors.task_payload_schema?.message}
+          rows={4}
+        />
+
+        <InputTextarea
+          {...register('metadata')}
+          label='Metadata JSON'
+          value={watch('metadata')}
+          error={errors.metadata?.message}
+          rows={3}
+        />
+      </div>
+
+      {/* Payload validation (edit mode only) */}
       {isEdit ? (
         <div className='rounded-[var(--radius-card)] border border-border p-4'>
           <InputTextarea
@@ -231,9 +371,9 @@ export function AgentProfileForm({
               type='button'
               variant={BUTTON_VARIANT.secondary}
               className='w-auto'
-              loading={isPending}
+              loading={isValidatePending}
               onClick={() => {
-                startTransition(async () => {
+                startValidate(async () => {
                   try {
                     const payload = parseJsonInput(watch('validation_payload'));
 
@@ -269,7 +409,7 @@ export function AgentProfileForm({
         <Button
           type='submit'
           className='w-auto'
-          loading={isPending}
+          loading={isSavePending}
           disabled={!isDirty && isEdit}
         >
           Save

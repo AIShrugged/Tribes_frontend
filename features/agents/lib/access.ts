@@ -4,11 +4,10 @@ import { getOrganizations } from '@/entities/organization';
 
 import type { OrganizationProps } from '@/entities/organization';
 
-/**
- *
- * @param role
- */
-export function isOrganizationManager(role: string | null | undefined) {
+// Intentionally broader than backend's UserRole::MANAGER check.
+// Employees are granted agent management access by product decision.
+// If this changes, also update AgentProfileController::assertUserCanManageProfiles().
+export function canManageAgents(role: string | null | undefined) {
   const normalized = role?.trim().toLowerCase();
   return normalized === 'manager' || normalized === 'employee';
 }
@@ -34,7 +33,7 @@ export async function getAgentAccessContext(): Promise<{
       return String(organization.id) === activeOrganizationId;
     }) ?? null;
   const managerOrganizations = organizations.filter((organization) => {
-    return isOrganizationManager(organization.pivot.role);
+    return canManageAgents(organization.pivot.role);
   });
 
   return {
@@ -42,6 +41,6 @@ export async function getAgentAccessContext(): Promise<{
     managerOrganizations,
     activeOrganization,
     activeOrganizationId,
-    canManageAgents: isOrganizationManager(activeOrganization?.pivot.role),
+    canManageAgents: canManageAgents(activeOrganization?.pivot.role),
   };
 }

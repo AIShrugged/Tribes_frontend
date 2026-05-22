@@ -9,8 +9,8 @@ import { getTeams } from '@/entities/team/api/team';
 import {
   createAgentTask,
   updateAgentTask,
-  validateAgentProfilePayload,
-} from '@/features/agents/api/agents';
+} from '@/features/agents/api/agent-tasks';
+import { validateAgentProfilePayload } from '@/features/agents/api/agent-profiles';
 import { normalizeAllowedTools } from '@/features/agents/lib/format';
 import { parseJsonInput, stringifyJson } from '@/features/agents/lib/json';
 import { ROUTES } from '@/shared/lib/routes';

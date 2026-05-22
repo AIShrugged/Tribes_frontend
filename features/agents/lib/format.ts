@@ -124,49 +124,9 @@ export function normalizeToolOptions(
     });
 }
 
-/**
- * Safely normalize allowed_tools from API response.
- * Handles cases where backend returns non-array values (object, string, null, etc.)
- */
 export function normalizeAllowedTools(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.filter((item): item is string => {
-      return typeof item === 'string';
-    });
-  }
-
-  // Handle case where backend might return a string
-  if (typeof value === 'string') {
-    return value
-      .split(',')
-      .map((t) => {
-        return t.trim();
-      })
-      .filter(Boolean);
-  }
-
-  // Handle case where backend might return an object with tool names
-  if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>;
-    // Try to extract from object values or keys
-    const values = Object.values(obj);
-    if (
-      values.every((v): v is string => {
-        return typeof v === 'string';
-      })
-    ) {
-      return values;
-    }
-    // Try keys as fallback
-    const keys = Object.keys(obj);
-    if (
-      keys.length > 0 &&
-      keys.every((k) => {
-        return !/^\d+$/.test(k);
-      })
-    ) {
-      return keys;
-    }
+    return value.filter((item): item is string => {return typeof item === 'string'});
   }
 
   return [];

@@ -1,4 +1,5 @@
-export * from './api/agents';
+export * from './api/agent-profiles';
+export * from './api/agent-tasks';
 export * from './api/activity';
 export * from './lib/access';
 export * from './lib/format';
@@ -17,3 +18,4 @@ export { AgentTaskRunsList } from './ui/agent-task-runs-list';
 export { AgentTasksList } from './ui/agent-tasks-list';
 export { AgentsTabsNav } from './ui/agents-tabs-nav';
 export { AgentProfilesList } from './ui/agent-profiles-list';
+export { AgentMemoriesList } from './ui/agent-memories-list';

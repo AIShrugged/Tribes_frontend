@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback } from 'react';
 
-import { getAgentTasks } from '@/features/agents/api/agents';
+import { getAgentTasks } from '@/features/agents/api/agent-tasks';
 import {
   formatBooleanLabel,
   formatDateTime,

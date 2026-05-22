@@ -17,32 +17,36 @@ const COLUMNS: TableColumn<AgentProfile>[] = [
   {
     id: 'name',
     header: 'Name',
-    renderCell: (profile) => {
-      return (
-        <Link
-          href={`${ROUTES.DASHBOARD.AGENT_PROFILES}/${profile.id}`}
-          className='font-medium text-primary hover:underline'
-        >
-          {profile.name}
-        </Link>
-      );
-    },
+    renderCell: (profile) => {return (
+      <Link
+        href={ROUTES.DASHBOARD.AGENT_PROFILE_OVERVIEW(profile.id)}
+        className='font-medium text-primary hover:underline'
+      >
+        {profile.name}
+      </Link>
+    )},
   },
   {
     id: 'description',
     header: 'Description',
-    cellClassName: 'text-muted-foreground',
-    renderCell: (profile) => {
-      return profile.description || '—';
-    },
+    cellClassName: 'text-muted-foreground max-w-[200px]',
+    renderCell: (profile) => {return (
+      <p className='line-clamp-2'>{profile.description || '—'}</p>
+    )},
   },
   {
-    id: 'system_prompt',
-    header: 'System Prompt',
-    cellClassName: 'text-muted-foreground max-w-[200px]',
-    renderCell: (profile) => {
-      return <p className='line-clamp-2'>{profile.system_prompt || '—'}</p>;
-    },
+    id: 'status',
+    header: 'Status',
+    renderCell: (profile) => {return (
+      <div className='flex flex-wrap gap-1.5'>
+        <Badge variant={profile.enabled ? 'success' : 'warning'}>
+          {profile.enabled ? 'Enabled' : 'Disabled'}
+        </Badge>
+        {profile.execution_mode ? (
+          <Badge>{profile.execution_mode}</Badge>
+        ) : null}
+      </div>
+    )},
   },
   {
     id: 'allowed_tools',
@@ -53,9 +57,7 @@ const COLUMNS: TableColumn<AgentProfile>[] = [
       return (
         <div className='flex flex-wrap gap-2'>
           {tools.length > 0 ? (
-            tools.map((tool) => {
-              return <Badge key={tool}>{tool}</Badge>;
-            })
+            tools.map((tool) => {return <Badge key={tool}>{tool}</Badge>})
           ) : (
             <span className='text-muted-foreground'>—</span>
           )}
@@ -66,81 +68,57 @@ const COLUMNS: TableColumn<AgentProfile>[] = [
   {
     id: 'sandbox_profile',
     header: 'Sandbox',
-    renderCell: (profile) => {
-      return profile.sandbox_profile || '—';
-    },
-  },
-  {
-    id: 'model',
-    header: 'Model',
-    renderCell: (profile) => {
-      return profile.model ?? '—';
-    },
+    renderCell: (profile) => {return profile.sandbox_profile || '—'},
   },
   {
     id: 'updated_at',
     header: 'Updated',
     cellClassName: 'text-muted-foreground',
-    renderCell: (profile) => {
-      return formatDateTime(profile.updated_at);
-    },
-  },
-  {
-    id: 'created_at',
-    header: 'Created',
-    cellClassName: 'text-muted-foreground',
-    renderCell: (profile) => {
-      return formatDateTime(profile.created_at);
-    },
+    renderCell: (profile) => {return formatDateTime(profile.updated_at)},
   },
 ];
 
-/**
- * AgentProfilesList — renders agent profiles as a responsive table with mobile card fallback.
- */
 export function AgentProfilesList({ profiles }: { profiles: AgentProfile[] }) {
   return (
     <DataTable
       columns={COLUMNS}
       items={profiles}
-      keyExtractor={(p) => {
-        return p.id;
-      }}
+      keyExtractor={(p) => {return p.id}}
       caption='Agent Profiles'
       captionSrOnly
       tableMinWidth='min-w-[700px]'
-      renderMobileCard={(profile) => {
-        return (
-          <Link
-            href={`${ROUTES.DASHBOARD.AGENT_PROFILES}/${profile.id}`}
-            className='block rounded-[var(--radius-card)] border border-border p-4 hover:bg-accent/30 transition-colors'
-          >
+      renderMobileCard={(profile) => {return (
+        <Link
+          href={ROUTES.DASHBOARD.AGENT_PROFILE_OVERVIEW(profile.id)}
+          className='block rounded-[var(--radius-card)] border border-border p-4 hover:bg-accent/30 transition-colors'
+        >
+          <div className='flex flex-wrap items-center gap-1.5'>
             <p className='font-medium text-primary'>{profile.name}</p>
-            {profile.description && (
-              <p className='mt-1 text-sm text-muted-foreground line-clamp-2'>
-                {profile.description}
-              </p>
+            <Badge variant={profile.enabled ? 'success' : 'warning'}>
+              {profile.enabled ? 'Enabled' : 'Disabled'}
+            </Badge>
+            {profile.execution_mode ? (
+              <Badge>{profile.execution_mode}</Badge>
+            ) : null}
+          </div>
+          {profile.description && (
+            <p className='mt-1 text-sm text-muted-foreground line-clamp-2'>
+              {profile.description}
+            </p>
+          )}
+          <div className='mt-2 flex flex-wrap gap-1.5'>
+            {normalizeAllowedTools(profile.allowed_tools).map((tool) => {return (
+              <Badge key={tool}>{tool}</Badge>
+            )})}
+          </div>
+          <div className='mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground'>
+            {profile.sandbox_profile && (
+              <span>Sandbox: {profile.sandbox_profile}</span>
             )}
-            {profile.system_prompt && (
-              <p className='mt-1 text-sm text-muted-foreground line-clamp-2'>
-                {profile.system_prompt}
-              </p>
-            )}
-            <div className='mt-2 flex flex-wrap gap-1.5'>
-              {normalizeAllowedTools(profile.allowed_tools).map((tool) => {
-                return <Badge key={tool}>{tool}</Badge>;
-              })}
-            </div>
-            <div className='mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground'>
-              {profile.sandbox_profile && (
-                <span>Sandbox: {profile.sandbox_profile}</span>
-              )}
-              {profile.model && <span>Model: {profile.model}</span>}
-              <span>Updated: {formatDateTime(profile.updated_at)}</span>
-            </div>
-          </Link>
-        );
-      }}
+            <span>Updated: {formatDateTime(profile.updated_at)}</span>
+          </div>
+        </Link>
+      )}}
     />
   );
 }

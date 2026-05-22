@@ -7,6 +7,9 @@ export type AgentRunStatus =
   | 'failed'
   | 'error';
 
+export const AGENT_EXECUTION_MODES = ['inline', 'isolated', 'paperclip'] as const;
+export type AgentExecutionMode = (typeof AGENT_EXECUTION_MODES)[number];
+
 export interface AgentToolDefinition {
   name: string;
   label?: string | null;
@@ -15,29 +18,55 @@ export interface AgentToolDefinition {
 
 export interface AgentProfile {
   id: number;
+  key: string;
   name: string;
   description: string | null;
   system_prompt: string | null;
-  metadata?: Record<string, unknown> | null;
-  allowed_tools: string[] | null;
+  config_schema: Record<string, unknown> | null;
+  task_payload_schema: Record<string, unknown> | null;
+  execution_mode: AgentExecutionMode | null;
   sandbox_profile: string | null;
-  model?: string | null;
-  config?: Record<string, unknown> | null;
-  config_schema?: Record<string, unknown> | null;
-  task_payload_schema?: Record<string, unknown> | null;
+  allowed_tools: string[] | null;
+  allowed_outbound_hosts: string[] | null;
+  default_model: string | null;
+  enabled: boolean;
+  metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface AgentProfilePayload {
+  key: string;
   name: string;
   description: string | null;
   system_prompt: string | null;
-  metadata?: Record<string, unknown> | null;
-  allowed_tools: string[];
+  config_schema: Record<string, unknown> | null;
+  task_payload_schema: Record<string, unknown> | null;
+  execution_mode: AgentExecutionMode | null;
   sandbox_profile: string | null;
-  model?: string | null;
-  config?: Record<string, unknown> | null;
+  allowed_tools: string[];
+  allowed_outbound_hosts: string[];
+  default_model: string | null;
+  enabled: boolean;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface AgentMemory {
+  id: number;
+  agent_profile_id: number;
+  profile: { id: number; key: string; name: string } | null;
+  scope_type: string | null;
+  scope_key: string | null;
+  kind: string | null;
+  priority: number | null;
+  active: boolean;
+  content: string | null;
+  last_seen_at: string | null;
+  source_task_id: number | null;
+  source_run_id: number | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AgentTaskOrganization {
@@ -61,7 +90,7 @@ export interface AgentTask {
   agent_profile_id: number | null;
   schedule_type: string | null;
   interval_seconds: number | null;
-  execution_mode: string | null;
+  execution_mode: AgentExecutionMode | null;
   agent_task_type: string | null;
   output_mode: string | null;
   allowed_tools: string[] | null;
