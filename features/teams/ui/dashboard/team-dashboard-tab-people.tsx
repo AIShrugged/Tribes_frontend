@@ -401,6 +401,16 @@ function MemberRow({ member, analytics, teamId, isManager }: MemberRowProps) {
 
 // ─── Pending invite row ───────────────────────────────────────────────────────
 
+const INVITE_STATUS_BADGE: Record<
+  TeamInvite['status'],
+  { label: string; className: string }
+> = {
+  pending: { label: 'Pending', className: 'bg-amber-500/10 text-amber-400' },
+  cancelled: { label: 'Cancelled', className: 'bg-red-500/10 text-red-400' },
+  accepted: { label: 'Accepted', className: 'bg-emerald-500/10 text-emerald-400' },
+  expired: { label: 'Expired', className: 'bg-red-500/10 text-red-400' },
+};
+
 interface PendingInviteRowProps {
   invite: TeamInvite;
   teamId: number;
@@ -410,12 +420,25 @@ function PendingInviteRow({ invite, teamId }: PendingInviteRowProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  // Parse once, use for both expiry check and display label.
+  // new Date(null) = Unix epoch (1970) — the null guard prevents that false positive.
+  const expiresDate = invite.expires_at !== null ? new Date(invite.expires_at) : null;
+  const isPastExpiry = expiresDate !== null && expiresDate < new Date();
+
+  const badge = isPastExpiry ? INVITE_STATUS_BADGE['expired'] : INVITE_STATUS_BADGE[invite.status];
+
+  const expiresLabel = expiresDate
+    ? expiresDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : null;
+
   const handleCancel = () => {
     startTransition(async () => {
       const result = await cancelTeamInvite(teamId, invite.id);
 
       if (result.error) {
         toast.error(result.error);
+        // No router.refresh() on error: server state is unchanged.
+        // revalidatePath('/dashboard/teams') in the Server Action handles cache invalidation.
       } else {
         toast.success('Invitation cancelled');
         router.refresh();
@@ -423,26 +446,23 @@ function PendingInviteRow({ invite, teamId }: PendingInviteRowProps) {
     });
   };
 
-  const expiresLabel = invite.expires_at
-    ? new Date(invite.expires_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      })
-    : null;
-
   return (
     <div className='flex items-center gap-3 p-3 rounded-[var(--radius-card)] border border-border bg-card/50'>
       <div className='flex-1 min-w-0'>
         <p className='text-sm text-foreground truncate'>{invite.email}</p>
         {expiresLabel && (
-          <p className='text-xs text-muted-foreground mt-0.5'>
-            Expires {expiresLabel}
+          <p
+            className={`text-xs mt-0.5 ${isPastExpiry ? 'text-red-400' : 'text-muted-foreground'}`}
+          >
+            {isPastExpiry ? `Expired ${expiresLabel}` : `Expires ${expiresLabel}`}
           </p>
         )}
       </div>
 
-      <span className='text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 flex-shrink-0'>
-        Pending
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${badge.className}`}
+      >
+        {badge.label}
       </span>
 
       <ButtonIcon

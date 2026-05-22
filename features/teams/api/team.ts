@@ -215,7 +215,9 @@ export async function getTeamInvites(
     `${API_URL}/teams/${teamId}/invites`,
   );
 
-  return data ?? [];
+  return (data ?? []).filter((inv) => {
+    return inv.status === 'pending';
+  });
 }
 
 /**
