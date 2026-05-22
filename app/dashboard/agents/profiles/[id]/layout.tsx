@@ -65,10 +65,10 @@ export default async function AgentProfileDetailLayout({
 
   if (!profile) notFound();
 
-  const base = `${ROUTES.DASHBOARD.AGENT_PROFILES}/${profile.id}`;
   const TABS = [
-    { href: `${base}/overview`, label: 'Overview' },
-    { href: `${base}/memories`, label: 'Memories' },
+    { href: ROUTES.DASHBOARD.AGENT_PROFILE_OVERVIEW(profile.id), label: 'Overview' },
+    { href: ROUTES.DASHBOARD.AGENT_PROFILE_TOOLS(profile.id), label: 'Tools' },
+    { href: ROUTES.DASHBOARD.AGENT_PROFILE_MEMORIES(profile.id), label: 'Memories' },
   ] as const;
 
   return (
