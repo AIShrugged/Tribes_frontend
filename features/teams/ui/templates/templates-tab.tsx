@@ -26,6 +26,9 @@ export function TemplatesTab({ teamId, isReadOnly }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    setSummary(null);
+    setAgenda(null);
+    setLoadError(null);
 
     Promise.all([getMeetingSummaryTemplate(teamId), getAgendaTemplate(teamId)])
       .then(([s, a]) => {
@@ -47,7 +50,9 @@ export function TemplatesTab({ teamId, isReadOnly }: Props) {
 
   if (loadError) {
     return (
-      <p className='text-sm text-destructive py-6 text-center'>{loadError}</p>
+      <p role='alert' className='text-sm text-destructive py-6 text-center'>
+        {loadError}
+      </p>
     );
   }
 

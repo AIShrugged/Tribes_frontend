@@ -31,17 +31,17 @@ jest.mock('@/shared/ui/modal/modal-body', () => {
 
 describe('TeamMemberAddModal', () => {
   it('renders "Add member" title', () => {
-    render(<TeamMemberAddModal close={jest.fn()} />);
+    render(<TeamMemberAddModal close={jest.fn()} teamId={7} />);
     expect(screen.getByTestId('modal-header')).toHaveTextContent('Add member');
   });
 
   it('renders the add member form', () => {
-    render(<TeamMemberAddModal close={jest.fn()} />);
+    render(<TeamMemberAddModal close={jest.fn()} teamId={7} />);
     expect(screen.getByTestId('add-member-form')).toBeInTheDocument();
   });
 
   it('renders invitation instructions text', () => {
-    render(<TeamMemberAddModal close={jest.fn()} />);
+    render(<TeamMemberAddModal close={jest.fn()} teamId={7} />);
     expect(screen.getByText(/invitation will be sent/i)).toBeInTheDocument();
   });
 });

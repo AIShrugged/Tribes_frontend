@@ -1,5 +1,6 @@
 'use client';
 
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import TeamDashboardKpis from '@/features/teams/ui/dashboard/team-dashboard-kpis';
@@ -22,6 +23,7 @@ interface TeamsPageClientProps {
   pendingInvites: TeamInvite[];
   isManager: boolean;
   currentTab: string;
+  organizationId: string;
 }
 
 /**
@@ -37,6 +39,7 @@ export default function TeamsPageClient({
   pendingInvites,
   isManager,
   currentTab,
+  organizationId,
 }: TeamsPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -56,6 +59,7 @@ export default function TeamsPageClient({
         teams={teams}
         selectedTeamId={team.id}
         onTeamChange={handleTeamChange}
+        organizationId={organizationId}
       />
 
       <div className='flex flex-col flex-1 overflow-y-auto'>
@@ -94,16 +98,37 @@ export default function TeamsPageClient({
         )}
 
         {!dashboard && (
-          <TeamDashboardTabs
-            currentTab={currentTab}
-            tabs={null}
-            teamId={team.id}
-            members={team.members}
-            pendingInvites={pendingInvites}
-            isManager={isManager}
-            settings={settings}
-            availableChats={availableChats}
-          />
+          <>
+            <div className='flex flex-col items-center gap-4 py-12 px-6 text-center'>
+              <AlertCircle className='h-8 w-8 text-muted-foreground' />
+              <div>
+                <p className='text-sm font-medium text-foreground'>
+                  Dashboard data unavailable
+                </p>
+                <p className='text-xs text-muted-foreground mt-1'>
+                  Could not load team analytics. Some features may be limited.
+                </p>
+              </div>
+              <button
+                type='button'
+                onClick={() => { router.refresh(); }}
+                className='flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors'
+              >
+                <RefreshCw className='h-4 w-4' />
+                Retry
+              </button>
+            </div>
+            <TeamDashboardTabs
+              currentTab={currentTab}
+              tabs={null}
+              teamId={team.id}
+              members={team.members}
+              pendingInvites={pendingInvites}
+              isManager={isManager}
+              settings={settings}
+              availableChats={availableChats}
+            />
+          </>
         )}
       </div>
     </div>

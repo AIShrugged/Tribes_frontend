@@ -397,6 +397,7 @@ function SettingRow({ setting, teamId }: SettingRowProps) {
           onClick={handleToggle}
           disabled={isPending}
           aria-label={setting.enabled ? 'Disable' : 'Enable'}
+          aria-pressed={setting.enabled}
           className={`relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
             setting.enabled ? 'bg-violet-600' : 'bg-muted'
           }`}

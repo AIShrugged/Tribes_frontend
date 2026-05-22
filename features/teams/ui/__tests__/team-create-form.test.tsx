@@ -21,7 +21,6 @@ jest.mock('sonner', () => {
 
 const mockCreateTeam = jest.fn().mockResolvedValue({ data: { id: 1 } });
 const mockUpdateTeam = jest.fn().mockResolvedValue({ data: {} });
-const mockInvalidate = jest.fn();
 const mockPush = jest.fn();
 
 jest.mock('@/features/teams/api/team', () => {
@@ -31,16 +30,6 @@ jest.mock('@/features/teams/api/team', () => {
     },
     updateTeam: (...args: unknown[]) => {
       return mockUpdateTeam(...args);
-    },
-  };
-});
-
-jest.mock('@/features/teams/model/teams-store', () => {
-  return {
-    useTeamsStore: {
-      getState: () => {
-        return { invalidate: mockInvalidate };
-      },
     },
   };
 });

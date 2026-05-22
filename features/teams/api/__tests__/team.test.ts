@@ -1,7 +1,9 @@
+'use server';
+
 import {
   createTeam,
   deleteTeam,
-  loadTeamsChunk,
+  getTeams,
   sendInvite,
   updateTeam,
 } from '@/features/teams/api/team';
@@ -21,65 +23,23 @@ jest.mock('@/shared/lib/config', () => {
   };
 });
 
-jest.mock('@/shared/lib/getAuthToken', () => {
-  return {
-    getAuthHeaders: jest.fn(() => {
-      return Promise.resolve({ Authorization: 'Bearer test-token' });
-    }),
-  };
-});
-
 jest.mock('@/shared/lib/httpClient', () => {
   return {
     httpClient: jest.fn(),
+    httpClientList: jest.fn(),
   };
 });
 
-import { httpClient } from '@/shared/lib/httpClient';
+import { httpClient, httpClientList } from '@/shared/lib/httpClient';
 
 const mockHttpClient = jest.mocked(httpClient);
+const mockHttpClientList = jest.mocked(httpClientList);
 
 // revalidatePath is auto-mocked via __mocks__/next-cache.js
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Test data
 // ---------------------------------------------------------------------------
-/**
- *
- * @param status
- * @param body
- * @param headers
- */
-function makeResponse(
-  status: number,
-  body: unknown,
-  headers: Record<string, string> = {},
-): Response {
-  const bodyText = typeof body === 'string' ? body : JSON.stringify(body);
-
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    statusText: status === 200 ? 'OK' : 'Error',
-    url: 'https://api.test',
-    text: jest.fn(() => {
-      return Promise.resolve(bodyText);
-    }),
-    json: jest.fn(() => {
-      return Promise.resolve(body);
-    }),
-    headers: {
-      /**
-       *
-       * @param key
-       */
-      get: (key: string) => {
-        return headers[key] ?? null;
-      },
-    },
-  } as unknown as Response;
-}
-
 const mockTeam = {
   id: 1,
   name: 'Alpha',
@@ -89,88 +49,30 @@ const mockTeam = {
 };
 
 // ---------------------------------------------------------------------------
-// Tests — loadTeamsChunk
+// Tests — getTeams
 // ---------------------------------------------------------------------------
-describe('loadTeamsChunk', () => {
+describe('getTeams', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('returns data, totalCount, and hasMore on success', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(
-        makeResponse(
-          200,
-          { success: true, data: [mockTeam] },
-          { 'Items-Count': '15' },
-        ),
-      );
+  it('calls httpClientList with limit=100', async () => {
+    mockHttpClientList.mockResolvedValue({ data: [mockTeam], totalCount: 1 });
 
-    const result = await loadTeamsChunk('5', 0, 10);
+    await getTeams('5');
 
-    expect(result.data).toEqual([mockTeam]);
-    expect(result.totalCount).toBe(15);
-    expect(result.hasMore).toBe(true);
-  });
-
-  it('returns hasMore=false when all teams loaded', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(
-        makeResponse(
-          200,
-          { success: true, data: [mockTeam] },
-          { 'Items-Count': '1' },
-        ),
-      );
-
-    const result = await loadTeamsChunk('5', 0, 10);
-
-    expect(result.hasMore).toBe(false);
-  });
-
-  it('builds correct URL with org id, offset, and limit', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(
-        makeResponse(200, { success: true, data: [] }, { 'Items-Count': '0' }),
-      );
-
-    await loadTeamsChunk('9', 20, 5);
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      'https://api.test/organizations/9/teams?offset=20&limit=5',
-      expect.anything(),
+    expect(mockHttpClientList).toHaveBeenCalledWith(
+      'https://api.test/organizations/5/teams?limit=100',
     );
   });
 
-  it('throws on non-ok status', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(makeResponse(500, 'Server error'));
+  it('returns data and totalCount', async () => {
+    mockHttpClientList.mockResolvedValue({ data: [mockTeam], totalCount: 1 });
 
-    await expect(loadTeamsChunk('5', 0, 10)).rejects.toThrow();
-  });
+    const result = await getTeams('5');
 
-  it('throws when success=false in response', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(
-        makeResponse(200, { success: false, error: 'Not found' }),
-      );
-
-    await expect(loadTeamsChunk('5', 0, 10)).rejects.toThrow('Not found');
-  });
-
-  it('defaults totalCount to 0 when header absent', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(makeResponse(200, { success: true, data: [] }));
-
-    const result = await loadTeamsChunk('5', 0, 10);
-
-    expect(result.totalCount).toBe(0);
+    expect(result.data).toEqual([mockTeam]);
+    expect(result.totalCount).toBe(1);
   });
 });
 
@@ -182,33 +84,45 @@ describe('deleteTeam', () => {
     jest.clearAllMocks();
   });
 
-  it('sends DELETE to correct URL', async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue(makeResponse(200, {}));
+  it('calls httpClient with DELETE to correct URL', async () => {
+    mockHttpClient.mockResolvedValue({ data: undefined });
 
     await deleteTeam(42);
 
-    expect(globalThis.fetch).toHaveBeenCalledWith(
+    expect(mockHttpClient).toHaveBeenCalledWith(
       'https://api.test/teams/42',
       expect.objectContaining({ method: 'DELETE' }),
     );
   });
 
-  it('resolves undefined on success', async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue(makeResponse(200, {}));
+  it('returns { error: null } on success', async () => {
+    mockHttpClient.mockResolvedValue({ data: undefined });
 
     const result = await deleteTeam(1);
 
-    expect(result).toBeUndefined();
+    expect(result.error).toBeNull();
   });
 
-  it('returns error text on failure', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(makeResponse(404, 'Team not found'));
+  it('returns { error: string } on ServerError', async () => {
+    const { ServerError } = await import('@/shared/lib/errors');
+
+    mockHttpClient.mockRejectedValue(
+      new ServerError('Not Found', {
+        status: 404,
+        responseBody: JSON.stringify({ message: 'Team not found' }),
+      }),
+    );
 
     const result = await deleteTeam(999);
 
-    expect(result).toBe('Team not found');
+    expect(result.error).toBe('Team not found');
+    expect(result.data).toBeNull();
+  });
+
+  it('rethrows unexpected errors', async () => {
+    mockHttpClient.mockRejectedValue(new Error('Network failure'));
+
+    await expect(deleteTeam(1)).rejects.toThrow('Network failure');
   });
 });
 
@@ -220,57 +134,81 @@ describe('createTeam', () => {
     jest.clearAllMocks();
   });
 
-  it('sends POST to /teams', async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue(makeResponse(201, {}));
+  it('calls httpClient with POST to /teams', async () => {
+    mockHttpClient.mockResolvedValue({ data: mockTeam });
 
     await createTeam('5', { name: 'Beta' });
 
-    expect(globalThis.fetch).toHaveBeenCalledWith(
+    expect(mockHttpClient).toHaveBeenCalledWith(
       'https://api.test/teams',
       expect.objectContaining({ method: 'POST' }),
     );
   });
 
-  it('includes organization_id in body', async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue(makeResponse(201, {}));
+  it('includes organization_id and name in body', async () => {
+    mockHttpClient.mockResolvedValue({ data: mockTeam });
 
     await createTeam('7', { name: 'Gamma' });
 
-    const [, options] = (globalThis.fetch as jest.Mock).mock.calls[0] as [
+    const [, options] = mockHttpClient.mock.calls[0] as [
       string,
-      RequestInit,
+      RequestInit & { body: string },
     ];
-    const body = JSON.parse(options.body as string) as Record<string, unknown>;
+    const body = JSON.parse(options.body) as Record<string, unknown>;
 
     expect(body.organization_id).toBe('7');
     expect(body.name).toBe('Gamma');
   });
 
+  it('includes Content-Type: application/json header', async () => {
+    mockHttpClient.mockResolvedValue({ data: mockTeam });
+
+    await createTeam('5', { name: 'Team' });
+
+    expect(mockHttpClient).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+        }),
+      }),
+    );
+  });
+
   it('returns { error: null, data } on success', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(
-        makeResponse(201, { success: true, data: { id: 42 } }),
-      );
+    mockHttpClient.mockResolvedValue({ data: mockTeam });
 
     const result = await createTeam('5', { name: 'Team' });
 
     expect(result.error).toBeNull();
-    expect(result.data).toBeTruthy();
+    expect(result.data).toEqual(mockTeam);
   });
 
-  it('returns { error: string } on failure', async () => {
-    globalThis.fetch = jest
-      .fn()
-      .mockResolvedValue(makeResponse(422, 'Validation error'));
+  it('returns { error: string } on ServerError', async () => {
+    const { ServerError } = await import('@/shared/lib/errors');
+
+    mockHttpClient.mockRejectedValue(
+      new ServerError('Unprocessable Entity', {
+        status: 422,
+        responseBody: JSON.stringify({ message: 'Validation error' }),
+      }),
+    );
 
     const result = await createTeam('5', { name: 'T' });
 
     expect(result.error).toBeTruthy();
+    expect(result.data).toBeNull();
   });
 
   it('returns default error message when response body is empty', async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue(makeResponse(500, ''));
+    const { ServerError } = await import('@/shared/lib/errors');
+
+    mockHttpClient.mockRejectedValue(
+      new ServerError('Internal Server Error', {
+        status: 500,
+        responseBody: '',
+      }),
+    );
 
     const result = await createTeam('5', { name: 'T' });
 
@@ -293,6 +231,19 @@ describe('updateTeam', () => {
     expect(mockHttpClient).toHaveBeenCalledWith(
       'https://api.test/teams/3',
       expect.objectContaining({ method: 'PUT' }),
+    );
+  });
+
+  it('includes Content-Type: application/json header', async () => {
+    await updateTeam(3, { name: 'Updated' });
+
+    expect(mockHttpClient).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+        }),
+      }),
     );
   });
 
@@ -355,7 +306,7 @@ describe('sendInvite', () => {
     );
   });
 
-  it('returns error when response is not ok', async () => {
+  it('returns error when ServerError thrown', async () => {
     const { ServerError } = await import('@/shared/lib/errors');
 
     mockHttpClient.mockRejectedValue(

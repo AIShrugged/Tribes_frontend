@@ -216,8 +216,8 @@ function InsightSection({
                 Strengths
               </p>
               <ul className='space-y-0.5 text-muted-foreground'>
-                {strengths.map((s, i) => {
-                  return <li key={i}>• {s}</li>;
+                {strengths.map((s) => {
+                  return <li key={s}>• {s}</li>;
                 })}
               </ul>
             </div>
@@ -228,8 +228,8 @@ function InsightSection({
                 Development areas
               </p>
               <ul className='space-y-0.5 text-muted-foreground'>
-                {dev.map((s, i) => {
-                  return <li key={i}>• {s}</li>;
+                {dev.map((s) => {
+                  return <li key={s}>• {s}</li>;
                 })}
               </ul>
             </div>
@@ -240,8 +240,8 @@ function InsightSection({
                 Work patterns
               </p>
               <ul className='space-y-0.5 text-muted-foreground'>
-                {patterns.map((s, i) => {
-                  return <li key={i}>• {s}</li>;
+                {patterns.map((s) => {
+                  return <li key={s}>• {s}</li>;
                 })}
               </ul>
             </div>
@@ -493,7 +493,7 @@ export default function TeamDashboardTabPeople({
   );
 
   const handleInvite = () => {
-    open?.(<TeamMemberAddModal close={close} />);
+    open?.(<TeamMemberAddModal close={close} teamId={teamId} />);
   };
 
   return (

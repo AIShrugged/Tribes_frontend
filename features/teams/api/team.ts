@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
-import { getAuthHeaders } from '@/shared/lib/getAuthToken';
 import { httpClient, httpClientList } from '@/shared/lib/httpClient';
 
 import type {
@@ -15,7 +14,6 @@ import type {
   TeamProps,
   TeamUserRecord,
 } from '@/entities/team';
-import type { ApiResponse } from '@/shared/types/common';
 import type { ActionResult } from '@/shared/types/server-action';
 
 // ------------------------------
@@ -27,50 +25,10 @@ import type { ActionResult } from '@/shared/types/server-action';
  * @returns Promise.
  */
 export const getTeams = async (organizationId: number | string) => {
-  const { data, totalCount } = await loadTeamsChunk(organizationId, 0, 10);
-
-  return { data, totalCount };
-};
-
-/**
- * loadTeamsChunk.
- * @param organizationId
- * @param offset
- * @param limit
- * @returns Promise.
- */
-export async function loadTeamsChunk(
-  organizationId: number | string,
-  offset: number,
-  limit: number,
-) {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(
-    `${API_URL}/organizations/${organizationId}/teams?offset=${offset}&limit=${limit}`,
-    {
-      headers: {
-        ...authHeaders,
-      },
-      cache: 'no-store',
-    },
+  return httpClientList<TeamProps>(
+    `${API_URL}/organizations/${organizationId}/teams?limit=100`,
   );
-
-  if (!res.ok) {
-    const text = await res.text();
-
-    throw new Error(`${text}`);
-  }
-
-  const json: ApiResponse<TeamProps[]> = await res.json();
-
-  if (!json.success || !json.data) {
-    throw new Error(json.error ?? 'Invalid API response');
-  }
-
-  const totalCount = Number(res.headers.get('Items-Count') || '0');
-
-  return { data: json.data, totalCount, hasMore: offset + limit < totalCount };
-}
+};
 
 /**
  * getTeam.
@@ -86,20 +44,21 @@ export const getTeam = async (teamId: string) => {
  * @param teamId - teamId.
  * @returns Promise.
  */
-export async function deleteTeam(teamId: number) {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/teams/${teamId}`, {
-    method: 'DELETE',
-    headers: {
-      ...authHeaders,
-    },
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    return await res.text();
+export async function deleteTeam(teamId: number): Promise<ActionResult<void>> {
+  try {
+    await httpClient<void>(`${API_URL}/teams/${teamId}`, { method: 'DELETE' });
+    revalidatePath('/dashboard/teams');
+    return { data: undefined, error: null };
+  } catch (error) {
+    if (error instanceof ServerError) {
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to delete team',
+      );
+      return { data: null, error: parsed.message };
+    }
+    throw error;
   }
-  revalidatePath('/dashboard/teams');
 }
 
 // ------------------------------
@@ -114,31 +73,25 @@ export async function deleteTeam(teamId: number) {
 export async function createTeam(
   organizationId: string,
   data: TeamCreateDTO,
-): Promise<{ error: string; data: null } | { error: null; data: TeamProps }> {
-  const authHeaders = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/teams`, {
-    method: 'POST',
-    headers: {
-      ...authHeaders,
-    },
-    body: JSON.stringify({
-      organization_id: organizationId,
-      ...data,
-    }),
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-
-    return { error: text || 'Failed to create team', data: null };
+): Promise<ActionResult<TeamProps>> {
+  try {
+    const { data: team } = await httpClient<TeamProps>(`${API_URL}/teams`, {
+      method: 'POST',
+      body: JSON.stringify({ organization_id: organizationId, ...data }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    revalidatePath('/dashboard/teams');
+    return { data: team ?? null, error: null };
+  } catch (error) {
+    if (error instanceof ServerError) {
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to create team',
+      );
+      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+    }
+    throw error;
   }
-
-  revalidatePath('/dashboard/teams');
-
-  const json: ApiResponse<TeamProps> = await res.json();
-
-  return { error: null, data: json.data ?? ({ id: 0 } as TeamProps) };
 }
 
 /**
@@ -151,6 +104,7 @@ export async function updateTeam(id: number, data: TeamCreateDTO) {
   await httpClient<TeamProps>(`${API_URL}/teams/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' },
   });
 
   revalidatePath('/dashboard/teams');

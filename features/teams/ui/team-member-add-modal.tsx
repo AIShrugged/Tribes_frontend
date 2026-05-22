@@ -4,12 +4,17 @@ import ModalHeader from '@/shared/ui/modal/modal-header';
 
 import type { ModalContextValue } from '@/shared/types/modal';
 
+interface Props extends ModalContextValue {
+  teamId: number;
+}
+
 /**
  * TeamMemberAddModal component.
  * @param props - Component props.
  * @param props.close
+ * @param props.teamId
  */
-export default function TeamMemberAddModal({ close }: ModalContextValue) {
+export default function TeamMemberAddModal({ close, teamId }: Props) {
   return (
     <>
       <ModalHeader onClick={close} title={'Add member'} />
@@ -20,7 +25,7 @@ export default function TeamMemberAddModal({ close }: ModalContextValue) {
           team
         </p>
 
-        <TeamMemberAddForm close={close} />
+        <TeamMemberAddForm close={close} teamId={teamId} />
       </ModalBody>
     </>
   );

@@ -2,14 +2,6 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
-jest.mock('next/navigation', () => {
-  return {
-    useSearchParams: () => {
-      return new URLSearchParams('team_id=7');
-    },
-  };
-});
-
 jest.mock('sonner', () => {
   return {
     toast: { success: jest.fn(), error: jest.fn() },
@@ -92,28 +84,28 @@ describe('TeamMemberAddForm', () => {
   });
 
   it('renders the email input field', () => {
-    render(<TeamMemberAddForm close={close} />);
+    render(<TeamMemberAddForm close={close} teamId={7} />);
     expect(screen.getByTestId(FIELD_EMAIL)).toBeInTheDocument();
   });
 
   it('renders an Invite button', () => {
-    render(<TeamMemberAddForm close={close} />);
+    render(<TeamMemberAddForm close={close} teamId={7} />);
     expect(screen.getByRole('button', { name: 'Invite' })).toBeInTheDocument();
   });
 
   it('Invite button is disabled when form is pristine', () => {
-    render(<TeamMemberAddForm close={close} />);
+    render(<TeamMemberAddForm close={close} teamId={7} />);
     expect(screen.getByRole('button', { name: 'Invite' })).toBeDisabled();
   });
 
   it('enables Invite button after typing in email field', async () => {
-    render(<TeamMemberAddForm close={close} />);
+    render(<TeamMemberAddForm close={close} teamId={7} />);
     await user.type(screen.getByTestId(FIELD_EMAIL), 'user@example.com');
     expect(screen.getByRole('button', { name: 'Invite' })).not.toBeDisabled();
   });
 
   it('calls sendInvite with teamId and form data on submit', async () => {
-    render(<TeamMemberAddForm close={close} />);
+    render(<TeamMemberAddForm close={close} teamId={7} />);
     await user.type(screen.getByTestId(FIELD_EMAIL), TEST_EMAIL);
     await act(async () => {
       await user.click(screen.getByRole('button', { name: 'Invite' }));
@@ -122,7 +114,7 @@ describe('TeamMemberAddForm', () => {
   });
 
   it('shows success toast and calls close on success', async () => {
-    render(<TeamMemberAddForm close={close} />);
+    render(<TeamMemberAddForm close={close} teamId={7} />);
     await user.type(screen.getByTestId(FIELD_EMAIL), TEST_EMAIL);
     await act(async () => {
       await user.click(screen.getByRole('button', { name: 'Invite' }));
@@ -136,7 +128,7 @@ describe('TeamMemberAddForm', () => {
       data: null,
       error: 'Email already invited',
     });
-    render(<TeamMemberAddForm close={close} />);
+    render(<TeamMemberAddForm close={close} teamId={7} />);
     await user.type(screen.getByTestId(FIELD_EMAIL), TEST_EMAIL);
     await act(async () => {
       await user.click(screen.getByRole('button', { name: 'Invite' }));

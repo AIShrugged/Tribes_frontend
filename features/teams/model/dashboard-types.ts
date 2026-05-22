@@ -19,8 +19,8 @@ export interface DashboardMeetingCard {
   id: number;
   title: string;
   starts_at: string;
-  ends_at: string;
-  platform: string;
+  ends_at: string | null;
+  platform: string | null;
   url: string | null;
   meeting_link: { label: string; url: string } | null;
   description: string | null;
@@ -170,7 +170,7 @@ export interface TabHealth {
 
 export interface RiskItem {
   id: string;
-  severity: 'high' | 'medium' | 'low';
+  severity: 'high' | 'medium';
   title: string;
   subtitle: string;
   source: 'task' | 'meeting';

@@ -1,6 +1,5 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import React, { useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -18,14 +17,17 @@ import type { ModalContextValue } from '@/shared/types/modal';
 
 const FORM_ID = 'team-member-add-form';
 
+interface Props extends ModalContextValue {
+  teamId: number;
+}
+
 /**
  * TeamMemberAddForm component.
  * @param props - Component props.
  * @param props.close
+ * @param props.teamId
  */
-export default function TeamMemberAddForm({ close }: ModalContextValue) {
-  const searchParams = useSearchParams();
-  const currentTeamId = searchParams.get('team_id');
+export default function TeamMemberAddForm({ close, teamId }: Props) {
   const [isPending, startTransition] = useTransition();
   const {
     control,
@@ -43,13 +45,8 @@ export default function TeamMemberAddForm({ close }: ModalContextValue) {
    * @returns Result.
    */
   const onSubmit = (data: TeamAddMemberDTO) => {
-    if (!currentTeamId) {
-      toast.error('Team not found');
-      return;
-    }
-
     startTransition(async () => {
-      const result = await sendInvite(Number(currentTeamId), data);
+      const result = await sendInvite(teamId, data);
 
       if (result.error) {
         setError('email', { message: result.error });

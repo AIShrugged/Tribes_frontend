@@ -99,12 +99,16 @@ export default function TeamDashboardTabReadiness({
           </p>
           <div className='flex items-center gap-3 text-xs text-muted-foreground flex-wrap'>
             <span>
-              {format(parseISO(data.meeting.starts_at), 'MMM d, HH:mm')} —{' '}
-              {format(parseISO(data.meeting.ends_at), 'HH:mm')}
+              {format(parseISO(data.meeting.starts_at), 'MMM d, HH:mm')}
+              {data.meeting.ends_at !== null && (
+                <> — {format(parseISO(data.meeting.ends_at), 'HH:mm')}</>
+              )}
             </span>
-            <span className='capitalize'>
-              {data.meeting.platform.replace('_', ' ')}
-            </span>
+            {data.meeting.platform !== null && (
+              <span className='capitalize'>
+                {data.meeting.platform.replace('_', ' ')}
+              </span>
+            )}
             <span className='flex items-center gap-1'>
               <Users className='h-3 w-3' />
               {data.meeting.participants_count}

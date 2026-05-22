@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 
 import { createTeam, updateTeam } from '@/features/teams/api/team';
 import { TEAM_CREATE_FIELDS } from '@/features/teams/model/fields';
-import { useTeamsStore } from '@/features/teams/model/teams-store';
 import { VARIANT_MAPPER, type VariantType } from '@/shared/lib/fieldMapper';
 import { ROUTES } from '@/shared/lib/routes';
 import { Button } from '@/shared/ui/button/Button';
@@ -52,7 +51,6 @@ export default function TeamCreateForm({
       try {
         if (isEdit) {
           await updateTeam(values.id, data);
-          useTeamsStore.getState().invalidate();
 
           if (onSuccess) {
             onSuccess(values.id);
@@ -67,8 +65,6 @@ export default function TeamCreateForm({
 
             return;
           }
-
-          useTeamsStore.getState().invalidate();
 
           if (onSuccess && result.data) {
             onSuccess(result.data.id);

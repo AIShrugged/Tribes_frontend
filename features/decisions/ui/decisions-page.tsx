@@ -47,16 +47,21 @@ export function DecisionsPage({
     search: debouncedSearch || null,
   };
 
+  const loadGenRef = useRef(0);
+
   const loadInitial = useCallback(async () => {
+    const gen = ++loadGenRef.current;
     setIsLoading(true);
     try {
       const result = await getDecisions(teamId, filters, 0, PAGE_SIZE);
+      if (gen !== loadGenRef.current) return;
       setDecisions(result.data ?? []);
       setTotalDecisions(result.totalCount);
     } catch {
+      if (gen !== loadGenRef.current) return;
       toast.error('Failed to load data');
     } finally {
-      setIsLoading(false);
+      if (gen === loadGenRef.current) setIsLoading(false);
     }
   }, [teamId, debouncedSearch, sourceTypeFilter]);
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef } from 'react';
+
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { TemplatesTab } from '../templates/templates-tab';
@@ -78,6 +80,7 @@ export default function TeamDashboardTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Redirect legacy ?tab=settings to ?tab=people
   const resolvedTab = currentTab === 'settings' ? 'people' : currentTab;
@@ -95,20 +98,55 @@ export default function TeamDashboardTabs({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    const lastIndex = TABS.length - 1;
+    let nextIndex: number | null = null;
+
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % TABS.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+    } else if (e.key === 'Home') {
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      nextIndex = lastIndex;
+    }
+
+    if (nextIndex !== null) {
+      e.preventDefault();
+      handleTabChange(TABS[nextIndex].key);
+      tabRefs.current[nextIndex]?.focus();
+    }
+  };
+
   return (
     <div className='flex flex-col flex-1 overflow-hidden'>
       {/* Tab strip */}
-      <div className='flex gap-1 border-b border-border px-6 flex-shrink-0'>
-        {TABS.map((tab) => {
+      <div
+        role='tablist'
+        aria-label='Team dashboard'
+        className='flex gap-1 border-b border-border px-6 flex-shrink-0'
+      >
+        {TABS.map((tab, index) => {
           const isActive = tab.key === activeTab;
 
           return (
             <button
               key={tab.key}
+              ref={(el) => { tabRefs.current[index] = el; }}
               type='button'
+              role='tab'
+              id={`team-tab-${tab.key}`}
+              aria-selected={isActive}
+              aria-controls={`team-panel-${tab.key}`}
+              tabIndex={isActive ? 0 : -1}
               onClick={() => {
                 return handleTabChange(tab.key);
               }}
+              onKeyDown={(e) => { handleKeyDown(e, index); }}
               className={[
                 'cursor-pointer px-4 py-2 text-sm font-medium transition-colors',
                 isActive
@@ -123,7 +161,12 @@ export default function TeamDashboardTabs({
       </div>
 
       {/* Tab content */}
-      <div className='flex-1 overflow-y-auto px-6 py-4'>
+      <div
+        role='tabpanel'
+        id={`team-panel-${activeTab}`}
+        aria-labelledby={`team-tab-${activeTab}`}
+        className='flex-1 overflow-y-auto px-6 py-4'
+      >
         {activeTab === 'people' && (
           <TeamDashboardTabPeople
             analyticsData={tabs?.people ?? null}

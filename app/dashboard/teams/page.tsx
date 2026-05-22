@@ -85,17 +85,16 @@ export default async function Page({
   const pendingInvites =
     invitesResult.status === 'fulfilled' ? invitesResult.value : [];
 
-  // Derive manager status: look up the current viewer in team.members by id.
+  // Derive manager status from the viewer's role in the team members list.
   // Falls back to false for org-level managers not explicitly in the members list.
+  // Full fix requires backend to expose viewer.is_manager in TeamDashboardService.
   const viewerId = dashboard?.viewer.id ?? null;
   const viewerMember = viewerId
     ? (team.members.find((m) => {
         return m.id === viewerId;
       }) ?? null)
     : null;
-  // TeamMember type does not expose role yet — treat presence in list as manager signal.
-  // Request viewer.is_manager from backend dashboard payload for more accurate detection.
-  const isManager = viewerMember !== null;
+  const isManager = viewerMember?.role === 'manager';
 
   return (
     <Card className='min-h-full flex flex-col overflow-y-auto'>
@@ -108,6 +107,7 @@ export default async function Page({
         pendingInvites={pendingInvites}
         isManager={isManager}
         currentTab={tab}
+        organizationId={String(organizationId)}
       />
     </Card>
   );
