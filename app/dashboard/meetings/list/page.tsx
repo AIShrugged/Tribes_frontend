@@ -12,6 +12,7 @@ import {
 import { MeetingsListClient } from '@/features/meetings/ui/meetings-list-client';
 import { MeetingsListFiltersBar } from '@/features/meetings/ui/meetings-list-filters-bar';
 import { getOrganizations } from '@/features/organization';
+import { TranscriptUploadButton } from '@/features/transcript-upload';
 import { formatDateLabel, toDateParam } from '@/shared/lib/date-nav';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { Card } from '@/shared/ui/card';
@@ -48,16 +49,19 @@ export default async function MeetingsListPage({
   const organizations = orgsResponse.data ?? [];
 
   const filtersBar = (
-    <Suspense
-      fallback={<div className='h-14 border-b border-border bg-card' />}
-    >
-      <MeetingsListFiltersBar
-        key={cookieOrgId}
-        cookieOrgId={cookieOrgId}
-        filters={filters}
-        organizations={organizations}
-      />
-    </Suspense>
+    <div className='flex items-center justify-between gap-3 border-b border-border bg-card pr-3'>
+      <Suspense
+        fallback={<div className='h-14 flex-1' />}
+      >
+        <MeetingsListFiltersBar
+          key={cookieOrgId}
+          cookieOrgId={cookieOrgId}
+          filters={filters}
+          organizations={organizations}
+        />
+      </Suspense>
+      <TranscriptUploadButton organizationId={cookieOrgId} />
+    </div>
   );
 
   if (filtersActive) {
