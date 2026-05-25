@@ -2,14 +2,15 @@ import { MessageSquare } from 'lucide-react';
 
 import { getChats, ChatList } from '@/features/chat';
 import { getOrganizations } from '@/features/organization';
+import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 
 /**
  * ChatPage component.
  * @returns JSX element.
  */
 export default async function ChatPage() {
-  const [{ data: chats, totalCount }, { data: organizations }] =
-    await Promise.all([getChats(0, 20), getOrganizations()]);
+  const [{ data: chats, totalCount }, { data: organizations }, organizationId] =
+    await Promise.all([getChats(0, 20), getOrganizations(), getOrganizationId()]);
 
   return (
     <div className='flex h-full rounded-[var(--radius-card)] overflow-hidden border border-border bg-card '>
@@ -17,6 +18,7 @@ export default async function ChatPage() {
         initialChats={chats}
         totalCount={totalCount}
         organizations={organizations ?? []}
+        organizationId={Number(organizationId)}
       />
 
       {/* Empty state — hidden on mobile (ChatList fills screen) */}

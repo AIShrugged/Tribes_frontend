@@ -1,9 +1,12 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
 import { httpClient, httpClientList } from '@/shared/lib/httpClient';
+import { ROUTES } from '@/shared/lib/routes';
 
 import type { Chat, ChatUpsertDTO } from '@/features/chat/model/types';
 import type { ActionResult } from '@/shared/types/server-action';
@@ -30,13 +33,8 @@ export async function getChat(id: number): Promise<Chat> {
 }
 
 export async function createChat(
-  payloadOrTitle: Partial<ChatUpsertDTO> | string | null = {},
+  payload: Partial<ChatUpsertDTO> = {},
 ): Promise<ActionResult<Chat>> {
-  const payload =
-    typeof payloadOrTitle === 'string' || payloadOrTitle === null
-      ? { title: payloadOrTitle }
-      : payloadOrTitle;
-
   const body: Record<string, number | string | null> = {};
   if ('title' in payload) body.title = payload.title ?? null;
   if ('organization_id' in payload)
@@ -49,6 +47,7 @@ export async function createChat(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+    revalidatePath(ROUTES.DASHBOARD.CHAT);
     return { data: data!, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
@@ -109,4 +108,5 @@ export async function updateChatTitle(
 
 export async function deleteChat(id: number): Promise<void> {
   await httpClient(`${API_URL}/chats/${id}`, { method: 'DELETE' });
+  revalidatePath(ROUTES.DASHBOARD.CHAT);
 }

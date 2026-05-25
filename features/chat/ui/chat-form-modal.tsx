@@ -25,6 +25,7 @@ interface ChatFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   organizations: OrganizationProps[];
+  organizationId?: number;
   chat?: Chat | null;
   onSaved: (chat: Chat, mode: 'create' | 'update') => void;
 }
@@ -51,6 +52,7 @@ export function ChatFormModal({
   isOpen,
   onClose,
   organizations,
+  organizationId,
   chat,
   onSaved,
 }: ChatFormModalProps) {
@@ -105,6 +107,7 @@ export function ChatFormModal({
       try {
         const payload = {
           title: values.title.trim() || null,
+          ...(organizationId !== undefined && { organization_id: organizationId }),
         };
         const result = chat
           ? await updateChat(chat.id, payload)

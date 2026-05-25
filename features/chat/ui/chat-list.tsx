@@ -20,6 +20,7 @@ interface ChatListProps {
   totalCount: number;
   activeChatId?: number;
   organizations?: OrganizationProps[];
+  organizationId?: number;
   onActiveChatUpdate?: (chat: Chat) => void;
 }
 
@@ -41,6 +42,7 @@ export function ChatList({
   totalCount,
   activeChatId,
   organizations = [],
+  organizationId,
   onActiveChatUpdate,
 }: ChatListProps) {
   const router = useRouter();
@@ -242,6 +244,7 @@ export function ChatList({
             setEditingChat(null);
           }}
           organizations={organizations}
+          organizationId={organizationId}
           chat={editingChat}
           onSaved={handleSavedChat}
         />
