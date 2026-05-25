@@ -1,8 +1,8 @@
 'use client';
 
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useRef } from 'react';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { TemplatesTab } from '../templates/templates-tab';
 
@@ -105,14 +105,28 @@ export default function TeamDashboardTabs({
     const lastIndex = TABS.length - 1;
     let nextIndex: number | null = null;
 
-    if (e.key === 'ArrowRight') {
+    switch (e.key) {
+    case 'ArrowRight': {
       nextIndex = (currentIndex + 1) % TABS.length;
-    } else if (e.key === 'ArrowLeft') {
+    
+    break;
+    }
+    case 'ArrowLeft': {
       nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
-    } else if (e.key === 'Home') {
+    
+    break;
+    }
+    case 'Home': {
       nextIndex = 0;
-    } else if (e.key === 'End') {
+    
+    break;
+    }
+    case 'End': {
       nextIndex = lastIndex;
+    
+    break;
+    }
+    // No default
     }
 
     if (nextIndex !== null) {

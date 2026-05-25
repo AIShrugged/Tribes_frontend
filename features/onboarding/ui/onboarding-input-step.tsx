@@ -69,6 +69,12 @@ export function OnboardingInputStep({
 }: Props) {
   const isRefine = Boolean(needsInfoData);
 
+  const hasAnyInput =
+    state.description.trim().length > 0 ||
+    state.attachments.length > 0 ||
+    state.links.some(Boolean) ||
+    template !== null;
+
   return (
     <div className='flex flex-col gap-6'>
       <div>
@@ -211,7 +217,7 @@ export function OnboardingInputStep({
         <Button
           type='button'
           variant={BUTTON_VARIANT.primary}
-          disabled={isSubmitting || hasFilePending || !state.description.trim()}
+          disabled={isSubmitting || hasFilePending || !hasAnyInput}
           onClick={onSubmit}
         >
           {getSubmitLabel(isSubmitting, hasFilePending, isRefine)}
