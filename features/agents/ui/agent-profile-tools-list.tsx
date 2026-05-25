@@ -10,7 +10,7 @@ export function AgentProfileToolsList({ tools }: Props) {
   if (tools.length === 0) {
     return (
       <p className='text-sm text-muted-foreground'>
-        No tools assigned. When allowed_tools is unset, all system tools are available.
+        No tools available for this agent.
       </p>
     );
   }

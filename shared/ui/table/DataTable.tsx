@@ -71,6 +71,7 @@ export function DataTable<T>({
           {items.map((row) => {
             return <div key={keyExtractor(row)}>{renderMobileCard(row)}</div>;
           })}
+          {items.length === 0 && !isLoading && emptyState}
           {isLoading && (
             <div className='flex justify-center py-4'>
               <SpinLoader />

@@ -31,7 +31,7 @@ export default async function AgentProfileDetailLayout({
   if (!canManageAgents) {
     return (
       <Card className='h-full flex flex-col'>
-        <PageHeader hasButtonBack title='Agent Profile' />
+        <PageHeader hasButtonBack title='Agent' />
         <CardBody>
           <AccessDeniedState />
         </CardBody>
@@ -55,7 +55,7 @@ export default async function AgentProfileDetailLayout({
   if (accessDenied) {
     return (
       <Card className='h-full flex flex-col'>
-        <PageHeader hasButtonBack title='Agent Profile' />
+        <PageHeader hasButtonBack title='Agent' />
         <CardBody>
           <AccessDeniedState description='The backend denied access to this agent profile.' />
         </CardBody>
