@@ -62,5 +62,9 @@ export const ROUTES = {
     MEETING_DETAIL_TRANSCRIPT: (id: string | number) => {
       return `/dashboard/meetings/${id}/transcript`;
     },
+    AGENT_PROMPTS: '/dashboard/agents/prompts',
+    AGENT_PROMPT_EDIT: (id: number) => {
+      return `/dashboard/agents/prompts/${id}`;
+    },
   },
 } as const;
