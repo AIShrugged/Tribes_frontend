@@ -32,7 +32,7 @@ export default function TeamsHeader({
     return { value: String(t.id), label: t.name };
   });
 
-  const selectedTeam = teams.find((t) => t.id === selectedTeamId);
+  const selectedTeam = teams.find((t) => {return t.id === selectedTeamId});
   const { open, close } = useModal();
 
   const handleRename = () => {
