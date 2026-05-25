@@ -1,10 +1,11 @@
 'use client';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 
 import { formatDateTime } from '@/features/agents/lib/format';
 import { Badge } from '@/shared/ui/badge';
+import { EmptyState } from '@/shared/ui/feedback/empty-state';
 import { DataTable } from '@/shared/ui/table';
 
 import type { AgentMemory } from '@/features/agents/model/types';
@@ -106,6 +107,13 @@ export function AgentMemoriesList({
         caption='Agent Memories'
         captionSrOnly
         tableMinWidth='min-w-[700px]'
+        emptyState={
+          <EmptyState
+            icon={BrainCircuit}
+            title='No memories yet'
+            description='Memories will appear as the agent runs tasks.'
+          />
+        }
         renderMobileCard={(memory) => {return (
           <div className='rounded-[var(--radius-card)] border border-border p-4'>
             <div className='flex flex-wrap items-center gap-2'>

@@ -11,7 +11,7 @@ import { ButtonLink } from '@/shared/ui/button';
 import { Card, CardBody } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/feedback/empty-state';
 
-export const metadata = { title: 'Agent Profiles' };
+export const metadata = { title: 'Agents' };
 
 export default async function AgentProfilesPage() {
   const { canManageAgents } = await getAgentAccessContext();
@@ -33,7 +33,7 @@ export default async function AgentProfilesPage() {
             access.
           </p>
           <ButtonLink href={ROUTES.DASHBOARD.AGENT_PROFILES_NEW}>
-            New profile
+            New Agent
           </ButtonLink>
         </div>
       </CardBody>
@@ -42,8 +42,8 @@ export default async function AgentProfilesPage() {
       ) : (
         <EmptyState
           icon={Bot}
-          title='No agent profiles yet'
-          description='Create the first profile for reusable agent configuration.'
+          title='No agents yet'
+          description='Create the first agent configuration.'
         />
       )}
     </Card>

@@ -84,7 +84,7 @@ export function AgentProfilesList({ profiles }: { profiles: AgentProfile[] }) {
       columns={COLUMNS}
       items={profiles}
       keyExtractor={(p) => {return p.id}}
-      caption='Agent Profiles'
+      caption='Agents'
       captionSrOnly
       tableMinWidth='min-w-[700px]'
       renderMobileCard={(profile) => {return (
