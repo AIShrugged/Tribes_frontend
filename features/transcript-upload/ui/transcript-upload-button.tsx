@@ -7,19 +7,11 @@ import { TranscriptUploadModal } from '@/features/transcript-upload/ui/transcrip
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
 
-interface Props {
-  /** Active organization id from cookie. Required for fetching teams. */
+export function TranscriptUploadButton({
+  organizationId,
+}: {
   organizationId: string | null;
-}
-
-/**
- * Trigger button for the manual transcript upload modal.
- *
- * Lives as a client-side island so the meetings list page can stay a
- * Server Component. Receives `organizationId` because the modal needs
- * it to fetch teams for Mode B.
- */
-export function TranscriptUploadButton({ organizationId }: Props) {
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -32,7 +24,7 @@ export function TranscriptUploadButton({ organizationId }: Props) {
         }}
       >
         <Upload className='mr-2 size-4' />
-        Загрузить транскрипт
+        Upload transcript
       </Button>
       <TranscriptUploadModal
         isOpen={isOpen}

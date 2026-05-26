@@ -1,1 +1,1 @@
-export type { EventProps } from './model/types';
+export type { EventProps, CalendarEventListItem } from './model/types';

@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 
 import { TranscriptUploadForm } from '@/features/transcript-upload/ui/transcript-upload-form';
 
+import type { CalendarEventListItem } from '@/entities/event';
 import type { TeamProps } from '@/entities/team';
-import type { CalendarEventListItem } from '@/features/meetings/model/types';
 
 const mockUpload = jest.fn();
 jest.mock('@/features/transcript-upload/api/upload-transcript', () => {
@@ -46,7 +46,7 @@ jest.mock('next/navigation', () => {
 const meetings: CalendarEventListItem[] = [
   {
     id: 42,
-    title: 'Tribes техсинк',
+    title: 'Tribes tech sync',
     starts_at: '2026-05-01T10:00:00Z',
     ends_at: '2026-05-01T11:00:00Z',
     platform: 'google_meet',
@@ -80,15 +80,13 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    expect(screen.getByRole('tab', { name: /существующей/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-    expect(screen.getByRole('tab', { name: /создать новую/i })).toHaveAttribute(
-      'aria-selected',
-      'false',
-    );
-    expect(screen.getByLabelText(/файл транскрипта/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('tab', { name: /attach to existing meeting/i }),
+    ).toHaveAttribute('aria-selected', 'true');
+    expect(
+      screen.getByRole('tab', { name: /create new meeting/i }),
+    ).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByLabelText(/transcript file/i)).toBeInTheDocument();
   });
 
   it('disables Mode B tab when user has zero teams', () => {
@@ -100,10 +98,9 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    expect(screen.getByRole('tab', { name: /создать новую/i })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(
+      screen.getByRole('tab', { name: /create new meeting/i }),
+    ).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows new-meeting fields after switching mode', async () => {
@@ -115,11 +112,13 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('tab', { name: /создать новую/i }));
+    await userEvent.click(
+      screen.getByRole('tab', { name: /create new meeting/i }),
+    );
 
-    expect(screen.getByText(/название встречи/i)).toBeInTheDocument();
-    expect(screen.getByText(/^начало$/i)).toBeInTheDocument();
-    expect(screen.getByText(/^окончание$/i)).toBeInTheDocument();
+    expect(screen.getByText(/meeting title/i)).toBeInTheDocument();
+    expect(screen.getByText(/^start$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^end$/i)).toBeInTheDocument();
   });
 
   it('rejects oversized files with a toast', async () => {
@@ -132,13 +131,13 @@ describe('TranscriptUploadForm', () => {
     );
 
     const oversized = makeFile('big.txt', 6 * 1024 * 1024 + 1);
-    const fileInput = screen.getByLabelText(/файл транскрипта/i, {
+    const fileInput = screen.getByLabelText(/transcript file/i, {
       selector: 'input',
     }) as HTMLInputElement;
 
     await userEvent.upload(fileInput, oversized);
 
-    expect(mockToastError).toHaveBeenCalledWith('Файл больше 5 МБ');
+    expect(mockToastError).toHaveBeenCalledWith('File exceeds 5 MB');
   });
 
   it('on successful submit, shows toast and redirects', async () => {
@@ -160,32 +159,28 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    // Pick existing meeting (only one available).
-    await userEvent.click(screen.getByText(/выберите встречу|tribes/i));
-    // The InputDropdown opens a portal — click the option label.
-    const option = await screen.findByText(/Tribes техсинк —/i);
+    await userEvent.click(screen.getByText(/select a meeting|tribes/i));
+    const option = await screen.findByText(/Tribes tech sync —/i);
     await userEvent.click(option);
 
-    // Attach file
-    const fileInput = screen.getByLabelText(/файл транскрипта/i, {
+    const fileInput = screen.getByLabelText(/transcript file/i, {
       selector: 'input',
     }) as HTMLInputElement;
     await userEvent.upload(fileInput, makeFile('valid.txt', 100));
 
-    await userEvent.click(screen.getByRole('button', { name: /^загрузить$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^upload$/i }));
 
-    // Allow promises to flush.
-    await screen.findByRole('button', { name: /загрузка|^загрузить$/i });
+    await screen.findByRole('button', { name: /uploading|^upload$/i });
 
     expect(mockUpload).toHaveBeenCalled();
     expect(mockToastSuccess).toHaveBeenCalledWith(
-      expect.stringContaining('Транскрипт загружен'),
+      expect.stringContaining('Transcript uploaded'),
     );
     expect(mockPush).toHaveBeenCalledWith('/dashboard/meetings/100/transcript');
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('shows Russian error message for NO_SOURCE error code', async () => {
+  it('shows English error message for NO_SOURCE error code', async () => {
     mockUpload.mockResolvedValue({
       data: null,
       error: 'no source',
@@ -200,21 +195,21 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    await userEvent.click(screen.getByText(/выберите встречу|tribes/i));
-    const option = await screen.findByText(/Tribes техсинк —/i);
+    await userEvent.click(screen.getByText(/select a meeting|tribes/i));
+    const option = await screen.findByText(/Tribes tech sync —/i);
     await userEvent.click(option);
 
-    const fileInput = screen.getByLabelText(/файл транскрипта/i, {
+    const fileInput = screen.getByLabelText(/transcript file/i, {
       selector: 'input',
     }) as HTMLInputElement;
     await userEvent.upload(fileInput, makeFile('valid.txt', 100));
 
-    await userEvent.click(screen.getByRole('button', { name: /^загрузить$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^upload$/i }));
 
-    await screen.findByRole('button', { name: /^загрузить$/i });
+    await screen.findByRole('button', { name: /^upload$/i });
 
     expect(mockToastError).toHaveBeenCalledWith(
-      expect.stringContaining('Подключите календарь'),
+      expect.stringContaining('Connect your calendar'),
     );
   });
 });
