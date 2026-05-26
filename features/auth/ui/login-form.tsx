@@ -27,7 +27,7 @@ export default function LoginForm() {
   } = useForm<LoginInput>({
     defaultValues: SIGN_IN_VALUES,
     resolver: zodResolver(LoginSchema),
-    mode: 'onBlur',
+    mode: 'onTouched',
     reValidateMode: 'onChange',
   });
 
