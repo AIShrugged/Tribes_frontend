@@ -1,6 +1,7 @@
 import type { MeetingTask } from '@/features/meeting/types';
+import type { CalendarEventListItem } from '@/entities/event';
 
-export type { CalendarEventListItem } from '@/entities/event';
+export type { CalendarEventListItem };
 
 export interface CalendarEventReadMore {
   section?: string | null;
