@@ -41,6 +41,15 @@ describe('getMenuItems', () => {
     expect(item?.label).toBe('Tasks');
   });
 
+  it('includes a Telegram item', () => {
+    const item = getMenuItems().find((menuItem) => {
+      return menuItem.id === 'telegram';
+    });
+
+    expect(item).toBeDefined();
+    expect(item?.label).toBe('Telegram');
+  });
+
   it('items are sorted by position ascending', () => {
     const items = getMenuItems();
     const positions = items.map((item) => {
@@ -71,6 +80,7 @@ describe('ICONS_MAP', () => {
       'calendar',
       'kanban',
       'messageSquare',
+      'send',
       'bug',
     ] as const;
 

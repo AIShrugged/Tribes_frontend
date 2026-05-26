@@ -37,7 +37,7 @@ export const ROUTES = {
     PROFILE_PREFERENCES: '/dashboard/profile/preferences',
     PROFILE_INTEGRATIONS: '/dashboard/profile/integrations',
     ONBOARDING: '/dashboard/onboarding',
-    PROFILE_TELEGRAM: '/dashboard/profile/telegram',
+    TELEGRAM: '/dashboard/telegram',
     SUMMARY: '/dashboard/summary',
     KANBAN: '/dashboard/kanban',
     ISSUES_LIST: '/dashboard/issues/list',

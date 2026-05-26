@@ -6,6 +6,7 @@ import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
 import { httpClient, httpClientList } from '@/shared/lib/httpClient';
+import { ROUTES } from '@/shared/lib/routes';
 
 import type { TelegramChatRegistration } from '@/entities/telegram';
 import type { TelegramWorkspaceChatCreatePayload } from '@/features/telegram/model/types';
@@ -33,7 +34,7 @@ export async function createTelegramWorkspaceChat(
         status: 200,
       });
     }
-    revalidatePath('/dashboard/profile/telegram');
+    revalidatePath(ROUTES.DASHBOARD.TELEGRAM);
     return { data, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
@@ -58,7 +59,7 @@ export async function deleteTelegramWorkspaceChat(
     await httpClient<null>(`${API_URL}/telegram/chats/${id}`, {
       method: 'DELETE',
     });
-    revalidatePath('/dashboard/profile/telegram');
+    revalidatePath(ROUTES.DASHBOARD.TELEGRAM);
     return { data: undefined, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
