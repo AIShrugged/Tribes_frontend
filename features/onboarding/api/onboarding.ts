@@ -107,8 +107,8 @@ export async function acceptStructure(
       value: '1',
       httpOnly: true,
       secure:
-      process.env.NODE_ENV === 'production' ||
-      process.env.NEXT_PUBLIC_APP_ENV === 'production',
+        process.env.NODE_ENV === 'production' ||
+        process.env.NEXT_PUBLIC_APP_ENV === 'production',
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 365,

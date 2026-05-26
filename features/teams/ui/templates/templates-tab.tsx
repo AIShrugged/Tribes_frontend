@@ -3,7 +3,6 @@
 import { RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-
 import { getAgendaTemplate } from '@/features/teams/api/agenda-template';
 import { getMeetingSummaryTemplate } from '@/features/teams/api/meeting-summary-template';
 import {
@@ -60,7 +59,11 @@ export function TemplatesTab({ teamId, isReadOnly }: Props) {
         <p className='text-sm text-destructive'>{loadError}</p>
         <button
           type='button'
-          onClick={() => { setRetryCount(c => {return c + 1}); }}
+          onClick={() => {
+            setRetryCount((c) => {
+              return c + 1;
+            });
+          }}
           className='inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors'
         >
           <RefreshCw className='size-3.5' />

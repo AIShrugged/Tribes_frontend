@@ -33,8 +33,12 @@ export default async function NewAgentProfilePage() {
 
   try {
     [meta, tools] = await Promise.all([
-      getAgentTasksMeta().catch((): AgentTasksMeta => {return {}}),
-      getAgentTools().catch(() => {return []}),
+      getAgentTasksMeta().catch((): AgentTasksMeta => {
+        return {};
+      }),
+      getAgentTools().catch(() => {
+        return [];
+      }),
     ]);
   } catch (error) {
     if (error instanceof ServerError && error.status === 403) {

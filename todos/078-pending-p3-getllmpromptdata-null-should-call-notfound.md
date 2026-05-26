@@ -1,7 +1,7 @@
 ---
 status: pending
 priority: p3
-issue_id: "078"
+issue_id: '078'
 tags: [code-review, typescript, llm-prompts]
 dependencies: [071]
 ---
@@ -10,14 +10,20 @@ dependencies: [071]
 
 ## Problem Statement
 
-The plan's `getLlmPromptData` returns `LlmPromptProps | null`. Callers (Server Component pages) must null-check the result. If a developer forgets this check, TypeScript may still allow downstream access (e.g., if the null is cast away). The Next.js App Router convention is to call `notFound()` immediately after a null response from a data helper, producing a proper 404 page.
+The plan's `getLlmPromptData` returns `LlmPromptProps | null`. Callers (Server
+Component pages) must null-check the result. If a developer forgets this check,
+TypeScript may still allow downstream access (e.g., if the null is cast away).
+The Next.js App Router convention is to call `notFound()` immediately after a
+null response from a data helper, producing a proper 404 page.
 
 ## Findings
 
 - Plan: `getLlmPromptData` returns `LlmPromptProps | null`
 - `app/dashboard/agents/prompts/[id]/page.tsx` must handle the null case
 - Next.js convention: `if (!data) notFound();` immediately after the fetch
-- Existing pattern: `features/agents/api/agent-profiles.ts` throws `ServerError` on 404 rather than returning null — which triggers the error boundary, not the 404 page
+- Existing pattern: `features/agents/api/agent-profiles.ts` throws `ServerError`
+  on 404 rather than returning null — which triggers the error boundary, not the
+  404 page
 
 ## Proposed Solutions
 
@@ -27,16 +33,17 @@ The plan's `getLlmPromptData` returns `LlmPromptProps | null`. Callers (Server C
 // app/dashboard/agents/prompts/[id]/page.tsx
 export default async function PromptEditPage({ params }) {
   const ctx = await getAgentAccessContext();
-  const prompt = await getLlmPromptData(ctx.activeOrganizationId, Number(params.id));
+  const prompt = await getLlmPromptData(
+    ctx.activeOrganizationId,
+    Number(params.id),
+  );
   if (!prompt) notFound();
   // ... render
 }
 ```
 
-**Pros:** Standard Next.js pattern; produces proper 404 page; TypeScript narrows type after check
-**Cons:** None
-**Effort:** 5 minutes
-**Risk:** Low
+**Pros:** Standard Next.js pattern; produces proper 404 page; TypeScript narrows
+type after check **Cons:** None **Effort:** 5 minutes **Risk:** Low
 
 ---
 
@@ -50,16 +57,19 @@ export const getLlmPromptData = cache(async (orgId, id) => {
 });
 ```
 
-**Pros:** Callers never need to null-check; cleaner page code
-**Cons:** `getLlmPromptData` has a side effect (navigation); mixing data and routing concerns
+**Pros:** Callers never need to null-check; cleaner page code **Cons:**
+`getLlmPromptData` has a side effect (navigation); mixing data and routing
+concerns
 
 ## Recommended Action
 
-Option 1 — null-check and call `notFound()` in the page component. This is the Next.js App Router convention and keeps the data helper pure.
+Option 1 — null-check and call `notFound()` in the page component. This is the
+Next.js App Router convention and keeps the data helper pure.
 
 ## Technical Details
 
 **Affected files:**
+
 - `app/dashboard/agents/prompts/[id]/page.tsx` — add null check + `notFound()`
 
 ## Acceptance Criteria
@@ -71,6 +81,7 @@ Option 1 — null-check and call `notFound()` in the page component. This is the
 ## Work Log
 
 ### 2026-05-25 - Discovered during plan TypeScript review
+
 **By:** Claude Code
 
 ---

@@ -22,9 +22,15 @@ export const ROUTES = {
     AGENTS: '/dashboard/agents',
     AGENT_PROFILES: '/dashboard/agents/profiles',
     AGENT_PROFILES_NEW: '/dashboard/agents/profiles/new',
-    AGENT_PROFILE_OVERVIEW: (id: string | number) => {return `/dashboard/agents/profiles/${id}/overview`},
-    AGENT_PROFILE_TOOLS: (id: string | number) => {return `/dashboard/agents/profiles/${id}/tools`},
-    AGENT_PROFILE_MEMORIES: (id: string | number) => {return `/dashboard/agents/profiles/${id}/memories`},
+    AGENT_PROFILE_OVERVIEW: (id: string | number) => {
+      return `/dashboard/agents/profiles/${id}/overview`;
+    },
+    AGENT_PROFILE_TOOLS: (id: string | number) => {
+      return `/dashboard/agents/profiles/${id}/tools`;
+    },
+    AGENT_PROFILE_MEMORIES: (id: string | number) => {
+      return `/dashboard/agents/profiles/${id}/memories`;
+    },
     AGENT_TASKS: '/dashboard/agents/tasks',
     AGENT_ACTIVITY: '/dashboard/agents/activity',
     TEAMS: '/dashboard/teams',

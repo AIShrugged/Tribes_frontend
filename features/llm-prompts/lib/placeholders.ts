@@ -66,9 +66,13 @@ export function extractPlaceholders(text: string): string[] {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const re = new RegExp(PLACEHOLDER_PATTERN.source, 'g');
 
-  return [...new Set([...text.matchAll(re)].map((m) => {
-    return m[0];
-  }))];
+  return [
+    ...new Set(
+      [...text.matchAll(re)].map((m) => {
+        return m[0];
+      }),
+    ),
+  ];
 }
 
 /**
@@ -77,7 +81,10 @@ export function extractPlaceholders(text: string): string[] {
  * @param current - Placeholders in the current (edited) prompt.
  * @returns Array of removed placeholder strings.
  */
-export function diffPlaceholders(original: string[], current: string[]): string[] {
+export function diffPlaceholders(
+  original: string[],
+  current: string[],
+): string[] {
   const currentSet = new Set(current);
 
   return original.filter((p) => {

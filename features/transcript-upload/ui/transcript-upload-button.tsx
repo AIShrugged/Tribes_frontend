@@ -27,14 +27,18 @@ export function TranscriptUploadButton({ organizationId }: Props) {
       <Button
         type='button'
         variant={BUTTON_VARIANT.secondary}
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          return setIsOpen(true);
+        }}
       >
         <Upload className='mr-2 size-4' />
         Загрузить транскрипт
       </Button>
       <TranscriptUploadModal
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={() => {
+          return setIsOpen(false);
+        }}
         organizationId={organizationId}
       />
     </>

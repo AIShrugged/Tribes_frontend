@@ -19,10 +19,17 @@ export function AgentProfileToolsList({ tools }: Props) {
     <ul className='space-y-3'>
       {tools.map((tool) => {
         return (
-          <li key={tool.name} className='rounded-[var(--radius-card)] border border-border bg-card p-4'>
-            <p className='font-mono text-sm font-semibold text-violet-400'>{tool.name}</p>
+          <li
+            key={tool.name}
+            className='rounded-[var(--radius-card)] border border-border bg-card p-4'
+          >
+            <p className='font-mono text-sm font-semibold text-violet-400'>
+              {tool.name}
+            </p>
             {tool.description.length > 0 && (
-              <p className='mt-1 text-sm text-muted-foreground'>{tool.description}</p>
+              <p className='mt-1 text-sm text-muted-foreground'>
+                {tool.description}
+              </p>
             )}
             {Object.keys(tool.parameters).length > 0 && (
               <details className='mt-2'>

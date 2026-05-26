@@ -20,7 +20,10 @@ async function fetchTools(profileId: number): Promise<ToolsResult> {
     if (error instanceof ServerError) {
       if (error.status === 403) {
         // eslint-disable-next-line no-console
-        console.error('[agents] 403 on profile tools', { profileId, url: error.url });
+        console.error('[agents] 403 on profile tools', {
+          profileId,
+          url: error.url,
+        });
 
         return { kind: 'access_denied' };
       }

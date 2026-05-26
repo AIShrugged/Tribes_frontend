@@ -107,7 +107,9 @@ export function ChatFormModal({
       try {
         const payload = {
           title: values.title.trim() || null,
-          ...(organizationId !== undefined && { organization_id: organizationId }),
+          ...(organizationId !== undefined && {
+            organization_id: organizationId,
+          }),
         };
         const result = chat
           ? await updateChat(chat.id, payload)

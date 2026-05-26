@@ -134,7 +134,7 @@ export function OnboardingFileUpload({
             multiple
             disabled={isBusy}
             onChange={(event) => {
-              const files = [...event.target.files ?? []];
+              const files = [...(event.target.files ?? [])];
 
               event.target.value = '';
               if (files.length === 0) return;
@@ -173,7 +173,9 @@ export function OnboardingFileUpload({
                   })
                   .catch(() => {
                     if (!isMountedRef.current) return;
-                    toast.error(`Failed to upload "${originalName}". Please try again.`);
+                    toast.error(
+                      `Failed to upload "${originalName}". Please try again.`,
+                    );
                   })
                   .finally(() => {
                     removeOp(opId);

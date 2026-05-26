@@ -4,7 +4,10 @@ import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
 import { httpClient, httpClientList } from '@/shared/lib/httpClient';
 
-import type { LlmPromptGroup, LlmPromptProps } from '@/features/llm-prompts/model/types';
+import type {
+  LlmPromptGroup,
+  LlmPromptProps,
+} from '@/features/llm-prompts/model/types';
 import type { PaginatedResult } from '@/shared/types/common';
 
 /**
@@ -51,19 +54,21 @@ export async function getLlmPrompts(
  * @param promptId - The prompt's ID.
  * @returns Promise resolving to LlmPromptProps or null if not found.
  */
-export const getLlmPromptData = cache(async (
-  organizationId: number,
-  promptId: number,
-): Promise<LlmPromptProps | null> => {
-  try {
-    const { data } = await httpClient<LlmPromptProps>(
-      `${API_URL}/organizations/${organizationId}/llm-prompts/${promptId}`,
-    );
+export const getLlmPromptData = cache(
+  async (
+    organizationId: number,
+    promptId: number,
+  ): Promise<LlmPromptProps | null> => {
+    try {
+      const { data } = await httpClient<LlmPromptProps>(
+        `${API_URL}/organizations/${organizationId}/llm-prompts/${promptId}`,
+      );
 
-    return data;
-  } catch (error) {
-    if (error instanceof ServerError && error.status === 404) return null;
+      return data;
+    } catch (error) {
+      if (error instanceof ServerError && error.status === 404) return null;
 
-    throw error;
-  }
-});
+      throw error;
+    }
+  },
+);

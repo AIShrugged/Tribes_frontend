@@ -111,7 +111,9 @@ export default function TeamsPageClient({
               </div>
               <button
                 type='button'
-                onClick={() => { router.refresh(); }}
+                onClick={() => {
+                  router.refresh();
+                }}
                 className='flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors'
               >
                 <RefreshCw className='h-4 w-4' />

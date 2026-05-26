@@ -57,7 +57,11 @@ describe('getTeams', () => {
   });
 
   it('calls httpClientList with limit=100', async () => {
-    mockHttpClientList.mockResolvedValue({ data: [mockTeam], totalCount: 1, hasMore: false });
+    mockHttpClientList.mockResolvedValue({
+      data: [mockTeam],
+      totalCount: 1,
+      hasMore: false,
+    });
 
     await getTeams('5');
 
@@ -67,7 +71,11 @@ describe('getTeams', () => {
   });
 
   it('returns data and totalCount', async () => {
-    mockHttpClientList.mockResolvedValue({ data: [mockTeam], totalCount: 1, hasMore: false });
+    mockHttpClientList.mockResolvedValue({
+      data: [mockTeam],
+      totalCount: 1,
+      hasMore: false,
+    });
 
     const result = await getTeams('5');
 

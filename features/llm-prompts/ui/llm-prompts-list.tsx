@@ -14,7 +14,10 @@ import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/ui/feedback/empty-state';
 import { DataTable } from '@/shared/ui/table';
 
-import type { LlmPromptGroup, LlmPromptProps } from '@/features/llm-prompts/model/types';
+import type {
+  LlmPromptGroup,
+  LlmPromptProps,
+} from '@/features/llm-prompts/model/types';
 import type { TableColumn } from '@/shared/ui/table';
 
 const SEARCH_DEBOUNCE_MS = 150;
@@ -76,10 +79,7 @@ export function LlmPromptsList({
 
     const q = debouncedSearch.toLowerCase();
 
-    return (
-      p.name.toLowerCase().includes(q) ||
-      p.slug.toLowerCase().includes(q)
-    );
+    return p.name.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q);
   });
 
   const handleSeedSafe = () => {
@@ -159,11 +159,7 @@ export function LlmPromptsList({
     prompts.length === 0 ? (
       <EmptyState
         icon={Zap}
-        title={
-          canEdit
-            ? 'No prompts configured yet'
-            : 'No prompts configured'
-        }
+        title={canEdit ? 'No prompts configured yet' : 'No prompts configured'}
         description={
           canEdit
             ? 'Seed the default prompts to get started.'
@@ -232,7 +228,8 @@ export function LlmPromptsList({
                         Replace ALL prompt text with system defaults.
                       </p>
                       <p className='text-xs text-muted-foreground'>
-                        This will overwrite all customized prompts and cannot be undone.
+                        This will overwrite all customized prompts and cannot be
+                        undone.
                       </p>
                       <label className='flex cursor-pointer items-start gap-2 text-sm'>
                         <input
@@ -244,7 +241,9 @@ export function LlmPromptsList({
                           }}
                           className='mt-0.5 shrink-0'
                         />
-                        <span>I understand all customizations will be lost</span>
+                        <span>
+                          I understand all customizations will be lost
+                        </span>
                       </label>
                       <div className='flex gap-2'>
                         <Button
@@ -278,7 +277,8 @@ export function LlmPromptsList({
                       >
                         <p className='font-medium'>Sync missing defaults</p>
                         <p className='text-xs text-muted-foreground'>
-                          Add defaults for any missing slugs. Existing customizations are preserved.
+                          Add defaults for any missing slugs. Existing
+                          customizations are preserved.
                         </p>
                       </button>
                       <button
@@ -335,7 +335,9 @@ export function LlmPromptsList({
                   ) : (
                     <p className='font-medium'>{p.name}</p>
                   )}
-                  <p className='mt-1 font-mono text-xs text-muted-foreground'>{p.slug}</p>
+                  <p className='mt-1 font-mono text-xs text-muted-foreground'>
+                    {p.slug}
+                  </p>
                   <p className='mt-2 text-xs text-muted-foreground'>
                     Updated: {formatUpdatedAt(p.updated_at)}
                   </p>

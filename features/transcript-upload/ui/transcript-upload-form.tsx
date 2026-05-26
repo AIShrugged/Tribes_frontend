@@ -14,15 +14,15 @@ import {
   transcriptUploadSchema,
   type TranscriptUploadFormData,
 } from '@/features/transcript-upload/model/schema';
-import { BUTTON_VARIANT } from '@/shared/types/button';
 import { ROUTES } from '@/shared/lib/routes';
+import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
+import Error from '@/shared/ui/input/Error';
 import Input from '@/shared/ui/input/Input';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
-import Error from '@/shared/ui/input/Error';
 
-import type { CalendarEventListItem } from '@/features/meetings/model/types';
 import type { TeamProps } from '@/entities/team';
+import type { CalendarEventListItem } from '@/features/meetings/model/types';
 
 type Mode = 'existing' | 'new';
 
@@ -115,8 +115,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
         }
 
         const onlyFieldErrors =
-          result.fieldErrors &&
-          Object.keys(result.fieldErrors).length > 0;
+          result.fieldErrors && Object.keys(result.fieldErrors).length > 0;
 
         if (onlyFieldErrors) {
           setRootError(userMessage);
@@ -130,9 +129,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
       const uploadResponse = result.data;
       if (!uploadResponse) return; // narrow for TS; unreachable in practice
 
-      toast.success(
-        'Транскрипт загружен. Саммари появится через 1-2 минуты.',
-      );
+      toast.success('Транскрипт загружен. Саммари появится через 1-2 минуты.');
       onClose();
       router.push(
         ROUTES.DASHBOARD.MEETING_DETAIL_TRANSCRIPT(
@@ -148,32 +145,33 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
-      onChange(undefined);
+      onChange();
       return;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
       toast.error('Файл больше 5 МБ');
       event.target.value = '';
-      onChange(undefined);
+      onChange();
       return;
     }
     onChange(file);
   };
 
-  const meetingOptions = meetings.map((m) => ({
-    value: String(m.id),
-    label: `${m.title} — ${new Date(m.starts_at).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}`,
-  }));
-  const teamOptions = teams.map((t) => ({
-    value: String(t.id),
-    label: t.name,
-  }));
+  const meetingOptions = meetings.map((m) => {
+    return {
+      value: String(m.id),
+      label: `${m.title} — ${new Date(m.starts_at).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}`,
+    };
+  });
+  const teamOptions = teams.map((t) => {
+    return {
+      value: String(t.id),
+      label: t.name,
+    };
+  });
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className='flex flex-col gap-4 p-4'
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4 p-4'>
       {/* Mode tabs */}
       <div
         role='tablist'
@@ -182,8 +180,12 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
       >
         <ModeTabButton
           isActive={mode === 'existing'}
-          onActivate={() => switchMode('existing')}
-          onArrow={() => switchMode('new')}
+          onActivate={() => {
+            return switchMode('existing');
+          }}
+          onArrow={() => {
+            return switchMode('new');
+          }}
         >
           К существующей встрече
         </ModeTabButton>
@@ -195,8 +197,12 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
               ? 'Создайте команду, чтобы загружать транскрипты без встречи'
               : undefined
           }
-          onActivate={() => switchMode('new')}
-          onArrow={() => switchMode('existing')}
+          onActivate={() => {
+            return switchMode('new');
+          }}
+          onArrow={() => {
+            return switchMode('existing');
+          }}
         >
           Создать новую
         </ModeTabButton>
@@ -209,25 +215,29 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
         <Controller
           control={control}
           name='calendar_event_id'
-          render={({ field }) => (
-            <div className='flex flex-col gap-1.5'>
-              <label className='text-sm font-medium text-foreground'>
-                Встреча
-              </label>
-              <InputDropdown
-                options={meetingOptions}
-                value={field.value !== undefined ? String(field.value) : ''}
-                onChange={(v) => field.onChange(Number(v))}
-                placeholder={
-                  meetingOptions.length === 0
-                    ? 'У вас нет прошедших встреч'
-                    : 'Выберите встречу'
-                }
-                searchable
-                error={fieldErrorMessage('calendar_event_id')}
-              />
-            </div>
-          )}
+          render={({ field }) => {
+            return (
+              <div className='flex flex-col gap-1.5'>
+                <label className='text-sm font-medium text-foreground'>
+                  Встреча
+                </label>
+                <InputDropdown
+                  options={meetingOptions}
+                  value={field.value === undefined ? '' : String(field.value)}
+                  onChange={(v) => {
+                    return field.onChange(Number(v));
+                  }}
+                  placeholder={
+                    meetingOptions.length === 0
+                      ? 'У вас нет прошедших встреч'
+                      : 'Выберите встречу'
+                  }
+                  searchable
+                  error={fieldErrorMessage('calendar_event_id')}
+                />
+              </div>
+            );
+          }}
         />
       )}
 
@@ -238,78 +248,90 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
             control={control}
             name='title'
             defaultValue=''
-            render={({ field }) => (
-              <div className='flex flex-col gap-1.5'>
-                <label className='text-sm font-medium text-foreground'>
-                  Название встречи
-                </label>
-                <Input
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  placeholder='Например: Tribes техсинк'
-                  error={fieldErrorMessage('title')}
-                />
-              </div>
-            )}
+            render={({ field }) => {
+              return (
+                <div className='flex flex-col gap-1.5'>
+                  <label className='text-sm font-medium text-foreground'>
+                    Название встречи
+                  </label>
+                  <Input
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder='Например: Tribes техсинк'
+                    error={fieldErrorMessage('title')}
+                  />
+                </div>
+              );
+            }}
           />
           <div className='grid grid-cols-2 gap-3'>
             <Controller
               control={control}
               name='starts_at'
-              render={({ field }) => (
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-foreground'>
-                    Начало
-                  </label>
-                  <Input
-                    type='datetime-local'
-                    value={field.value ?? ''}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={fieldErrorMessage('starts_at')}
-                  />
-                </div>
-              )}
+              render={({ field }) => {
+                return (
+                  <div className='flex flex-col gap-1.5'>
+                    <label className='text-sm font-medium text-foreground'>
+                      Начало
+                    </label>
+                    <Input
+                      type='datetime-local'
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={fieldErrorMessage('starts_at')}
+                    />
+                  </div>
+                );
+              }}
             />
             <Controller
               control={control}
               name='ends_at'
-              render={({ field }) => (
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-foreground'>
-                    Окончание
-                  </label>
-                  <Input
-                    type='datetime-local'
-                    value={field.value ?? ''}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={fieldErrorMessage('ends_at')}
-                  />
-                </div>
-              )}
+              render={({ field }) => {
+                return (
+                  <div className='flex flex-col gap-1.5'>
+                    <label className='text-sm font-medium text-foreground'>
+                      Окончание
+                    </label>
+                    <Input
+                      type='datetime-local'
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={fieldErrorMessage('ends_at')}
+                    />
+                  </div>
+                );
+              }}
             />
           </div>
           {teams.length > 1 && (
             <Controller
               control={control}
               name='team_id'
-              render={({ field }) => (
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-foreground'>
-                    Команда
-                  </label>
-                  <InputDropdown
-                    options={teamOptions}
-                    value={field.value !== undefined ? String(field.value) : ''}
-                    onChange={(v) => field.onChange(Number(v))}
-                    placeholder='Выберите команду'
-                    searchable
-                    error={fieldErrorMessage('team_id')}
-                  />
-                </div>
-              )}
+              render={({ field }) => {
+                return (
+                  <div className='flex flex-col gap-1.5'>
+                    <label className='text-sm font-medium text-foreground'>
+                      Команда
+                    </label>
+                    <InputDropdown
+                      options={teamOptions}
+                      value={
+                        field.value === undefined ? '' : String(field.value)
+                      }
+                      onChange={(v) => {
+                        return field.onChange(Number(v));
+                      }}
+                      placeholder='Выберите команду'
+                      searchable
+                      error={fieldErrorMessage('team_id')}
+                    />
+                  </div>
+                );
+              }}
             />
           )}
         </>
@@ -319,34 +341,38 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
       <Controller
         control={control}
         name='file'
-        render={({ field }) => (
-          <div className='flex flex-col gap-1.5'>
-            <label
-              htmlFor='transcript-upload-file'
-              className='text-sm font-medium text-foreground'
-            >
-              Файл транскрипта
-              <span className='ml-2 text-xs font-normal text-muted-foreground'>
-                JSON, TXT, VTT или SRT · до 5 МБ
-              </span>
-            </label>
-            <input
-              id='transcript-upload-file'
-              type='file'
-              accept={ACCEPT_EXTENSIONS}
-              onChange={(e) => handleFileChange(e, field.onChange)}
-              className='text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
-            />
-            {field.value && (
-              <p className='text-xs text-muted-foreground'>
-                {field.value.name} · {(field.value.size / 1024).toFixed(1)} КБ
-              </p>
-            )}
-            {fieldErrorMessage('file') && (
-              <Error id='file-error'>{fieldErrorMessage('file')}</Error>
-            )}
-          </div>
-        )}
+        render={({ field }) => {
+          return (
+            <div className='flex flex-col gap-1.5'>
+              <label
+                htmlFor='transcript-upload-file'
+                className='text-sm font-medium text-foreground'
+              >
+                Файл транскрипта
+                <span className='ml-2 text-xs font-normal text-muted-foreground'>
+                  JSON, TXT, VTT или SRT · до 5 МБ
+                </span>
+              </label>
+              <input
+                id='transcript-upload-file'
+                type='file'
+                accept={ACCEPT_EXTENSIONS}
+                onChange={(e) => {
+                  return handleFileChange(e, field.onChange);
+                }}
+                className='text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
+              />
+              {field.value && (
+                <p className='text-xs text-muted-foreground'>
+                  {field.value.name} · {(field.value.size / 1024).toFixed(1)} КБ
+                </p>
+              )}
+              {fieldErrorMessage('file') && (
+                <Error id='file-error'>{fieldErrorMessage('file')}</Error>
+              )}
+            </div>
+          );
+        }}
       />
 
       {rootError && <p className='text-sm text-destructive'>{rootError}</p>}
@@ -392,7 +418,9 @@ function ModeTabButton({
       aria-selected={isActive}
       aria-disabled={disabled}
       title={tooltip}
-      onClick={() => !disabled && onActivate()}
+      onClick={() => {
+        return !disabled && onActivate();
+      }}
       onKeyDown={(e) => {
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') onArrow();
       }}
@@ -416,6 +444,8 @@ function ModeTabButton({
  * `<input type="datetime-local">` expects.
  */
 function toDatetimeLocalString(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
+  const pad = (n: number) => {
+    return String(n).padStart(2, '0');
+  };
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

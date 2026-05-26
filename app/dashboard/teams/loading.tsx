@@ -6,7 +6,11 @@ import { Skeleton } from '@/shared/ui/layout/skeleton';
  */
 export default function Loading() {
   return (
-    <Card className='h-full flex flex-col' aria-busy='true' aria-label='Loading team details'>
+    <Card
+      className='h-full flex flex-col'
+      aria-busy='true'
+      aria-label='Loading team details'
+    >
       {/* Page header */}
       <div className='px-4 py-3 border-b border-border'>
         <Skeleton className='h-6 w-24' />

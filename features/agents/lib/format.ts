@@ -126,7 +126,9 @@ export function normalizeToolOptions(
 
 export function normalizeAllowedTools(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.filter((item): item is string => {return typeof item === 'string'});
+    return value.filter((item): item is string => {
+      return typeof item === 'string';
+    });
   }
 
   return [];
