@@ -51,7 +51,7 @@ export async function uploadTranscript(
     );
 
     if (!data) {
-      return { data: null, error: 'Сервер вернул пустой ответ' };
+      return { data: null, error: 'Server returned an empty response' };
     }
 
     // Invalidate cached list views so new/updated meeting is reflected.
@@ -63,7 +63,7 @@ export async function uploadTranscript(
     if (error instanceof ServerError) {
       const parsed = parseApiError(
         error.responseBody ?? '',
-        'Не удалось загрузить транскрипт',
+        'Failed to upload transcript',
       );
 
       // Backend wraps error_code inside `data` (per ApiResponse::error in

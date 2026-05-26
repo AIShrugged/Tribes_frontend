@@ -30,7 +30,7 @@ export function TranscriptUploadButton({ organizationId }: Props) {
         onClick={() => setIsOpen(true)}
       >
         <Upload className='mr-2 size-4' />
-        Загрузить транскрипт
+        Upload transcript
       </Button>
       <TranscriptUploadModal
         isOpen={isOpen}

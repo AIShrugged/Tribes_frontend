@@ -73,7 +73,7 @@ export function TranscriptUploadModal({
       })
       .catch(() => {
         if (cancelled) return;
-        setLoadError('Не удалось загрузить данные. Попробуйте ещё раз.');
+        setLoadError('Failed to load data. Please try again.');
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -85,10 +85,10 @@ export function TranscriptUploadModal({
   }, [isOpen, meetings, organizationId]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title='Загрузить транскрипт' size='md'>
+    <Modal isOpen={isOpen} onClose={onClose} title='Upload transcript' size='md'>
       {isLoading && (
         <div className='p-6 text-center text-sm text-muted-foreground'>
-          Загрузка…
+          Loading…
         </div>
       )}
       {loadError && (

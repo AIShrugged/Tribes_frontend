@@ -131,7 +131,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
       if (!uploadResponse) return; // narrow for TS; unreachable in practice
 
       toast.success(
-        'Транскрипт загружен. Саммари появится через 1-2 минуты.',
+        'Transcript uploaded. Summary will appear in 1-2 minutes.',
       );
       onClose();
       router.push(
@@ -152,7 +152,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
       return;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error('Файл больше 5 МБ');
+      toast.error('File exceeds 5 MB');
       event.target.value = '';
       onChange(undefined);
       return;
@@ -162,7 +162,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
 
   const meetingOptions = meetings.map((m) => ({
     value: String(m.id),
-    label: `${m.title} — ${new Date(m.starts_at).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}`,
+    label: `${m.title} — ${new Date(m.starts_at).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}`,
   }));
   const teamOptions = teams.map((t) => ({
     value: String(t.id),
@@ -177,7 +177,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
       {/* Mode tabs */}
       <div
         role='tablist'
-        aria-label='Режим загрузки'
+        aria-label='Upload mode'
         className='flex rounded-md border border-border bg-background p-1'
       >
         <ModeTabButton
@@ -185,20 +185,20 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
           onActivate={() => switchMode('existing')}
           onArrow={() => switchMode('new')}
         >
-          К существующей встрече
+          Existing meeting
         </ModeTabButton>
         <ModeTabButton
           isActive={mode === 'new'}
           disabled={newMeetingDisabled}
           tooltip={
             newMeetingDisabled
-              ? 'Создайте команду, чтобы загружать транскрипты без встречи'
+              ? 'Create a team to upload transcripts without a meeting'
               : undefined
           }
           onActivate={() => switchMode('new')}
           onArrow={() => switchMode('existing')}
         >
-          Создать новую
+          New meeting
         </ModeTabButton>
       </div>
 
@@ -212,7 +212,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
           render={({ field }) => (
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-foreground'>
-                Встреча
+                Meeting
               </label>
               <InputDropdown
                 options={meetingOptions}
@@ -220,8 +220,8 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
                 onChange={(v) => field.onChange(Number(v))}
                 placeholder={
                   meetingOptions.length === 0
-                    ? 'У вас нет прошедших встреч'
-                    : 'Выберите встречу'
+                    ? 'No past meetings'
+                    : 'Select a meeting'
                 }
                 searchable
                 error={fieldErrorMessage('calendar_event_id')}
@@ -241,13 +241,13 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
             render={({ field }) => (
               <div className='flex flex-col gap-1.5'>
                 <label className='text-sm font-medium text-foreground'>
-                  Название встречи
+                  Meeting title
                 </label>
                 <Input
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
-                  placeholder='Например: Tribes техсинк'
+                  placeholder='e.g. Weekly Tribes sync'
                   error={fieldErrorMessage('title')}
                 />
               </div>
@@ -260,7 +260,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
               render={({ field }) => (
                 <div className='flex flex-col gap-1.5'>
                   <label className='text-sm font-medium text-foreground'>
-                    Начало
+                    Start
                   </label>
                   <Input
                     type='datetime-local'
@@ -278,7 +278,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
               render={({ field }) => (
                 <div className='flex flex-col gap-1.5'>
                   <label className='text-sm font-medium text-foreground'>
-                    Окончание
+                    End
                   </label>
                   <Input
                     type='datetime-local'
@@ -298,13 +298,13 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
               render={({ field }) => (
                 <div className='flex flex-col gap-1.5'>
                   <label className='text-sm font-medium text-foreground'>
-                    Команда
+                    Team
                   </label>
                   <InputDropdown
                     options={teamOptions}
                     value={field.value !== undefined ? String(field.value) : ''}
                     onChange={(v) => field.onChange(Number(v))}
-                    placeholder='Выберите команду'
+                    placeholder='Select a team'
                     searchable
                     error={fieldErrorMessage('team_id')}
                   />
@@ -325,9 +325,9 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
               htmlFor='transcript-upload-file'
               className='text-sm font-medium text-foreground'
             >
-              Файл транскрипта
+              Transcript file
               <span className='ml-2 text-xs font-normal text-muted-foreground'>
-                JSON, TXT, VTT или SRT · до 5 МБ
+                JSON, TXT, VTT or SRT · up to 5 MB
               </span>
             </label>
             <input
@@ -339,7 +339,7 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
             />
             {field.value && (
               <p className='text-xs text-muted-foreground'>
-                {field.value.name} · {(field.value.size / 1024).toFixed(1)} КБ
+                {field.value.name} · {(field.value.size / 1024).toFixed(1)} KB
               </p>
             )}
             {fieldErrorMessage('file') && (
@@ -358,10 +358,10 @@ export function TranscriptUploadForm({ meetings, teams, onClose }: Props) {
           onClick={onClose}
           disabled={isPending}
         >
-          Отмена
+          Cancel
         </Button>
         <Button type='submit' disabled={isPending}>
-          {isPending ? 'Загрузка…' : 'Загрузить'}
+          {isPending ? 'Uploading…' : 'Upload'}
         </Button>
       </div>
     </form>
