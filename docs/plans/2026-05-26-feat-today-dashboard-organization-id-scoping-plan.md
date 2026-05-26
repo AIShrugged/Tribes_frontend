@@ -1,7 +1,7 @@
 ---
 title: 'feat: Today Dashboard — Pass organization_id to All API Calls'
 type: feat
-status: active
+status: completed
 date: 2026-05-26
 deepened: 2026-05-26
 ---
