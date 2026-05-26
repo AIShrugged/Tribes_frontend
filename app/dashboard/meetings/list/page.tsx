@@ -50,17 +50,15 @@ export default async function MeetingsListPage({
 
   const filtersBar = (
     <div className='flex items-center justify-between gap-3 border-b border-border bg-card pr-3'>
-      <Suspense
-        fallback={<div className='h-14 flex-1' />}
-      >
+      <Suspense fallback={<div className='h-14 flex-1' />}>
         <MeetingsListFiltersBar
           key={cookieOrgId}
-          cookieOrgId={cookieOrgId}
+          cookieOrgId={String(cookieOrgId)}
           filters={filters}
           organizations={organizations}
         />
       </Suspense>
-      <TranscriptUploadButton organizationId={cookieOrgId} />
+      <TranscriptUploadButton organizationId={String(cookieOrgId)} />
     </div>
   );
 

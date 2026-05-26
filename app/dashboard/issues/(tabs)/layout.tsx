@@ -39,7 +39,7 @@ export default async function IssuesTabsLayout({
               persons={persons}
               epics={epics}
               currentUserId={currentUserId ?? null}
-              cookieOrgId={cookieOrgId}
+              cookieOrgId={String(cookieOrgId)}
             >
               {children}
             </IssuesLayoutClient>

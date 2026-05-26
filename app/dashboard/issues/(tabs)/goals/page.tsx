@@ -25,12 +25,9 @@ function UnlinkedTasksSkeleton() {
 }
 
 export default async function GoalsPage() {
-  const cookieOrgId = await getOrganizationId();
-  const orgId = Number(cookieOrgId);
+  const orgId = await getOrganizationId();
 
-  const epics = await getEpics(
-    Number.isFinite(orgId) && orgId > 0 ? orgId : null,
-  );
+  const epics = await getEpics(orgId);
 
   if (epics.length === 0) {
     return (
@@ -55,10 +52,7 @@ export default async function GoalsPage() {
       })}
 
       <Suspense fallback={<UnlinkedTasksSkeleton />}>
-        <UnlinkedTasksSection
-          orgId={Number.isFinite(orgId) && orgId > 0 ? orgId : 0}
-          epics={epics}
-        />
+        <UnlinkedTasksSection orgId={orgId} epics={epics} />
       </Suspense>
     </div>
   );

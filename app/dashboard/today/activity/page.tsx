@@ -8,5 +8,5 @@ export const metadata = { title: 'Activity' };
 export default async function TodayActivityPage() {
   const organizationId = await getOrganizationId();
 
-  return <CriticalPathPageClient organizationId={Number(organizationId)} />;
+  return <CriticalPathPageClient organizationId={organizationId} />;
 }
