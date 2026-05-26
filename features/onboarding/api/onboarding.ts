@@ -74,7 +74,9 @@ export async function skipOnboarding(orgId: number): Promise<void> {
     name: 'onboarding_skipped',
     value: String(orgId),
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure:
+      process.env.NODE_ENV === 'production' ||
+      process.env.NEXT_PUBLIC_APP_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   });
@@ -104,7 +106,9 @@ export async function acceptStructure(
       name: 'org_onboarded',
       value: '1',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure:
+        process.env.NODE_ENV === 'production' ||
+        process.env.NEXT_PUBLIC_APP_ENV === 'production',
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 365,

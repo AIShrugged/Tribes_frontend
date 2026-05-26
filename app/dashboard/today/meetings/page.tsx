@@ -25,7 +25,7 @@ export default async function TodayMeetingsPage({
 
   return (
     <Card className='h-full flex flex-col'>
-      <MeetingsContent key={data.date} data={data} organizationId={+orgId} />
+      <MeetingsContent key={data.date} data={data} organizationId={orgId} />
     </Card>
   );
 }

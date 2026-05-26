@@ -32,7 +32,7 @@ export default async function ProfileCalendarPage() {
   return (
     <CalendarSection
       source={calendarSource}
-      organizationId={+orgId}
+      organizationId={orgId}
       organizationName={orgName}
     />
   );

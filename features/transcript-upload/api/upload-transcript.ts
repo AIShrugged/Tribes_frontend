@@ -15,13 +15,10 @@ import type {
 import type { ActionResult } from '@/shared/types/server-action';
 
 /**
- * Upload a transcript file to an existing or freshly-created CalendarEvent.
- *
  * Backend endpoint: POST /api/v1/transcripts/upload (multipart/form-data).
  * Returns 201 with calendar_event_id on success.
  *
- * Error codes the backend may return (mapped to Russian copy in
- * model/schema.ts → ERROR_CODE_MESSAGES):
+ * Error codes the backend may return (mapped in model/schema.ts → ERROR_CODE_MESSAGES):
  *   NO_SOURCE — uploader has no connected calendar source
  *   TRANSCRIPT_PARSE_FAILED — parser couldn't extract entries
  *   TOO_MANY_ENTRIES — > 10 000 parsed entries
@@ -54,7 +51,6 @@ export async function uploadTranscript(
       return { data: null, error: 'Server returned an empty response' };
     }
 
-    // Invalidate cached list views so new/updated meeting is reflected.
     revalidatePath(ROUTES.DASHBOARD.MEETINGS_LIST);
     revalidatePath(`/dashboard/meetings/${data.calendar_event_id}`, 'layout');
 

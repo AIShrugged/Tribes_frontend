@@ -6,7 +6,11 @@ import { cache } from 'react';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
-import { httpClient, httpClientAction, httpClientList } from '@/shared/lib/httpClient';
+import {
+  httpClient,
+  httpClientAction,
+  httpClientList,
+} from '@/shared/lib/httpClient';
 
 import type {
   AgentMemory,
@@ -40,7 +44,11 @@ export const getAgentProfile = cache(async (id: number) => {
   );
 
   if (!data) {
-    throw new ServerError('Not found', { status: 404, url: `${API_URL}/agent-profiles/${id}`, responseBody: '' });
+    throw new ServerError('Not found', {
+      status: 404,
+      url: `${API_URL}/agent-profiles/${id}`,
+      responseBody: '',
+    });
   }
 
   return data;
@@ -49,7 +57,11 @@ export const getAgentProfile = cache(async (id: number) => {
 export async function createAgentProfile(payload: AgentProfileCreatePayload) {
   const result = await httpClientAction<AgentProfile>(
     `${API_URL}/agent-profiles`,
-    { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    },
     'Failed to create agent profile',
   );
 
@@ -66,7 +78,11 @@ export async function updateAgentProfile(
 ) {
   const result = await httpClientAction<AgentProfile>(
     `${API_URL}/agent-profiles/${id}`,
-    { method: 'PATCH', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    },
     'Failed to update agent profile',
   );
 
@@ -105,7 +121,11 @@ export async function validateAgentProfilePayload(
 ) {
   return httpClientAction<unknown>(
     `${API_URL}/agent-profiles/${id}/validate-payload`,
-    { method: 'POST', body: JSON.stringify({ payload }), headers: { 'Content-Type': 'application/json' } },
+    {
+      method: 'POST',
+      body: JSON.stringify({ payload }),
+      headers: { 'Content-Type': 'application/json' },
+    },
     'Failed to validate payload',
   );
 }
@@ -126,14 +146,20 @@ export const getAgentTools = cache(async () => {
   return data ?? [];
 });
 
-export const getAgentProfileTools = cache(async (id: number): Promise<AgentProfileTool[]> => {
-  if (!Number.isInteger(id) || id <= 0) return [];
-  const { data } = await httpClient<AgentProfileTool[]>(`${API_URL}/agent-profiles/${id}/tools`);
+export const getAgentProfileTools = cache(
+  async (id: number): Promise<AgentProfileTool[]> => {
+    if (!Number.isInteger(id) || id <= 0) return [];
+    const { data } = await httpClient<AgentProfileTool[]>(
+      `${API_URL}/agent-profiles/${id}/tools`,
+    );
 
-  return data ?? [];
-});
+    return data ?? [];
+  },
+);
 
-export async function getAgentProfilePromptVersions(id: number): Promise<AgentProfilePromptVersion[]> {
+export async function getAgentProfilePromptVersions(
+  id: number,
+): Promise<AgentProfilePromptVersion[]> {
   if (!Number.isInteger(id) || id <= 0) return [];
   const { data } = await httpClient<AgentProfilePromptVersion[]>(
     `${API_URL}/agent-profiles/${id}/prompt-versions`,
@@ -147,8 +173,10 @@ export async function restoreAgentProfilePromptVersion(
   versionNumber: number,
 ): Promise<ActionResult<AgentProfile>> {
   if (
-    !Number.isInteger(profileId) || profileId <= 0 ||
-    !Number.isInteger(versionNumber) || versionNumber <= 0
+    !Number.isInteger(profileId) ||
+    profileId <= 0 ||
+    !Number.isInteger(versionNumber) ||
+    versionNumber <= 0
   ) {
     return { data: null, error: 'Invalid profile or version' };
   }

@@ -7,7 +7,11 @@ export type AgentRunStatus =
   | 'failed'
   | 'error';
 
-export const AGENT_EXECUTION_MODES = ['inline', 'isolated', 'paperclip'] as const;
+export const AGENT_EXECUTION_MODES = [
+  'inline',
+  'isolated',
+  'paperclip',
+] as const;
 export type AgentExecutionMode = (typeof AGENT_EXECUTION_MODES)[number];
 
 export interface AgentToolDefinition {

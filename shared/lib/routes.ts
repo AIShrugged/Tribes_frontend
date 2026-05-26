@@ -22,9 +22,15 @@ export const ROUTES = {
     AGENTS: '/dashboard/agents',
     AGENT_PROFILES: '/dashboard/agents/profiles',
     AGENT_PROFILES_NEW: '/dashboard/agents/profiles/new',
-    AGENT_PROFILE_OVERVIEW: (id: string | number) => {return `/dashboard/agents/profiles/${id}/overview`},
-    AGENT_PROFILE_TOOLS: (id: string | number) => {return `/dashboard/agents/profiles/${id}/tools`},
-    AGENT_PROFILE_MEMORIES: (id: string | number) => {return `/dashboard/agents/profiles/${id}/memories`},
+    AGENT_PROFILE_OVERVIEW: (id: string | number) => {
+      return `/dashboard/agents/profiles/${id}/overview`;
+    },
+    AGENT_PROFILE_TOOLS: (id: string | number) => {
+      return `/dashboard/agents/profiles/${id}/tools`;
+    },
+    AGENT_PROFILE_MEMORIES: (id: string | number) => {
+      return `/dashboard/agents/profiles/${id}/memories`;
+    },
     AGENT_TASKS: '/dashboard/agents/tasks',
     AGENT_ACTIVITY: '/dashboard/agents/activity',
     TEAMS: '/dashboard/teams',
@@ -36,8 +42,8 @@ export const ROUTES = {
     PROFILE_CALENDAR: '/dashboard/profile/calendar',
     PROFILE_PREFERENCES: '/dashboard/profile/preferences',
     PROFILE_INTEGRATIONS: '/dashboard/profile/integrations',
-    PROFILE_ONBOARDING: '/dashboard/profile/onboarding',
-    PROFILE_TELEGRAM: '/dashboard/profile/telegram',
+    ONBOARDING: '/dashboard/onboarding',
+    TELEGRAM: '/dashboard/telegram',
     SUMMARY: '/dashboard/summary',
     KANBAN: '/dashboard/kanban',
     ISSUES_LIST: '/dashboard/issues/list',
@@ -61,6 +67,10 @@ export const ROUTES = {
     },
     MEETING_DETAIL_TRANSCRIPT: (id: string | number) => {
       return `/dashboard/meetings/${id}/transcript`;
+    },
+    AGENT_PROMPTS: '/dashboard/agents/prompts',
+    AGENT_PROMPT_EDIT: (id: number) => {
+      return `/dashboard/agents/prompts/${id}`;
     },
   },
 } as const;

@@ -38,7 +38,7 @@ export function OnboardingGoalCard({ goal, index, onUpdate, onRemove }: Props) {
             {goal.title || 'Untitled goal'}
           </span>
         </div>
-        <div className='flex items-center gap-1 shrink-0'>
+        <div className='flex items-center gap-4 shrink-0'>
           <Button
             type='button'
             variant={BUTTON_VARIANT.ghost}
@@ -74,25 +74,6 @@ export function OnboardingGoalCard({ goal, index, onUpdate, onRemove }: Props) {
               return onUpdate({ ...goal, description: e.target.value });
             }}
           />
-          {goal.tasks.length > 0 && (
-            <div className='flex flex-col gap-1.5'>
-              <span className='text-xs font-medium text-muted-foreground'>
-                Tasks ({goal.tasks.length})
-              </span>
-              <ul className='flex flex-col gap-1'>
-                {goal.tasks.map((task, i) => {
-                  return (
-                    <li
-                      key={i}
-                      className='text-xs text-foreground/80 pl-3 border-l border-border/60'
-                    >
-                      {task.title}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
         </div>
       )}
     </div>

@@ -1,16 +1,7 @@
 import type { MeetingTask } from '@/features/meeting/types';
+import type { CalendarEventListItem } from '@/entities/event';
 
-export interface CalendarEventListItem {
-  id: number;
-  title: string;
-  starts_at: string;
-  ends_at: string;
-  platform: string;
-  url?: string | null;
-  description: string | null;
-  required_bot: boolean;
-  has_summary: boolean;
-}
+export type { CalendarEventListItem };
 
 export interface CalendarEventReadMore {
   section?: string | null;

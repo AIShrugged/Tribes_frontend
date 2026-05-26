@@ -43,7 +43,7 @@ export function DashboardChatPanel({
     if (isCreating) return;
     setIsCreating(true);
     try {
-      const result = await createChat(null);
+      const result = await createChat({});
       if (result.error) {
         toast.error(result.error);
         return;

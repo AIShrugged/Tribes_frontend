@@ -13,7 +13,8 @@ import { Button } from '@/shared/ui/button/Button';
 
 import type { PendingAttachment } from '../model/types';
 
-const MAX_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_SIZE_KB = 10_240;
+const MAX_SIZE_BYTES = MAX_SIZE_KB * 1024;
 
 interface Props {
   uploadToken: string;
@@ -22,6 +23,11 @@ interface Props {
   onUploaded: (attachment: PendingAttachment) => void;
   onDeleted: (attachmentId: number) => void;
   onPendingChange: (hasPending: boolean) => void;
+}
+
+function getUploadLabel(count: number): string {
+  if (count > 1) return `Uploading (${count})...`;
+  return 'Uploading...';
 }
 
 function formatSize(bytes: number): string {
@@ -120,53 +126,61 @@ export function OnboardingFileUpload({
           ].join(' ')}
         >
           <Upload className='h-3.5 w-3.5' />
-          {isBusy ? 'Uploading...' : 'Add file'}
+          {isBusy ? getUploadLabel(pendingOps.size) : 'Add files'}
           <input
             type='file'
             className='hidden'
             accept='.pdf,.docx,.md,.txt'
+            multiple
             disabled={isBusy}
             onChange={(event) => {
-              const file = event.target.files?.[0];
+              const files = [...(event.target.files ?? [])];
 
-              if (!file) return;
               event.target.value = '';
+              if (files.length === 0) return;
 
-              if (file.size > MAX_SIZE_BYTES) {
-                toast.error('File exceeds 10 MB limit');
-                return;
+              for (const file of files) {
+                if (file.size > MAX_SIZE_BYTES) {
+                  toast.error(
+                    `"${file.name}" exceeds ${formatSize(MAX_SIZE_BYTES)} limit`,
+                  );
+                  continue;
+                }
+
+                const opId = crypto.randomUUID();
+                const originalName = file.name;
+                const originalSize = file.size;
+
+                addOp(opId);
+                uploadPendingAttachment(file, uploadToken, organizationId)
+                  .then((result) => {
+                    if (!isMountedRef.current) return;
+                    if (result.error) {
+                      toast.error(result.error);
+                      return;
+                    }
+                    if (result.data) {
+                      const id = result.data.id;
+
+                      setFileNames((prev) => {
+                        return new Map(prev).set(id, originalName);
+                      });
+                      setFileSizes((prev) => {
+                        return new Map(prev).set(id, originalSize);
+                      });
+                      onUploaded(result.data);
+                    }
+                  })
+                  .catch(() => {
+                    if (!isMountedRef.current) return;
+                    toast.error(
+                      `Failed to upload "${originalName}". Please try again.`,
+                    );
+                  })
+                  .finally(() => {
+                    removeOp(opId);
+                  });
               }
-
-              const opId = crypto.randomUUID();
-              const originalName = file.name;
-              const originalSize = file.size;
-
-              addOp(opId);
-              uploadPendingAttachment(file, uploadToken, organizationId)
-                .then((result) => {
-                  if (!isMountedRef.current) return;
-                  if (result.error) {
-                    toast.error(result.error);
-                    return;
-                  }
-                  if (result.data) {
-                    const id = result.data.id;
-
-                    setFileNames((prev) => {
-                      return new Map(prev).set(id, originalName);
-                    });
-                    setFileSizes((prev) => {
-                      return new Map(prev).set(id, originalSize);
-                    });
-                    onUploaded(result.data);
-                  }
-                })
-                .catch(() => {
-                  toast.error('Upload failed. Please try again.');
-                })
-                .finally(() => {
-                  removeOp(opId);
-                });
             }}
           />
         </label>

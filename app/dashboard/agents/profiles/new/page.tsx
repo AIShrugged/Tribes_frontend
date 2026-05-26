@@ -19,7 +19,7 @@ export default async function NewAgentProfilePage() {
   if (!canManageAgents) {
     return (
       <Card className='h-full flex flex-col'>
-        <PageHeader hasButtonBack title='New Agent Profile' />
+        <PageHeader hasButtonBack title='New Agent' />
         <CardBody>
           <AccessDeniedState />
         </CardBody>
@@ -33,8 +33,12 @@ export default async function NewAgentProfilePage() {
 
   try {
     [meta, tools] = await Promise.all([
-      getAgentTasksMeta().catch((): AgentTasksMeta => {return {}}),
-      getAgentTools().catch(() => {return []}),
+      getAgentTasksMeta().catch((): AgentTasksMeta => {
+        return {};
+      }),
+      getAgentTools().catch(() => {
+        return [];
+      }),
     ]);
   } catch (error) {
     if (error instanceof ServerError && error.status === 403) {
@@ -47,7 +51,7 @@ export default async function NewAgentProfilePage() {
   if (accessDenied) {
     return (
       <Card className='h-full flex flex-col'>
-        <PageHeader hasButtonBack title='New Agent Profile' />
+        <PageHeader hasButtonBack title='New Agent' />
         <CardBody>
           <AccessDeniedState description='The backend denied access while loading profile creation metadata.' />
         </CardBody>
@@ -59,7 +63,7 @@ export default async function NewAgentProfilePage() {
 
   return (
     <Card className='h-full flex flex-col'>
-      <PageHeader hasButtonBack title='New Agent Profile' />
+      <PageHeader hasButtonBack title='New Agent' />
       <div className='h-full overflow-y-auto'>
         <CardBody>
           {toolOptions.length === 0 ? (

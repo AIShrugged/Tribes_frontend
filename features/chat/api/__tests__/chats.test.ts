@@ -189,7 +189,7 @@ describe('createChat', () => {
       .fn()
       .mockResolvedValue(makeResponse(200, { success: true, data: mockChat }));
 
-    const result = await createChat('My Chat');
+    const result = await createChat({ title: 'My Chat' });
 
     expect(result.error).toBeNull();
     expect(result.data).toEqual(mockChat);
@@ -200,7 +200,7 @@ describe('createChat', () => {
       .fn()
       .mockResolvedValue(makeResponse(200, { success: true, data: mockChat }));
 
-    await createChat('Hello Chat');
+    await createChat({ title: 'Hello Chat' });
 
     const [, options] = (globalThis.fetch as jest.Mock).mock.calls[0] as [
       string,
@@ -209,6 +209,22 @@ describe('createChat', () => {
     const body = JSON.parse(options.body as string) as Record<string, unknown>;
 
     expect(body.title).toBe('Hello Chat');
+  });
+
+  it('sends organization_id in request body when provided', async () => {
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValue(makeResponse(200, { success: true, data: mockChat }));
+
+    await createChat({ title: 'Scoped Chat', organization_id: 42 });
+
+    const [, options] = (globalThis.fetch as jest.Mock).mock.calls[0] as [
+      string,
+      RequestInit,
+    ];
+    const body = JSON.parse(options.body as string) as Record<string, unknown>;
+
+    expect(body.organization_id).toBe(42);
   });
 
   it('omits title when no title is given', async () => {

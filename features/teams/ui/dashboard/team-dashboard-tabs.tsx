@@ -1,8 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
-
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRef } from 'react';
 
 import { TemplatesTab } from '../templates/templates-tab';
 
@@ -105,14 +104,28 @@ export default function TeamDashboardTabs({
     const lastIndex = TABS.length - 1;
     let nextIndex: number | null = null;
 
-    if (e.key === 'ArrowRight') {
-      nextIndex = (currentIndex + 1) % TABS.length;
-    } else if (e.key === 'ArrowLeft') {
-      nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
-    } else if (e.key === 'Home') {
-      nextIndex = 0;
-    } else if (e.key === 'End') {
-      nextIndex = lastIndex;
+    switch (e.key) {
+      case 'ArrowRight': {
+        nextIndex = (currentIndex + 1) % TABS.length;
+
+        break;
+      }
+      case 'ArrowLeft': {
+        nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+
+        break;
+      }
+      case 'Home': {
+        nextIndex = 0;
+
+        break;
+      }
+      case 'End': {
+        nextIndex = lastIndex;
+
+        break;
+      }
+      // No default
     }
 
     if (nextIndex !== null) {
@@ -136,7 +149,9 @@ export default function TeamDashboardTabs({
           return (
             <button
               key={tab.key}
-              ref={(el) => { tabRefs.current[index] = el; }}
+              ref={(el) => {
+                tabRefs.current[index] = el;
+              }}
               type='button'
               role='tab'
               id={`team-tab-${tab.key}`}
@@ -146,7 +161,9 @@ export default function TeamDashboardTabs({
               onClick={() => {
                 return handleTabChange(tab.key);
               }}
-              onKeyDown={(e) => { handleKeyDown(e, index); }}
+              onKeyDown={(e) => {
+                handleKeyDown(e, index);
+              }}
               className={[
                 'cursor-pointer px-4 py-2 text-sm font-medium transition-colors',
                 isActive

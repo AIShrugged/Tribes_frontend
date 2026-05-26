@@ -6,7 +6,11 @@ import { cache } from 'react';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
 import { ServerError } from '@/shared/lib/errors';
-import { httpClient, httpClientAction, httpClientList } from '@/shared/lib/httpClient';
+import {
+  httpClient,
+  httpClientAction,
+  httpClientList,
+} from '@/shared/lib/httpClient';
 
 import type {
   AgentTask,
@@ -45,7 +49,11 @@ export const getAgentTask = cache(async (id: number) => {
 export async function createAgentTask(payload: AgentTaskPayload) {
   const result = await httpClientAction<AgentTask>(
     `${API_URL}/agent-tasks`,
-    { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    },
     'Failed to create agent task',
   );
 
@@ -62,7 +70,11 @@ export async function updateAgentTask(
 ) {
   const result = await httpClientAction<AgentTask>(
     `${API_URL}/agent-tasks/${id}`,
-    { method: 'PATCH', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } },
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    },
     'Failed to update agent task',
   );
 
@@ -96,7 +108,11 @@ export async function deleteAgentTask(id: number): Promise<ActionResult<null>> {
 export async function dispatchAgentTask(id: number) {
   const result = await httpClientAction<unknown>(
     `${API_URL}/agent-tasks/${id}/dispatch`,
-    { method: 'POST', body: JSON.stringify({}), headers: { 'Content-Type': 'application/json' } },
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+      headers: { 'Content-Type': 'application/json' },
+    },
     'Failed to dispatch agent task',
   );
 

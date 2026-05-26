@@ -407,7 +407,10 @@ const INVITE_STATUS_BADGE: Record<
 > = {
   pending: { label: 'Pending', className: 'bg-amber-500/10 text-amber-400' },
   cancelled: { label: 'Cancelled', className: 'bg-red-500/10 text-red-400' },
-  accepted: { label: 'Accepted', className: 'bg-emerald-500/10 text-emerald-400' },
+  accepted: {
+    label: 'Accepted',
+    className: 'bg-emerald-500/10 text-emerald-400',
+  },
   expired: { label: 'Expired', className: 'bg-red-500/10 text-red-400' },
 };
 
@@ -422,13 +425,19 @@ function PendingInviteRow({ invite, teamId }: PendingInviteRowProps) {
 
   // Parse once, use for both expiry check and display label.
   // new Date(null) = Unix epoch (1970) — the null guard prevents that false positive.
-  const expiresDate = invite.expires_at !== null ? new Date(invite.expires_at) : null;
+  const expiresDate =
+    invite.expires_at === null ? null : new Date(invite.expires_at);
   const isPastExpiry = expiresDate !== null && expiresDate < new Date();
 
-  const badge = isPastExpiry ? INVITE_STATUS_BADGE['expired'] : INVITE_STATUS_BADGE[invite.status];
+  const badge = isPastExpiry
+    ? INVITE_STATUS_BADGE['expired']
+    : INVITE_STATUS_BADGE[invite.status];
 
   const expiresLabel = expiresDate
-    ? expiresDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    ? expiresDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })
     : null;
 
   const handleCancel = () => {
@@ -454,7 +463,9 @@ function PendingInviteRow({ invite, teamId }: PendingInviteRowProps) {
           <p
             className={`text-xs mt-0.5 ${isPastExpiry ? 'text-red-400' : 'text-muted-foreground'}`}
           >
-            {isPastExpiry ? `Expired ${expiresLabel}` : `Expires ${expiresLabel}`}
+            {isPastExpiry
+              ? `Expired ${expiresLabel}`
+              : `Expires ${expiresLabel}`}
           </p>
         )}
       </div>

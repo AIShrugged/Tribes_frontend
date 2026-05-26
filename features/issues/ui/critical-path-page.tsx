@@ -79,6 +79,7 @@ export function CriticalPathPageClient({
 
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const pollGenRef = useRef(0);
 
   function clearPolling() {
     if (pollingRef.current !== null) {
@@ -89,15 +90,17 @@ export function CriticalPathPageClient({
 
   useEffect(() => {
     mountedRef.current = true;
+    pollGenRef.current += 1;
+    const gen = pollGenRef.current;
 
     async function poll() {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || pollGenRef.current !== gen) return;
       try {
         const data = await getCriticalPath({
           organization_id: organizationId,
           team_id: teamId,
         });
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || pollGenRef.current !== gen) return;
         if (data === null) {
           setNotFound(true);
           setLoading(false);
@@ -110,7 +113,7 @@ export function CriticalPathPageClient({
           pollingRef.current = setTimeout(poll, POLL_INTERVAL_MS);
         }
       } catch {
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || pollGenRef.current !== gen) return;
         setLoading(false);
       }
     }
@@ -124,7 +127,12 @@ export function CriticalPathPageClient({
   }, [organizationId, teamId]);
 
   async function handleRebuild() {
+    if (rebuilding) return;
     setRebuilding(true);
+    clearPolling();
+    pollGenRef.current += 1;
+    const gen = pollGenRef.current;
+
     const result = await rebuildCriticalPath({
       organization_id: organizationId,
       team_id: teamId,
@@ -153,16 +161,15 @@ export function CriticalPathPageClient({
       });
     }
     setRebuilding(false);
-    clearPolling();
 
     async function repoll() {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || pollGenRef.current !== gen) return;
       try {
         const data = await getCriticalPath({
           organization_id: organizationId,
           team_id: teamId,
         });
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || pollGenRef.current !== gen) return;
         if (data !== null) {
           setGraph(data);
           if (data.status === 'pending' || data.status === 'computing') {

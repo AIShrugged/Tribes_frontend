@@ -3,13 +3,15 @@ import userEvent from '@testing-library/user-event';
 
 import { TranscriptUploadForm } from '@/features/transcript-upload/ui/transcript-upload-form';
 
-import type { CalendarEventListItem } from '@/features/meetings/model/types';
+import type { CalendarEventListItem } from '@/entities/event';
 import type { TeamProps } from '@/entities/team';
 
 const mockUpload = jest.fn();
 jest.mock('@/features/transcript-upload/api/upload-transcript', () => {
   return {
-    uploadTranscript: (...args: unknown[]) => mockUpload(...args),
+    uploadTranscript: (...args: unknown[]) => {
+      return mockUpload(...args);
+    },
   };
 });
 
@@ -18,8 +20,12 @@ const mockToastError = jest.fn();
 jest.mock('sonner', () => {
   return {
     toast: {
-      success: (...args: unknown[]) => mockToastSuccess(...args),
-      error: (...args: unknown[]) => mockToastError(...args),
+      success: (...args: unknown[]) => {
+        return mockToastSuccess(...args);
+      },
+      error: (...args: unknown[]) => {
+        return mockToastError(...args);
+      },
     },
   };
 });
@@ -27,14 +33,20 @@ jest.mock('sonner', () => {
 const mockPush = jest.fn();
 jest.mock('next/navigation', () => {
   return {
-    useRouter: () => ({ push: (...args: unknown[]) => mockPush(...args) }),
+    useRouter: () => {
+      return {
+        push: (...args: unknown[]) => {
+          return mockPush(...args);
+        },
+      };
+    },
   };
 });
 
 const meetings: CalendarEventListItem[] = [
   {
     id: 42,
-    title: 'Tribes sync',
+    title: 'Tribes tech sync',
     starts_at: '2026-05-01T10:00:00Z',
     ends_at: '2026-05-01T11:00:00Z',
     platform: 'google_meet',
@@ -69,12 +81,11 @@ describe('TranscriptUploadForm', () => {
     );
 
     expect(
-      screen.getByRole('tab', { name: /existing meeting/i }),
+      screen.getByRole('tab', { name: /attach to existing meeting/i }),
     ).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: /new meeting/i })).toHaveAttribute(
-      'aria-selected',
-      'false',
-    );
+    expect(
+      screen.getByRole('tab', { name: /create new meeting/i }),
+    ).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByLabelText(/transcript file/i)).toBeInTheDocument();
   });
 
@@ -87,10 +98,9 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    expect(screen.getByRole('tab', { name: /new meeting/i })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(
+      screen.getByRole('tab', { name: /create new meeting/i }),
+    ).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows new-meeting fields after switching mode', async () => {
@@ -102,7 +112,9 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('tab', { name: /new meeting/i }));
+    await userEvent.click(
+      screen.getByRole('tab', { name: /create new meeting/i }),
+    );
 
     expect(screen.getByText(/meeting title/i)).toBeInTheDocument();
     expect(screen.getByText(/^start$/i)).toBeInTheDocument();
@@ -130,7 +142,11 @@ describe('TranscriptUploadForm', () => {
 
   it('on successful submit, shows toast and redirects', async () => {
     mockUpload.mockResolvedValue({
-      data: { calendar_event_id: 100, transcript_entries_count: 5, participants_count: 2 },
+      data: {
+        calendar_event_id: 100,
+        transcript_entries_count: 5,
+        participants_count: 2,
+      },
       error: null,
     });
 
@@ -143,13 +159,10 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    // Pick existing meeting (only one available).
     await userEvent.click(screen.getByText(/select a meeting|tribes/i));
-    // The InputDropdown opens a portal — click the option label.
-    const option = await screen.findByText(/Tribes sync —/i);
+    const option = await screen.findByText(/Tribes tech sync —/i);
     await userEvent.click(option);
 
-    // Attach file
     const fileInput = screen.getByLabelText(/transcript file/i, {
       selector: 'input',
     }) as HTMLInputElement;
@@ -157,7 +170,6 @@ describe('TranscriptUploadForm', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /^upload$/i }));
 
-    // Allow promises to flush.
     await screen.findByRole('button', { name: /uploading|^upload$/i });
 
     expect(mockUpload).toHaveBeenCalled();
@@ -168,7 +180,7 @@ describe('TranscriptUploadForm', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('shows Russian error message for NO_SOURCE error code', async () => {
+  it('shows English error message for NO_SOURCE error code', async () => {
     mockUpload.mockResolvedValue({
       data: null,
       error: 'no source',
@@ -184,7 +196,7 @@ describe('TranscriptUploadForm', () => {
     );
 
     await userEvent.click(screen.getByText(/select a meeting|tribes/i));
-    const option = await screen.findByText(/Tribes sync —/i);
+    const option = await screen.findByText(/Tribes tech sync —/i);
     await userEvent.click(option);
 
     const fileInput = screen.getByLabelText(/transcript file/i, {
@@ -197,7 +209,7 @@ describe('TranscriptUploadForm', () => {
     await screen.findByRole('button', { name: /^upload$/i });
 
     expect(mockToastError).toHaveBeenCalledWith(
-      expect.stringContaining('Connect a calendar'),
+      expect.stringContaining('Connect your calendar'),
     );
   });
 });
