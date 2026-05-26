@@ -21,7 +21,7 @@ export default async function IssuesListPage({
   const cookieOrgId = await getOrganizationId();
   const orgId =
     typeof params.organization_id === 'string'
-      ? params.organization_id
+      ? Number(params.organization_id)
       : cookieOrgId;
 
   const statusParam =
@@ -64,7 +64,7 @@ export default async function IssuesListPage({
     resolvedAssignee = null;
   }
 
-  const rawOrgId = Number(orgId);
+  const rawOrgId = orgId;
   const rawTeamId =
     typeof params.team_id === 'string' ? Number(params.team_id) : null;
   const rawAuthorId =
@@ -74,7 +74,7 @@ export default async function IssuesListPage({
 
   const issues = await getIssues({
     organization_id:
-      Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : null,
+      Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : cookieOrgId,
     team_id:
       rawTeamId !== null && Number.isFinite(rawTeamId) && rawTeamId > 0
         ? rawTeamId

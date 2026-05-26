@@ -23,7 +23,7 @@ export async function executeAiAction(
         body: JSON.stringify({
           name,
           prompt,
-          organization_id: Number(organizationId),
+          organization_id: organizationId,
           schedule_type: 'one_off',
           enabled: true,
         }),

@@ -31,8 +31,12 @@ export default async function AgentProfileOverviewPage({
   try {
     const results = await Promise.all([
       getAgentProfile(profileId),
-      getAgentTasksMeta().catch((): AgentTasksMeta => {return {}}),
-      getAgentTools().catch(() => {return []}),
+      getAgentTasksMeta().catch((): AgentTasksMeta => {
+        return {};
+      }),
+      getAgentTools().catch(() => {
+        return [];
+      }),
     ]);
     profile = results[0];
     meta = results[1];

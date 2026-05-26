@@ -9,7 +9,6 @@ import { SkeletonList } from '@/shared/ui/layout/skeleton';
 import type { AgentMemory } from '@/features/agents/model/types';
 import type { PaginatedResult } from '@/shared/types/common';
 
-
 type MemoriesResult =
   | { kind: 'ok'; data: PaginatedResult<AgentMemory> }
   | { kind: 'access_denied' }
@@ -24,7 +23,10 @@ async function fetchMemories(profileId: number): Promise<MemoriesResult> {
     if (error instanceof ServerError) {
       if (error.status === 403) {
         // eslint-disable-next-line no-console
-        console.error('[agents] 403 on profile memories', { profileId, url: error.url });
+        console.error('[agents] 403 on profile memories', {
+          profileId,
+          url: error.url,
+        });
 
         return { kind: 'access_denied' };
       }

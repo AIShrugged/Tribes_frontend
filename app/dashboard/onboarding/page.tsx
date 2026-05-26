@@ -11,7 +11,7 @@ export const metadata = { title: 'Onboarding' };
 export default async function OnboardingPage() {
   const orgId = await getOrganizationId();
   const [{ data: org }, initialDraft] = await Promise.all([
-    getOrganization(orgId),
+    getOrganization(String(orgId)),
     getLatestDraft(orgId),
   ]);
 

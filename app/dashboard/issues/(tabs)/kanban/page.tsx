@@ -16,7 +16,7 @@ export default async function IssuesKanbanPage({
   const cookieOrgId = await getOrganizationId();
   const orgId =
     typeof params.organization_id === 'string'
-      ? params.organization_id
+      ? Number(params.organization_id)
       : cookieOrgId;
 
   const typeParam =
@@ -27,7 +27,7 @@ export default async function IssuesKanbanPage({
     typeof params.assignee_id === 'string' ? params.assignee_id : null;
   const isUnassigned = assigneeIdParam === 'unassigned';
 
-  const rawOrgId = Number(orgId);
+  const rawOrgId = orgId;
   const rawTeamId =
     typeof params.team_id === 'string' ? Number(params.team_id) : null;
   const rawAssigneeId =
@@ -39,7 +39,7 @@ export default async function IssuesKanbanPage({
 
   const kanbanFilters: KanbanFilters = {
     organization_id:
-      Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : null,
+      Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : cookieOrgId,
     team_id:
       rawTeamId !== null && Number.isFinite(rawTeamId) && rawTeamId > 0
         ? rawTeamId

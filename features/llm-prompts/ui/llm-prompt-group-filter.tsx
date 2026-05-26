@@ -4,7 +4,10 @@ import clsx from 'clsx';
 
 import { LLM_PROMPT_GROUPS } from '@/features/llm-prompts/model/types';
 
-import type { LlmPromptGroup, LlmPromptProps } from '@/features/llm-prompts/model/types';
+import type {
+  LlmPromptGroup,
+  LlmPromptProps,
+} from '@/features/llm-prompts/model/types';
 
 /**
  * LlmPromptGroupFilter — sidebar pill-list for filtering prompts by group.
@@ -36,17 +39,17 @@ export function LlmPromptGroupFilter({
     'text-[var(--muted-foreground)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]';
 
   return (
-    <nav
-      aria-label='Filter prompts by group'
-      className='flex flex-col gap-0.5'
-    >
+    <nav aria-label='Filter prompts by group' className='flex flex-col gap-0.5'>
       <ul role='listbox' aria-label='Prompt groups'>
         <li>
           <button
             type='button'
             role='option'
             aria-selected={activeGroup === undefined}
-            className={clsx(pillBase, activeGroup === undefined ? pillActive : pillInactive)}
+            className={clsx(
+              pillBase,
+              activeGroup === undefined ? pillActive : pillInactive,
+            )}
             onClick={() => {
               onGroupChange();
             }}

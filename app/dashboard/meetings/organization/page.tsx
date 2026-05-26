@@ -26,7 +26,7 @@ export default async function OrganizationCalendarPage({
   });
 
   if (!isCalendarAttached) {
-    return <OnboardingTrigger organizationId={+orgId} />;
+    return <OnboardingTrigger organizationId={orgId} />;
   }
 
   if (!params.month || !MONTH_RE.test(params.month)) {

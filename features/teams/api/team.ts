@@ -88,7 +88,11 @@ export async function createTeam(
         error.responseBody ?? '',
         'Failed to create team',
       );
-      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
     }
     throw error;
   }

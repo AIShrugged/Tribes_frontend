@@ -33,9 +33,7 @@ export default async function IssueCreatePage({
       getUser(),
     ]);
 
-  const tasks = await getTasksForEpicForm(
-    organizationId ? Number(organizationId) : null,
-  ).catch(() => {
+  const tasks = await getTasksForEpicForm(organizationId).catch(() => {
     return [];
   });
 
@@ -49,7 +47,7 @@ export default async function IssueCreatePage({
             persons={persons}
             epics={epics}
             tasks={tasks}
-            defaultOrganizationId={organizationId}
+            defaultOrganizationId={String(organizationId)}
             currentUser={userResponse.data ?? null}
             backHref={backHref}
           />

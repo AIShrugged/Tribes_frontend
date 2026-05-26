@@ -6,10 +6,20 @@ export const MAX_ENTRIES = 10_000;
 
 const fileSchema = z
   .instanceof(File, { error: 'Выберите файл транскрипта' })
-  .refine((f) => f.size > 0, { message: 'Файл пустой' })
-  .refine((f) => f.size <= MAX_FILE_SIZE_BYTES, {
-    message: 'Файл больше 5 МБ',
-  });
+  .refine(
+    (f) => {
+      return f.size > 0;
+    },
+    { message: 'Файл пустой' },
+  )
+  .refine(
+    (f) => {
+      return f.size <= MAX_FILE_SIZE_BYTES;
+    },
+    {
+      message: 'Файл больше 5 МБ',
+    },
+  );
 
 const existingMeetingSchema = z.object({
   mode: z.literal('existing'),
@@ -33,10 +43,15 @@ const newMeetingSchema = z
     team_id: z.number().optional(),
     file: fileSchema,
   })
-  .refine((v) => new Date(v.ends_at) >= new Date(v.starts_at), {
-    message: 'Окончание должно быть не раньше начала',
-    path: ['ends_at'],
-  });
+  .refine(
+    (v) => {
+      return new Date(v.ends_at) >= new Date(v.starts_at);
+    },
+    {
+      message: 'Окончание должно быть не раньше начала',
+      path: ['ends_at'],
+    },
+  );
 
 export const transcriptUploadSchema = z.discriminatedUnion('mode', [
   existingMeetingSchema,
@@ -56,4 +71,6 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
 export const getUploadErrorMessage = (
   code: string | undefined,
   fallback: string,
-): string => (code && ERROR_CODE_MESSAGES[code]) || fallback;
+): string => {
+  return (code && ERROR_CODE_MESSAGES[code]) || fallback;
+};

@@ -43,7 +43,7 @@ export default async function MeetingsCalendarPage({
   });
 
   if (!isCalendarAttached) {
-    return <OnboardingTrigger organizationId={+orgId} />;
+    return <OnboardingTrigger organizationId={orgId} />;
   }
 
   if (!params.month) {
@@ -74,7 +74,7 @@ export default async function MeetingsCalendarPage({
       >
         <MeetingsCalendarFiltersBar
           filters={calendarFilters}
-          cookieOrgId={orgId}
+          cookieOrgId={String(orgId)}
           initialTeams={initialTeams}
         />
       </Suspense>

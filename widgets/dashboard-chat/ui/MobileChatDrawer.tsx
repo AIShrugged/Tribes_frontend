@@ -78,7 +78,9 @@ export function MobileChatDrawer({
       <button
         ref={fabRef}
         type='button'
-        onClick={() => { setIsOpen(true); }}
+        onClick={() => {
+          setIsOpen(true);
+        }}
         aria-label='Open chat'
         aria-expanded={isOpen}
         aria-haspopup='dialog'
@@ -119,9 +121,21 @@ export function MobileChatDrawer({
                   initial={{ y: '100%' }}
                   animate={{
                     y: 0,
-                    transition: { type: 'spring', stiffness: 400, damping: 40, mass: 0.8 },
+                    transition: {
+                      type: 'spring',
+                      stiffness: 400,
+                      damping: 40,
+                      mass: 0.8,
+                    },
                   }}
-                  exit={{ y: '100%', transition: { type: 'tween', ease: 'easeIn', duration: 0.2 } }}
+                  exit={{
+                    y: '100%',
+                    transition: {
+                      type: 'tween',
+                      ease: 'easeIn',
+                      duration: 0.2,
+                    },
+                  }}
                   onAnimationComplete={() => {
                     return !isOpen && fabRef.current?.focus();
                   }}

@@ -36,7 +36,10 @@ export const agentProfileCreateSchema = agentProfileBase.extend({
     .string()
     .min(2, 'Key must be at least 2 characters')
     .max(255)
-    .regex(/^[a-z0-9_-]+$/, 'Lowercase letters, digits, underscores, hyphens only'),
+    .regex(
+      /^[a-z0-9_-]+$/,
+      'Lowercase letters, digits, underscores, hyphens only',
+    ),
   allowed_tools: z.array(z.string()),
 });
 

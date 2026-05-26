@@ -3,13 +3,15 @@ import userEvent from '@testing-library/user-event';
 
 import { TranscriptUploadForm } from '@/features/transcript-upload/ui/transcript-upload-form';
 
-import type { CalendarEventListItem } from '@/features/meetings/model/types';
 import type { TeamProps } from '@/entities/team';
+import type { CalendarEventListItem } from '@/features/meetings/model/types';
 
 const mockUpload = jest.fn();
 jest.mock('@/features/transcript-upload/api/upload-transcript', () => {
   return {
-    uploadTranscript: (...args: unknown[]) => mockUpload(...args),
+    uploadTranscript: (...args: unknown[]) => {
+      return mockUpload(...args);
+    },
   };
 });
 
@@ -18,8 +20,12 @@ const mockToastError = jest.fn();
 jest.mock('sonner', () => {
   return {
     toast: {
-      success: (...args: unknown[]) => mockToastSuccess(...args),
-      error: (...args: unknown[]) => mockToastError(...args),
+      success: (...args: unknown[]) => {
+        return mockToastSuccess(...args);
+      },
+      error: (...args: unknown[]) => {
+        return mockToastError(...args);
+      },
     },
   };
 });
@@ -27,7 +33,13 @@ jest.mock('sonner', () => {
 const mockPush = jest.fn();
 jest.mock('next/navigation', () => {
   return {
-    useRouter: () => ({ push: (...args: unknown[]) => mockPush(...args) }),
+    useRouter: () => {
+      return {
+        push: (...args: unknown[]) => {
+          return mockPush(...args);
+        },
+      };
+    },
   };
 });
 
@@ -68,9 +80,10 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    expect(
-      screen.getByRole('tab', { name: /существующей/i }),
-    ).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: /существующей/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     expect(screen.getByRole('tab', { name: /создать новую/i })).toHaveAttribute(
       'aria-selected',
       'false',
@@ -102,9 +115,7 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    await userEvent.click(
-      screen.getByRole('tab', { name: /создать новую/i }),
-    );
+    await userEvent.click(screen.getByRole('tab', { name: /создать новую/i }));
 
     expect(screen.getByText(/название встречи/i)).toBeInTheDocument();
     expect(screen.getByText(/^начало$/i)).toBeInTheDocument();
@@ -132,7 +143,11 @@ describe('TranscriptUploadForm', () => {
 
   it('on successful submit, shows toast and redirects', async () => {
     mockUpload.mockResolvedValue({
-      data: { calendar_event_id: 100, transcript_entries_count: 5, participants_count: 2 },
+      data: {
+        calendar_event_id: 100,
+        transcript_entries_count: 5,
+        participants_count: 2,
+      },
       error: null,
     });
 

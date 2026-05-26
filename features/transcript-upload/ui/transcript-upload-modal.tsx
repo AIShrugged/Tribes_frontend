@@ -7,8 +7,8 @@ import { getTeams } from '@/features/teams/api/team';
 import { TranscriptUploadForm } from '@/features/transcript-upload/ui/transcript-upload-form';
 import { Modal } from '@/shared/ui/modal/modal';
 
-import type { CalendarEventListItem } from '@/features/meetings/model/types';
 import type { TeamProps } from '@/entities/team';
+import type { CalendarEventListItem } from '@/features/meetings/model/types';
 
 interface Props {
   isOpen: boolean;
@@ -64,7 +64,11 @@ export function TranscriptUploadModal({
       }),
       organizationId
         ? getTeams(organizationId)
-        : Promise.resolve({ data: [] as TeamProps[], totalCount: 0, hasMore: false }),
+        : Promise.resolve({
+            data: [] as TeamProps[],
+            totalCount: 0,
+            hasMore: false,
+          }),
     ])
       .then(([meetingsResult, teamsResult]) => {
         if (cancelled) return;
@@ -85,7 +89,12 @@ export function TranscriptUploadModal({
   }, [isOpen, meetings, organizationId]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title='Загрузить транскрипт' size='md'>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title='Загрузить транскрипт'
+      size='md'
+    >
       {isLoading && (
         <div className='p-6 text-center text-sm text-muted-foreground'>
           Загрузка…

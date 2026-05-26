@@ -7,7 +7,10 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { resetLlmPrompt, updateLlmPrompt } from '@/features/llm-prompts/api/llm-prompts';
+import {
+  resetLlmPrompt,
+  updateLlmPrompt,
+} from '@/features/llm-prompts/api/llm-prompts';
 import {
   buildSegments,
   diffPlaceholders,
@@ -32,7 +35,10 @@ const HIGHLIGHT_DEBOUNCE_MS = 250;
 type ResetState = 'idle' | 'confirming' | 'submitting';
 
 interface HighlightedTextareaProps
-  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'value'> {
+  extends Omit<
+    TextareaHTMLAttributes<HTMLTextAreaElement>,
+    'onChange' | 'value'
+  > {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
@@ -190,7 +196,10 @@ function HighlightedTextarea({
   );
 }
 
-type SetErrorFn = (field: 'name' | 'prompt', config: { message: string }) => void;
+type SetErrorFn = (
+  field: 'name' | 'prompt',
+  config: { message: string },
+) => void;
 
 function applyFieldErrors(
   fieldErrors: Record<string, string> | undefined,
@@ -316,29 +325,31 @@ export function LlmPromptForm({
               </span>
             )}
           </div>
-          <p className='text-sm text-muted-foreground'>
-            LLM Prompt Template
-          </p>
+          <p className='text-sm text-muted-foreground'>LLM Prompt Template</p>
         </div>
       </div>
 
       {/* Slug row (read-only) */}
       <div className='flex flex-col gap-1'>
-        <label className='text-xs font-medium text-muted-foreground'>Slug</label>
+        <label className='text-xs font-medium text-muted-foreground'>
+          Slug
+        </label>
         <div className='flex items-center gap-2 rounded-md border border-border bg-[var(--surface-2)] px-3 py-2'>
-          <code className='flex-1 font-mono text-sm text-foreground'>{prompt.slug}</code>
+          <code className='flex-1 font-mono text-sm text-foreground'>
+            {prompt.slug}
+          </code>
           <ButtonCopy copyText={prompt.slug} />
         </div>
       </div>
 
       {canEdit ? (
-        <form
-          className='flex flex-col gap-6'
-          onSubmit={handleSubmit(onSubmit)}
-        >
+        <form className='flex flex-col gap-6' onSubmit={handleSubmit(onSubmit)}>
           {/* Name field */}
           <div className='flex flex-col gap-1'>
-            <label className='text-xs font-medium text-muted-foreground' htmlFor='prompt-name'>
+            <label
+              className='text-xs font-medium text-muted-foreground'
+              htmlFor='prompt-name'
+            >
               Name
             </label>
             <input
@@ -356,7 +367,10 @@ export function LlmPromptForm({
           {/* Prompt field with highlighted textarea */}
           <div className='flex flex-col gap-1'>
             <div className='flex items-center justify-between'>
-              <label className='text-xs font-medium text-muted-foreground' htmlFor='prompt-text'>
+              <label
+                className='text-xs font-medium text-muted-foreground'
+                htmlFor='prompt-text'
+              >
                 Prompt
               </label>
             </div>
@@ -364,11 +378,16 @@ export function LlmPromptForm({
               id='prompt-text'
               value={promptValue}
               onChange={(val) => {
-                setValue('prompt', val, { shouldDirty: true, shouldValidate: false });
+                setValue('prompt', val, {
+                  shouldDirty: true,
+                  shouldValidate: false,
+                });
               }}
               disabled={isPending}
               hasError={Boolean(errors.prompt?.message)}
-              aria-describedby={errors.prompt?.message ? 'prompt-error' : undefined}
+              aria-describedby={
+                errors.prompt?.message ? 'prompt-error' : undefined
+              }
             />
             {errors.prompt?.message && (
               <p id='prompt-error' className='text-xs text-destructive'>
@@ -386,8 +405,7 @@ export function LlmPromptForm({
               <div className='flex items-start gap-2'>
                 <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-amber-500' />
                 <p className='text-sm text-foreground'>
-                  You removed{' '}
-                  <strong>{removedPlaceholders.length}</strong>{' '}
+                  You removed <strong>{removedPlaceholders.length}</strong>{' '}
                   placeholder{removedPlaceholders.length === 1 ? '' : 's'}:{' '}
                   <code className='text-amber-400'>
                     {removedPlaceholders.join(', ')}
@@ -430,7 +448,8 @@ export function LlmPromptForm({
                 Reset this prompt to its system default?
               </p>
               <p className='text-xs text-muted-foreground'>
-                All your customizations will be replaced with the original system prompt text.
+                All your customizations will be replaced with the original
+                system prompt text.
               </p>
               <div className='flex gap-2'>
                 <Button
@@ -504,11 +523,15 @@ export function LlmPromptForm({
         /* Read-only view for non-managers */
         <div className='flex flex-col gap-6'>
           <div className='flex flex-col gap-1'>
-            <label className='text-xs font-medium text-muted-foreground'>Name</label>
+            <label className='text-xs font-medium text-muted-foreground'>
+              Name
+            </label>
             <p className='text-sm text-foreground'>{prompt.name}</p>
           </div>
           <div className='flex flex-col gap-1'>
-            <label className='text-xs font-medium text-muted-foreground'>Prompt</label>
+            <label className='text-xs font-medium text-muted-foreground'>
+              Prompt
+            </label>
             <pre className='whitespace-pre-wrap rounded-md border border-border bg-[var(--surface-2)] p-3 font-mono text-sm leading-relaxed text-foreground'>
               {prompt.prompt}
             </pre>

@@ -1,22 +1,27 @@
 ---
 status: pending
 priority: p2
-issue_id: "065"
+issue_id: '065'
 tags: [code-review, typescript, chat, security, validation]
-dependencies: ["060", "063"]
+dependencies: ['060', '063']
 ---
 
 # createChat: String-to-Integer Conversion Missing Round-Trip Validation
 
 ## Problem Statement
 
-The plan proposes `Number(raw)` to convert the `organization_id` cookie string to an integer. `Number()` silently truncates non-numeric trailing characters: `Number('42abc')` → `42`. This means a cookie value like `'42abc'` passes the `Number.isInteger` check with value `42` — the guard does not catch it.
+The plan proposes `Number(raw)` to convert the `organization_id` cookie string
+to an integer. `Number()` silently truncates non-numeric trailing characters:
+`Number('42abc')` → `42`. This means a cookie value like `'42abc'` passes the
+`Number.isInteger` check with value `42` — the guard does not catch it.
 
-**Note:** This is conditional on the integer guard being retained. If todo #060 is resolved by moving the cookie read out of `createChat`, this todo is moot.
+**Note:** This is conditional on the integer guard being retained. If todo #060
+is resolved by moving the cookie read out of `createChat`, this todo is moot.
 
 ## Findings
 
 `getOrganizationId()` returns `Promise<string>`. The plan's guard:
+
 ```typescript
 const organizationId = Number(raw);
 if (!Number.isInteger(organizationId) || organizationId <= 0) {
@@ -24,9 +29,11 @@ if (!Number.isInteger(organizationId) || organizationId <= 0) {
 }
 ```
 
-`Number('42abc')` → `42` → `Number.isInteger(42)` is `true` → guard passes → `42` sent to backend.
+`Number('42abc')` → `42` → `Number.isInteger(42)` is `true` → guard passes →
+`42` sent to backend.
 
 The safe pattern uses a round-trip equality check:
+
 ```typescript
 const organizationId = Number(raw);
 if (
@@ -34,11 +41,14 @@ if (
   organizationId <= 0 ||
   String(organizationId) !== raw.trim()
 ) {
-  throw new FrontendError('Invalid organization_id cookie: value is not a positive integer');
+  throw new FrontendError(
+    'Invalid organization_id cookie: value is not a positive integer',
+  );
 }
 ```
 
-`String(42) !== '42abc'.trim()` → `'42' !== '42abc'` → true → guard fires correctly.
+`String(42) !== '42abc'.trim()` → `'42' !== '42abc'` → true → guard fires
+correctly.
 
 ## Proposed Solutions
 
@@ -51,7 +61,9 @@ if (
   organizationId <= 0 ||
   String(organizationId) !== raw.trim()
 ) {
-  throw new FrontendError('Invalid organization_id cookie: value is not a positive integer');
+  throw new FrontendError(
+    'Invalid organization_id cookie: value is not a positive integer',
+  );
 }
 ```
 
@@ -61,7 +73,11 @@ if (
 
 ```typescript
 const organizationId = parseInt(raw.trim(), 10);
-if (isNaN(organizationId) || organizationId <= 0 || String(organizationId) !== raw.trim()) {
+if (
+  isNaN(organizationId) ||
+  organizationId <= 0 ||
+  String(organizationId) !== raw.trim()
+) {
   throw new FrontendError('...');
 }
 ```
@@ -74,11 +90,13 @@ If cookie reading moves out of `createChat`, this todo is moot.
 
 ## Recommended Action
 
-If the guard is kept (todo #060 not resolving by removing the cookie read), apply Option 1. Otherwise, close as moot.
+If the guard is kept (todo #060 not resolving by removing the cookie read),
+apply Option 1. Otherwise, close as moot.
 
 ## Technical Details
 
 **Affected files:**
+
 - `features/chat/api/chats.ts` — integer conversion guard
 
 ## Acceptance Criteria
@@ -93,4 +111,5 @@ If the guard is kept (todo #060 not resolving by removing the cookie read), appl
 
 **By:** Claude Code (security-sentinel)
 
-Flagged `parseInt` / `Number()` footguns in the conversion. Round-trip check is the established safe pattern.
+Flagged `parseInt` / `Number()` footguns in the conversion. Round-trip check is
+the established safe pattern.

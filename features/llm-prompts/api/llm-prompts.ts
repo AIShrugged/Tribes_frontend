@@ -9,10 +9,16 @@ import { httpClientAction } from '@/shared/lib/httpClient';
 import { ROUTES } from '@/shared/lib/routes';
 
 import type { LlmPromptUpdatePayload } from '@/features/llm-prompts/model/schemas';
-import type { LlmPromptProps, LlmPromptSeedStats } from '@/features/llm-prompts/model/types';
+import type {
+  LlmPromptProps,
+  LlmPromptSeedStats,
+} from '@/features/llm-prompts/model/types';
 import type { ActionResult } from '@/shared/types/server-action';
 
-const FORBIDDEN_RESULT = { data: null, error: 'You do not have permission to edit prompts.' } as const;
+const FORBIDDEN_RESULT = {
+  data: null,
+  error: 'You do not have permission to edit prompts.',
+} as const;
 
 /**
  * updateLlmPrompt — PATCH a single prompt's name and/or prompt text.

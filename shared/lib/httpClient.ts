@@ -84,7 +84,11 @@ export async function httpClientAction<T>(
         error.status === 403 ||
         error.status === undefined
       ) {
-        return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+        return {
+          data: null,
+          error: parsed.message,
+          fieldErrors: parsed.fieldErrors,
+        };
       }
     }
 
