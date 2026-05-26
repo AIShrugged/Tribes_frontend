@@ -38,7 +38,7 @@ export function OnboardingGoalCard({ goal, index, onUpdate, onRemove }: Props) {
             {goal.title || 'Untitled goal'}
           </span>
         </div>
-        <div className='flex items-center gap-1 shrink-0'>
+        <div className='flex items-center gap-4 shrink-0'>
           <Button
             type='button'
             variant={BUTTON_VARIANT.ghost}
