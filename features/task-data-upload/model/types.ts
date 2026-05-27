@@ -1,10 +1,43 @@
 export interface TaskDataUploadResponse {
-  task_data_upload_id: number;
+  upload_id: number;
+  status: string;
+}
+
+export type UploadStatus =
+  | 'queued'
+  | 'extracting'
+  | 'analyzing'
+  | 'deduplicating'
+  | 'done'
+  | 'failed';
+
+export interface TaskDataUploadStatusResponse {
+  upload_id: number;
+  status: UploadStatus;
+  original_filename: string;
   issues_created: number;
   issues_updated: number;
-  issues: Array<{
+  issues?: Array<{
     id: number;
     name: string;
     status: 'new' | 'updated';
   }>;
 }
+
+export const STATUS_LABELS: Record<UploadStatus, string> = {
+  queued: 'Queued for processing…',
+  extracting: 'Reading and extracting file content…',
+  analyzing: 'Analyzing document with AI…',
+  deduplicating: 'Checking for duplicates with existing tasks…',
+  done: 'Processing complete',
+  failed: 'Processing failed',
+};
+
+export const STATUS_PROGRESS: Record<UploadStatus, number> = {
+  queued: 5,
+  extracting: 20,
+  analyzing: 45,
+  deduplicating: 75,
+  done: 100,
+  failed: 0,
+};
