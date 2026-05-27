@@ -60,13 +60,13 @@ export function TaskDataUploadForm({
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
-      onChange();
+      onChange(void 0);
       return;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
       toast.error('File exceeds 10 MB');
       event.target.value = '';
-      onChange();
+      onChange(void 0);
       return;
     }
     onChange(file);

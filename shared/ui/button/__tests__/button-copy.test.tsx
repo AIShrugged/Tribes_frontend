@@ -1,6 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
+import { toast } from 'sonner';
+
+import ButtonCopy from '@/shared/ui/button/button-copy';
 
 jest.mock('sonner', () => {
   return {
@@ -16,10 +18,6 @@ jest.mock('lucide-react', () => {
   };
 });
 
-import { toast } from 'sonner';
-
-import ButtonCopy from '@/shared/ui/button/button-copy';
-
 const user = userEvent.setup({ delay: null });
 
 describe('ButtonCopy', () => {
@@ -32,7 +30,7 @@ describe('ButtonCopy', () => {
       writable: true,
       configurable: true,
     });
-    mockWriteText.mockResolvedValue();
+    mockWriteText.mockResolvedValue(void 0);
   });
 
   it('renders a button with copy icon', () => {
