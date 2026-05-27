@@ -49,6 +49,12 @@ export function TelegramChatCard({
 
   const title =
     chat.chat_title?.trim() || `Telegram chat #${chat.telegram_chat_id}`;
+  const topicLabel =
+    chat.topic_label?.trim() ||
+    (chat.message_thread_id ? `Topic #${chat.message_thread_id}` : null);
+  const subtitle = topicLabel
+    ? `${formatChatType(chat.chat_type)} · ${topicLabel}`
+    : formatChatType(chat.chat_type);
   const canDelete = chat.chat_type !== 'private';
 
   const handleConfirmDelete = () => {
@@ -80,9 +86,7 @@ export function TelegramChatCard({
               <h3 className='truncate text-base font-semibold text-foreground'>
                 {title}
               </h3>
-              <p className='text-sm text-muted-foreground'>
-                {formatChatType(chat.chat_type)}
-              </p>
+              <p className='text-sm text-muted-foreground'>{subtitle}</p>
             </div>
             <div className='flex shrink-0 items-center gap-2'>
               <ChatStatusBadge chat={chat} />
@@ -104,6 +108,11 @@ export function TelegramChatCard({
               <span className='text-foreground/60'>Telegram ID:</span>{' '}
               {chat.telegram_chat_id}
             </p>
+            {topicLabel ? (
+              <p>
+                <span className='text-foreground/60'>Topic:</span> {topicLabel}
+              </p>
+            ) : null}
             <p>
               <span className='text-foreground/60'>Organization:</span>{' '}
               {orgName ??

@@ -59,7 +59,7 @@ export default async function Page({
   ] = await Promise.allSettled([
     getTeam(resolvedTeamId),
     getTeamNotificationSettings(resolvedTeamId),
-    getTelegramChats(),
+    getTelegramChats(organizationId),
     getTeamDashboard(resolvedTeamId),
     getTeamInvites(resolvedTeamId),
   ]);

@@ -12,8 +12,14 @@ import type { TelegramChatRegistration } from '@/entities/telegram';
 import type { TelegramWorkspaceChatCreatePayload } from '@/features/telegram/model/types';
 import type { ActionResult } from '@/shared/types/server-action';
 
-export async function getTelegramChats() {
-  return httpClientList<TelegramChatRegistration>(`${API_URL}/telegram/chats`);
+export async function getTelegramChats(organizationId: number) {
+  const params = new URLSearchParams({
+    organization_id: String(organizationId),
+  });
+
+  return httpClientList<TelegramChatRegistration>(
+    `${API_URL}/telegram/chats?${params.toString()}`,
+  );
 }
 
 export async function createTelegramWorkspaceChat(
