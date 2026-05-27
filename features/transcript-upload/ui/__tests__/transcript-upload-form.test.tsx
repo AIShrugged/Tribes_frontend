@@ -130,14 +130,14 @@ describe('TranscriptUploadForm', () => {
       />,
     );
 
-    const oversized = makeFile('big.txt', 6 * 1024 * 1024 + 1);
+    const oversized = makeFile('big.txt', 10 * 1024 * 1024 + 1);
     const fileInput = screen.getByLabelText(/transcript file/i, {
       selector: 'input',
     }) as HTMLInputElement;
 
     await userEvent.upload(fileInput, oversized);
 
-    expect(mockToastError).toHaveBeenCalledWith('File exceeds 5 MB');
+    expect(mockToastError).toHaveBeenCalledWith('File exceeds 10 MB');
   });
 
   it('on successful submit, shows toast and redirects', async () => {
