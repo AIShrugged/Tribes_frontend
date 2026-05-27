@@ -67,10 +67,11 @@ export function ChatList({
    * @returns Promise.
    */
   const loadMore = useCallback(async () => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore || organizationId === undefined) return;
     setIsLoading(true);
     try {
       const { data: more, totalCount: total } = await getChats(
+        organizationId,
         offset,
         PAGE_SIZE,
       );
@@ -88,7 +89,7 @@ export function ChatList({
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, hasMore, offset]);
+  }, [isLoading, hasMore, organizationId, offset]);
 
   useEffect(() => {
     if (!sentinelRef.current) return;
@@ -181,9 +182,11 @@ export function ChatList({
           <button
             type='button'
             onClick={() => {
+              if (organizationId === undefined) return;
               setEditingChat(null);
               setIsModalOpen(true);
             }}
+            disabled={organizationId === undefined}
             className='flex items-center gap-1 text-xs text-primary hover:opacity-70 transition-opacity cursor-pointer'
             aria-label='New chat'
           >
@@ -205,7 +208,13 @@ export function ChatList({
 
       {/* List */}
       <div className='flex-1 overflow-y-auto py-2 px-2 flex flex-col gap-0.5'>
-        {chats.length === 0 && !isLoading && (
+        {organizationId === undefined && !isLoading && (
+          <p className='text-xs text-muted-foreground text-center py-8'>
+            Select an organization to use chats.
+          </p>
+        )}
+
+        {organizationId !== undefined && chats.length === 0 && !isLoading && (
           <p className='text-xs text-muted-foreground text-center py-8'>
             No chats yet. Create your first one!
           </p>

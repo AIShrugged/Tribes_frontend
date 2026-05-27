@@ -28,6 +28,7 @@ interface ChatLayoutProps {
   totalMessagesCount: number;
   startOffset: number;
   organizations?: OrganizationProps[];
+  organizationId?: number;
 }
 
 /**
@@ -43,6 +44,7 @@ interface ChatLayoutProps {
  * @param root0.totalMessagesCount - Total message count in the chat.
  * @param root0.startOffset - Offset from which initialMessages were loaded.
  * @param root0.organizations
+ * @param root0.organizationId
  * @returns Result.
  */
 export function ChatLayout({
@@ -56,6 +58,7 @@ export function ChatLayout({
   totalMessagesCount,
   startOffset,
   organizations = [],
+  organizationId,
 }: ChatLayoutProps) {
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>('chat');
@@ -187,6 +190,7 @@ export function ChatLayout({
             totalCount={totalCount}
             activeChatId={activeChatId}
             organizations={organizations}
+            organizationId={organizationId}
             onActiveChatUpdate={setChat}
           />
         </div>
@@ -200,6 +204,7 @@ export function ChatLayout({
                 totalCount={totalCount}
                 activeChatId={activeChatId}
                 organizations={organizations}
+                organizationId={organizationId}
                 onActiveChatUpdate={(updated) => {
                   setChat(updated);
                   setMobileTab('chat');

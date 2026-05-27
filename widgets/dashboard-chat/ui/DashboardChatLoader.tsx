@@ -1,5 +1,6 @@
 import { getChats } from '@/features/chat/api/chats';
 import { getMessages } from '@/features/chat/api/messages';
+import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { DashboardChatPanel } from '@/widgets/dashboard-chat/ui/DashboardChatPanel';
 
 import type { Message } from '@/features/chat/model/types';
@@ -12,7 +13,10 @@ const INITIAL_MESSAGES_LIMIT = 20;
  * @returns JSX element.
  */
 export async function DashboardChatLoader() {
-  const { data: chats } = await getChats(0, 20);
+  const organizationId = await getOrganizationId();
+  const { data: chats } = await getChats(organizationId, 0, 20).catch(() => {
+    return { data: [], totalCount: 0, hasMore: false };
+  });
 
   const firstChat = chats[0] ?? null;
   let initialMessages: Message[] = [];
@@ -52,6 +56,7 @@ export async function DashboardChatLoader() {
       initialMessages={initialMessages}
       totalMessagesCount={totalMessagesCount}
       startOffset={startOffset}
+      organizationId={organizationId}
     />
   );
 }

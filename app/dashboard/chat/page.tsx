@@ -9,12 +9,17 @@ import { getOrganizationId } from '@/shared/lib/getOrganizationId';
  * @returns JSX element.
  */
 export default async function ChatPage() {
-  const [{ data: chats, totalCount }, { data: organizations }, organizationId] =
-    await Promise.all([
-      getChats(0, 20),
-      getOrganizations(),
-      getOrganizationId(),
-    ]);
+  const [{ data: organizations }, organizationId] = await Promise.all([
+    getOrganizations(),
+    getOrganizationId(),
+  ]);
+  const { data: chats, totalCount } = await getChats(
+    organizationId,
+    0,
+    20,
+  ).catch(() => {
+    return { data: [], totalCount: 0, hasMore: false };
+  });
 
   return (
     <div className='flex h-full rounded-[var(--radius-card)] overflow-hidden border border-border bg-card '>

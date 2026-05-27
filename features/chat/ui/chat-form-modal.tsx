@@ -103,6 +103,12 @@ export function ChatFormModal({
   const onSubmit = (values: ChatFormValues) => {
     setRootError('');
 
+    if (!isEdit && organizationId === undefined) {
+      setRootError('Select an organization to create a chat.');
+
+      return;
+    }
+
     startTransition(async () => {
       try {
         const payload = {
@@ -146,6 +152,10 @@ export function ChatFormModal({
       ? 'organization context selected in the app header.'
       : 'user context.'
   }`;
+
+  if (!isEdit && organizationId === undefined) {
+    helperText = 'Select an organization to create a chat.';
+  }
 
   if (isEdit && hasAssignedScope) {
     helperText = chat?.team_id
