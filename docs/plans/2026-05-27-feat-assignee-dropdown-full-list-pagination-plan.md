@@ -331,7 +331,8 @@ Consider also whether `PersonOption` should be unified with `UserBasicProps` in
       at line 363
 - [x] All 5+ call sites of `getPersons` benefit from deduplication automatically
 - [x] The duplicate `getPersons` call in `list/page.tsx` — kept intentionally;
-      `IssuesListTab` needs `persons` directly; `React.cache()` ensures single HTTP call
+      `IssuesListTab` needs `persons` directly; `React.cache()` ensures single
+      HTTP call
 - [x] Assignee and Author dropdowns in `SharedFiltersBar` show all org members
 - [x] No TypeScript errors; existing `PersonOption` type is unchanged
 - [x] `npm run lint` passes
