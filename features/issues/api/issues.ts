@@ -453,13 +453,19 @@ export async function getTasksForEpicForm(
 }
 
 /**
- * getPersons.
+ * getPersons fetches all visible persons for assignee/author dropdowns.
+ * Wrapped with React.cache() to deduplicate within a single render pass
+ * (e.g. when both layout.tsx and page.tsx call it).
  * @returns persons list.
  */
-export async function getPersons(): Promise<PersonOption[]> {
-  const result = await httpClientList<PersonOption>(`${API_URL}/persons`);
-  return result.data;
-}
+export const getPersons = cache(async function getPersons(): Promise<
+  PersonOption[]
+> {
+  const { data } = await httpClientList<PersonOption>(
+    `${API_URL}/persons?limit=100`,
+  );
+  return data;
+});
 
 /**
  * getIssueAttachments.

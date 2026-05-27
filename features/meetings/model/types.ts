@@ -1,7 +1,5 @@
-import type { MeetingTask } from '@/features/meeting/types';
 import type { CalendarEventListItem } from '@/entities/event';
-
-export type { CalendarEventListItem };
+import type { MeetingTask } from '@/features/meeting/types';
 
 export interface CalendarEventReadMore {
   section?: string | null;
@@ -92,3 +90,5 @@ export interface CalendarEventDetailResponse {
   counts: Record<string, number | string | null | undefined>;
   [key: string]: unknown;
 }
+
+export { type CalendarEventListItem } from '@/entities/event';

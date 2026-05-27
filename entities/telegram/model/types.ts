@@ -6,6 +6,8 @@ export interface TelegramChatRegistration {
   message_thread_id: number | null;
   chat_type: 'private' | 'group' | 'supergroup' | null;
   chat_title: string | null;
+  topic_label: string | null;
+  topic_title: string | null;
   organization_id: number | null;
   team_id: number | null;
   // Always null since the attach-code flow was removed — kept for API contract completeness

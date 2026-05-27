@@ -23,6 +23,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   organizations: OrganizationProps[];
+  selectedOrganizationId: number;
   botUsername: string;
 }
 
@@ -30,6 +31,7 @@ export function AddTelegramChatModal({
   isOpen,
   onClose,
   organizations,
+  selectedOrganizationId,
   botUsername,
 }: Props) {
   const [isPending, startTransition] = useTransition();
@@ -43,7 +45,11 @@ export function AddTelegramChatModal({
     formState: { errors },
   } = useForm<AddTelegramChatFormInput, unknown, AddTelegramChatFormValues>({
     resolver: zodResolver(addTelegramChatSchema),
-    defaultValues: { name: '', organization_id: '', team_id: '' },
+    defaultValues: {
+      name: '',
+      organization_id: String(selectedOrganizationId),
+      team_id: '',
+    },
   });
 
   const organizationId = watch('organization_id');
@@ -58,6 +64,7 @@ export function AddTelegramChatModal({
     startTransition(async () => {
       const result = await createTelegramWorkspaceChat({
         telegram_chat_id: values.telegram_chat_id,
+        message_thread_id: values.message_thread_id ?? null,
         organization_id: Number(values.organization_id),
         team_id: values.team_id ? Number(values.team_id) : null,
         name: values.name ?? null,
@@ -99,6 +106,24 @@ export function AddTelegramChatModal({
             error={errors.telegram_chat_id?.message}
             disabled={isPending}
           />
+          <div className='flex flex-col gap-1'>
+            <Input
+              {...register('message_thread_id', {
+                setValueAs: (v: string) => {
+                  return v === '' ? undefined : Number.parseInt(v, 10);
+                },
+              })}
+              label='Topic ID'
+              type='number'
+              value={String(watch('message_thread_id') ?? '')}
+              placeholder='Например: 336'
+              error={errors.message_thread_id?.message}
+              disabled={isPending}
+            />
+            <p className='px-1 text-xs text-muted-foreground'>
+              Оставьте пустым, чтобы подключить весь чат
+            </p>
+          </div>
           <Input
             {...register('name')}
             label='Chat name (optional)'

@@ -14,6 +14,7 @@ interface DashboardChatPanelProps {
   initialMessages: Message[];
   totalMessagesCount: number;
   startOffset: number;
+  organizationId?: number;
 }
 
 /**
@@ -24,6 +25,7 @@ interface DashboardChatPanelProps {
  * @param root0.initialMessages - Pre-loaded messages for the initial chat.
  * @param root0.totalMessagesCount - Total message count.
  * @param root0.startOffset - Offset from which initialMessages were loaded.
+ * @param root0.organizationId - Active organization id for new chats.
  * @returns JSX element.
  */
 export function DashboardChatPanel({
@@ -31,6 +33,7 @@ export function DashboardChatPanel({
   initialMessages,
   totalMessagesCount,
   startOffset,
+  organizationId,
 }: DashboardChatPanelProps) {
   const [activeChat, setActiveChat] = useState<Chat | null>(initialChat);
   const [activeChatMessages, setActiveChatMessages] =
@@ -40,10 +43,10 @@ export function DashboardChatPanel({
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateChat = async () => {
-    if (isCreating) return;
+    if (isCreating || organizationId === undefined) return;
     setIsCreating(true);
     try {
-      const result = await createChat({});
+      const result = await createChat({ organization_id: organizationId });
       if (result.error) {
         toast.error(result.error);
         return;
@@ -76,10 +79,14 @@ export function DashboardChatPanel({
               className='w-10 h-10 text-muted-foreground/30'
               aria-hidden='true'
             />
-            <p className='text-sm text-center px-4'>No chats yet</p>
+            <p className='text-sm text-center px-4'>
+              {organizationId === undefined
+                ? 'Select an organization to use chats'
+                : 'No chats yet'}
+            </p>
             <button
               onClick={handleCreateChat}
-              disabled={isCreating}
+              disabled={isCreating || organizationId === undefined}
               className='flex items-center gap-1 text-xs text-primary hover:opacity-70 transition-opacity cursor-pointer disabled:opacity-40'
             >
               <Plus className='w-3 h-3' />

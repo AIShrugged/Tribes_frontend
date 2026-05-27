@@ -22,7 +22,7 @@ import { BUTTON_SIZE, BUTTON_VARIANT } from '@/shared/types/button';
 import { Button, ButtonIcon } from '@/shared/ui/button';
 import Avatar from '@/shared/ui/common/avatar';
 
-import type { TeamInvite, TeamMember, TeamProps } from '@/entities/team';
+import type { TeamInvite, TeamMember } from '@/entities/team';
 import type { TelegramChatRegistration } from '@/entities/telegram';
 import type {
   PersonInsightCategoryValue,

@@ -8,6 +8,15 @@ export const addTelegramChatSchema = z.object({
     .negative({
       message: 'Group Chat IDs must be negative (e.g. -1003888134038)',
     }),
+  message_thread_id: z
+    .number()
+    .int()
+    .positive({ message: 'Topic ID must be a positive number' })
+    .optional()
+    .nullable()
+    .transform((v) => {
+      return v ?? null;
+    }),
   name: z
     .string()
     .max(255)

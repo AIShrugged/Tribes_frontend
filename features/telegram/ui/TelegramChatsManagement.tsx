@@ -16,6 +16,7 @@ import type { TelegramChatRegistration } from '@/entities/telegram';
 interface TelegramChatsManagementProps {
   initialChats: TelegramChatRegistration[];
   organizations: OrganizationProps[];
+  selectedOrganizationId: number;
   orgMap: Record<number, string>;
   botUsername: string;
 }
@@ -23,6 +24,7 @@ interface TelegramChatsManagementProps {
 export function TelegramChatsManagement({
   initialChats,
   organizations,
+  selectedOrganizationId,
   orgMap,
   botUsername,
 }: TelegramChatsManagementProps) {
@@ -59,6 +61,7 @@ export function TelegramChatsManagement({
           setIsModalOpen(false);
         }}
         organizations={organizations}
+        selectedOrganizationId={selectedOrganizationId}
         botUsername={botUsername}
       />
 

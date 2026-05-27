@@ -47,7 +47,7 @@ describe('getOrganizationId', () => {
   });
 
   it('redirects to login when cookie is absent', async () => {
-    mockCookiesGet.mockReturnValue();
+    mockCookiesGet.mockImplementation(() => {});
 
     await expect(getOrganizationId()).rejects.toThrow('REDIRECT:');
   });

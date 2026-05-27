@@ -19,7 +19,7 @@ import type {
   TabRisks,
   TabStatus,
 } from '../../model/dashboard-types';
-import type { TeamInvite, TeamMember, TeamProps } from '@/entities/team';
+import type { TeamInvite, TeamMember } from '@/entities/team';
 import type { TelegramChatRegistration } from '@/entities/telegram';
 import type { TeamNotificationSetting } from '@/features/teams/model/types';
 

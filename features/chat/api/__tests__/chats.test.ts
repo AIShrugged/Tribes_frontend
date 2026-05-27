@@ -101,7 +101,7 @@ describe('getChats', () => {
         ),
       );
 
-    const result = await getChats(0, 20);
+    const result = await getChats(42, 0, 20);
 
     expect(result.data).toEqual([mockChat]);
     expect(result.totalCount).toBe(25);
@@ -119,7 +119,7 @@ describe('getChats', () => {
         ),
       );
 
-    const result = await getChats(0, 20);
+    const result = await getChats(42, 0, 20);
 
     expect(result.hasMore).toBe(false);
   });
@@ -131,10 +131,25 @@ describe('getChats', () => {
         makeResponse(200, { success: true, data: [] }, { 'Items-Count': '0' }),
       );
 
-    await getChats();
+    await getChats(42);
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      'https://api.test/chats?offset=0&limit=20',
+      'https://api.test/chats?organization_id=42&offset=0&limit=20',
+      expect.anything(),
+    );
+  });
+
+  it('includes pagination and organization_id in query', async () => {
+    globalThis.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        makeResponse(200, { success: true, data: [] }, { 'Items-Count': '0' }),
+      );
+
+    await getChats(123, 40, 20);
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.test/chats?organization_id=123&offset=40&limit=20',
       expect.anything(),
     );
   });
@@ -144,7 +159,7 @@ describe('getChats', () => {
       .fn()
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
-    await expect(getChats()).rejects.toThrow();
+    await expect(getChats(42)).rejects.toThrow();
   });
 
   it('throws on other non-ok status', async () => {
@@ -152,7 +167,7 @@ describe('getChats', () => {
       .fn()
       .mockResolvedValue(makeResponse(500, 'Internal Server Error'));
 
-    await expect(getChats()).rejects.toThrow();
+    await expect(getChats(42)).rejects.toThrow();
   });
 
   it('throws when success=false in response body', async () => {
@@ -162,7 +177,7 @@ describe('getChats', () => {
         makeResponse(200, { success: false, error: 'Something broke' }),
       );
 
-    await expect(getChats()).rejects.toThrow('Something broke');
+    await expect(getChats(42)).rejects.toThrow('Something broke');
   });
 
   it('defaults totalCount to 0 when Items-Count header is absent', async () => {
@@ -170,7 +185,7 @@ describe('getChats', () => {
       .fn()
       .mockResolvedValue(makeResponse(200, { success: true, data: [] }));
 
-    const result = await getChats();
+    const result = await getChats(42);
 
     expect(result.totalCount).toBe(0);
   });
@@ -189,7 +204,7 @@ describe('createChat', () => {
       .fn()
       .mockResolvedValue(makeResponse(200, { success: true, data: mockChat }));
 
-    const result = await createChat({ title: 'My Chat' });
+    const result = await createChat({ title: 'My Chat', organization_id: 42 });
 
     expect(result.error).toBeNull();
     expect(result.data).toEqual(mockChat);
@@ -200,7 +215,7 @@ describe('createChat', () => {
       .fn()
       .mockResolvedValue(makeResponse(200, { success: true, data: mockChat }));
 
-    await createChat({ title: 'Hello Chat' });
+    await createChat({ title: 'Hello Chat', organization_id: 42 });
 
     const [, options] = (globalThis.fetch as jest.Mock).mock.calls[0] as [
       string,
@@ -232,7 +247,7 @@ describe('createChat', () => {
       .fn()
       .mockResolvedValue(makeResponse(200, { success: true, data: mockChat }));
 
-    await createChat();
+    await createChat({ organization_id: 42 });
 
     const [, options] = (globalThis.fetch as jest.Mock).mock.calls[0] as [
       string,
@@ -248,7 +263,7 @@ describe('createChat', () => {
       .fn()
       .mockResolvedValue(makeResponse(200, { success: true, data: mockChat }));
 
-    await createChat();
+    await createChat({ organization_id: 42 });
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'https://api.test/chats',
@@ -261,7 +276,7 @@ describe('createChat', () => {
       .fn()
       .mockResolvedValue(makeResponse(401, 'Unauthorized'));
 
-    await expect(createChat()).rejects.toThrow();
+    await expect(createChat({ organization_id: 42 })).rejects.toThrow();
   });
 
   it('returns ActionResult with error on server failure', async () => {
@@ -271,10 +286,34 @@ describe('createChat', () => {
         makeResponse(422, JSON.stringify({ message: 'Creation failed' })),
       );
 
-    const result = await createChat();
+    const result = await createChat({ title: 'Bad Chat' });
 
     expect(result.data).toBeNull();
     expect(result.error).toBe('Creation failed');
+  });
+
+  it('returns organization_id validation errors from 422 response', async () => {
+    globalThis.fetch = jest.fn().mockResolvedValue(
+      makeResponse(
+        422,
+        JSON.stringify({
+          message: 'The organization id field is required.',
+          errors: {
+            organization_id: ['The organization id field is required.'],
+          },
+        }),
+      ),
+    );
+
+    const result = await createChat({ title: 'Bad Chat' });
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBe('The organization id field is required.');
+    if (result.error) {
+      expect(result.fieldErrors).toEqual({
+        organization_id: 'The organization id field is required.',
+      });
+    }
   });
 });
 

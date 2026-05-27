@@ -37,11 +37,11 @@ const mockGetChats = jest.fn(() => {
 
 jest.mock('@/features/chat/api/chats', () => {
   return {
-    createChat: () => {
-      return mockCreateChat();
+    createChat: (...args: unknown[]) => {
+      return (mockCreateChat as (...params: unknown[]) => unknown)(...args);
     },
-    getChats: () => {
-      return mockGetChats();
+    getChats: (...args: unknown[]) => {
+      return (mockGetChats as (...params: unknown[]) => unknown)(...args);
     },
   };
 });
@@ -108,25 +108,33 @@ describe('ChatList', () => {
   it('renders a list of initial chats', () => {
     const chats = [makeChat(1, 'First chat'), makeChat(2, 'Second chat')];
 
-    render(<ChatList initialChats={chats} totalCount={2} />);
+    render(
+      <ChatList initialChats={chats} totalCount={2} organizationId={42} />,
+    );
     expect(screen.getByTestId(CHAT_ITEM_1)).toBeInTheDocument();
     expect(screen.getByTestId('chat-item-2')).toBeInTheDocument();
   });
 
   it('renders the empty state when initialChats is empty', () => {
-    render(<ChatList initialChats={[]} totalCount={0} />);
+    render(<ChatList initialChats={[]} totalCount={0} organizationId={42} />);
     expect(screen.getByText(/no chats yet/i)).toBeInTheDocument();
   });
 
   it('renders a "New" button', () => {
-    render(<ChatList initialChats={[]} totalCount={0} />);
+    render(<ChatList initialChats={[]} totalCount={0} organizationId={42} />);
     expect(
       screen.getByRole('button', { name: /new chat/i }),
     ).toBeInTheDocument();
   });
 
   it('collapses the panel when the ChevronLeft button is clicked', async () => {
-    render(<ChatList initialChats={[makeChat(1, 'Chat')]} totalCount={1} />);
+    render(
+      <ChatList
+        initialChats={[makeChat(1, 'Chat')]}
+        totalCount={1}
+        organizationId={42}
+      />,
+    );
     await userEvent.click(
       screen.getByRole('button', { name: /collapse chats panel/i }),
     );
@@ -135,7 +143,13 @@ describe('ChatList', () => {
   });
 
   it('expands the panel again after collapsing', async () => {
-    render(<ChatList initialChats={[makeChat(1, 'Chat')]} totalCount={1} />);
+    render(
+      <ChatList
+        initialChats={[makeChat(1, 'Chat')]}
+        totalCount={1}
+        organizationId={42}
+      />,
+    );
 
     await userEvent.click(
       screen.getByRole('button', { name: /collapse chats panel/i }),
@@ -149,7 +163,11 @@ describe('ChatList', () => {
 
   it('creates a new chat and prepends it to the list', async () => {
     render(
-      <ChatList initialChats={[makeChat(1, 'Existing')]} totalCount={1} />,
+      <ChatList
+        initialChats={[makeChat(1, 'Existing')]}
+        totalCount={1}
+        organizationId={42}
+      />,
     );
     await act(async () => {
       await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
@@ -160,10 +178,13 @@ describe('ChatList', () => {
     await waitFor(() => {
       expect(screen.getByTestId('chat-item-99')).toBeInTheDocument();
     });
+    expect(mockCreateChat).toHaveBeenCalledWith(
+      expect.objectContaining({ organization_id: 42 }),
+    );
   });
 
   it('navigates to the new chat after creation', async () => {
-    render(<ChatList initialChats={[]} totalCount={0} />);
+    render(<ChatList initialChats={[]} totalCount={0} organizationId={42} />);
     await act(async () => {
       await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
       await userEvent.click(
@@ -181,7 +202,7 @@ describe('ChatList', () => {
     };
 
     mockCreateChat.mockRejectedValueOnce(new Error('Server error'));
-    render(<ChatList initialChats={[]} totalCount={0} />);
+    render(<ChatList initialChats={[]} totalCount={0} organizationId={42} />);
     await act(async () => {
       await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
       await userEvent.click(
@@ -195,7 +216,11 @@ describe('ChatList', () => {
 
   it('updates a chat title when onUpdate is called', async () => {
     render(
-      <ChatList initialChats={[makeChat(1, 'Old title')]} totalCount={1} />,
+      <ChatList
+        initialChats={[makeChat(1, 'Old title')]}
+        totalCount={1}
+        organizationId={42}
+      />,
     );
     await userEvent.click(screen.getByRole('button', { name: 'update-1' }));
     expect(screen.getByTestId(CHAT_ITEM_1)).toHaveTextContent('Updated');
@@ -206,6 +231,7 @@ describe('ChatList', () => {
       <ChatList
         initialChats={[makeChat(1, 'Chat A'), makeChat(2, 'Chat B')]}
         totalCount={2}
+        organizationId={42}
       />,
     );
     await userEvent.click(screen.getByRole('button', { name: 'delete-1' }));
@@ -219,6 +245,7 @@ describe('ChatList', () => {
         initialChats={[makeChat(5, 'Active')]}
         totalCount={1}
         activeChatId={5}
+        organizationId={42}
       />,
     );
     await userEvent.click(screen.getByRole('button', { name: 'delete-5' }));
@@ -231,6 +258,7 @@ describe('ChatList', () => {
         initialChats={[makeChat(1, 'Other'), makeChat(2, 'Active')]}
         totalCount={2}
         activeChatId={2}
+        organizationId={42}
       />,
     );
     await userEvent.click(screen.getByRole('button', { name: 'delete-1' }));

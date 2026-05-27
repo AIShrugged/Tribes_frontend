@@ -12,11 +12,17 @@ import type { Chat, ChatUpsertDTO } from '@/features/chat/model/types';
 import type { ActionResult } from '@/shared/types/server-action';
 
 export async function getChats(
+  organizationId: number,
   offset = 0,
   limit = 20,
 ): Promise<{ data: Chat[]; totalCount: number; hasMore: boolean }> {
+  const params = new URLSearchParams({
+    organization_id: String(organizationId),
+    offset: String(offset),
+    limit: String(limit),
+  });
   const result = await httpClientList<Chat>(
-    `${API_URL}/chats?offset=${offset}&limit=${limit}`,
+    `${API_URL}/chats?${params.toString()}`,
   );
   // Preserve offset-based hasMore formula — httpClientList uses data.length < totalCount
   // which gives wrong result for partial pages in offset pagination.

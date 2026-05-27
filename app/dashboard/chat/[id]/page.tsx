@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getArtifacts } from '@/entities/artifact';
 import { ChatLayout, getChat, getChats, getMessages } from '@/features/chat';
 import { getOrganizations } from '@/features/organization';
+import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 
 import type { PageProps } from '@/shared/types/common';
 
@@ -18,21 +19,26 @@ export default async function ChatRoomPage({ params }: PageProps) {
   if (!Number.isFinite(chatId) || chatId <= 0) notFound();
 
   const INITIAL_LIMIT = 20;
+  const [{ data: organizations }, organizationId] = await Promise.all([
+    getOrganizations(),
+    getOrganizationId(),
+  ]);
   const [
-    { data: chats, totalCount },
+    chatListResult,
     currentChat,
     { data: oldest, totalCount: msgTotal },
     artifacts,
-    { data: organizations },
   ] = await Promise.all([
-    getChats(0, 20),
+    getChats(organizationId, 0, 20).catch(() => {
+      return { data: [], totalCount: 0, hasMore: false };
+    }),
     getChat(chatId),
     getMessages(chatId, 0, INITIAL_LIMIT),
     getArtifacts(chatId).catch(() => {
       return null;
     }),
-    getOrganizations(),
   ]);
+  const { data: chats, totalCount } = chatListResult;
   // API returns messages oldest-first (ASC by created_at).
   // If there are more messages than INITIAL_LIMIT, fetch from the end
   // so the user sees the newest messages on open.
@@ -62,6 +68,7 @@ export default async function ChatRoomPage({ params }: PageProps) {
       totalMessagesCount={msgTotal}
       startOffset={startOffset}
       organizations={organizations ?? []}
+      organizationId={organizationId}
     />
   );
 }
