@@ -48,12 +48,7 @@ export function TaskDataUploadModal({
   }, [isOpen, teams, organizationId]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title='Upload task data'
-      size='md'
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title='Upload task data' size='md'>
       {isLoading && (
         <div className='p-6 text-center text-sm text-muted-foreground'>
           Loading…

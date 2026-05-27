@@ -14,8 +14,8 @@ import {
 } from '@/features/task-data-upload/model/schema';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
-import InputDropdown from '@/shared/ui/input/InputDropdown';
 import Error from '@/shared/ui/input/Error';
+import InputDropdown from '@/shared/ui/input/InputDropdown';
 
 import type { TeamProps } from '@/entities/team';
 
@@ -31,10 +31,12 @@ export function TaskDataUploadForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const autoTeamId = teams.length === 1 ? teams[0].id : undefined;
-  const teamOptions = teams.map((t) => ({
-    value: String(t.id),
-    label: t.name,
-  }));
+  const teamOptions = teams.map((t) => {
+    return {
+      value: String(t.id),
+      label: t.name,
+    };
+  });
 
   const {
     handleSubmit,
@@ -58,13 +60,13 @@ export function TaskDataUploadForm({
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
-      onChange(undefined);
+      onChange();
       return;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
       toast.error('File exceeds 10 MB');
       event.target.value = '';
-      onChange(undefined);
+      onChange();
       return;
     }
     onChange(file);
@@ -87,52 +89,51 @@ export function TaskDataUploadForm({
       if (!uploadResult) return;
 
       toast.success(
-        `Processed: ${uploadResult.issues_created} new task${uploadResult.issues_created !== 1 ? 's' : ''}, ${uploadResult.issues_updated} updated.`,
+        `Processed: ${uploadResult.issues_created} new task${uploadResult.issues_created === 1 ? '' : 's'}, ${uploadResult.issues_updated} updated.`,
       );
       onClose();
     });
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className='flex flex-col gap-4 p-4'
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4 p-4'>
       {/* File input */}
       <Controller
         control={control}
         name='file'
-        render={({ field }) => (
-          <div className='flex flex-col gap-1.5'>
-            <label
-              htmlFor='task-data-upload-file'
-              className='text-sm font-medium text-foreground'
-            >
-              File with task data
-              <span className='ml-2 text-xs font-normal text-muted-foreground'>
-                Any text format or archive · up to 10 MB
-              </span>
-            </label>
-            <input
-              id='task-data-upload-file'
-              ref={fileInputRef}
-              type='file'
-              aria-label='Task data file'
-              className='text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
-              onChange={(e) => {
-                return handleFileChange(e, field.onChange);
-              }}
-            />
-            {field.value && (
-              <p className='text-xs text-muted-foreground'>
-                {field.value.name} · {(field.value.size / 1024).toFixed(1)} KB
-              </p>
-            )}
-            {fieldErrorMessage('file') && (
-              <Error id='file-error'>{fieldErrorMessage('file')}</Error>
-            )}
-          </div>
-        )}
+        render={({ field }) => {
+          return (
+            <div className='flex flex-col gap-1.5'>
+              <label
+                htmlFor='task-data-upload-file'
+                className='text-sm font-medium text-foreground'
+              >
+                File with task data
+                <span className='ml-2 text-xs font-normal text-muted-foreground'>
+                  Any text format or archive · up to 10 MB
+                </span>
+              </label>
+              <input
+                id='task-data-upload-file'
+                ref={fileInputRef}
+                type='file'
+                aria-label='Task data file'
+                className='text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90'
+                onChange={(e) => {
+                  return handleFileChange(e, field.onChange);
+                }}
+              />
+              {field.value && (
+                <p className='text-xs text-muted-foreground'>
+                  {field.value.name} · {(field.value.size / 1024).toFixed(1)} KB
+                </p>
+              )}
+              {fieldErrorMessage('file') && (
+                <Error id='file-error'>{fieldErrorMessage('file')}</Error>
+              )}
+            </div>
+          );
+        }}
       />
 
       {/* Team picker — hidden if user has exactly 1 team */}
@@ -140,23 +141,25 @@ export function TaskDataUploadForm({
         <Controller
           control={control}
           name='team_id'
-          render={({ field }) => (
-            <div className='flex flex-col gap-1.5'>
-              <label className='text-sm font-medium text-foreground'>
-                Team
-              </label>
-              <InputDropdown
-                options={teamOptions}
-                value={field.value !== undefined ? String(field.value) : ''}
-                onChange={(v) => {
-                  return field.onChange(Number(v));
-                }}
-                placeholder='Select a team'
-                searchable
-                error={fieldErrorMessage('team_id')}
-              />
-            </div>
-          )}
+          render={({ field }) => {
+            return (
+              <div className='flex flex-col gap-1.5'>
+                <label className='text-sm font-medium text-foreground'>
+                  Team
+                </label>
+                <InputDropdown
+                  options={teamOptions}
+                  value={field.value === undefined ? '' : String(field.value)}
+                  onChange={(v) => {
+                    return field.onChange(Number(v));
+                  }}
+                  placeholder='Select a team'
+                  searchable
+                  error={fieldErrorMessage('team_id')}
+                />
+              </div>
+            );
+          }}
         />
       )}
 
