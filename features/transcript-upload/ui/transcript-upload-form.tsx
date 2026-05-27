@@ -37,7 +37,7 @@ function handleFileChange(
     return;
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    toast.error('File exceeds 5 MB');
+    toast.error('File exceeds 10 MB');
     event.target.value = '';
     onChange();
     return;
@@ -365,7 +365,7 @@ function FilePickerField({
             <span className='text-sm font-medium text-foreground'>
               Transcript file
               <span className='ml-2 text-xs font-normal text-muted-foreground'>
-                JSON, TXT, VTT, or SRT · up to 5 MB
+                Any text format or archive · up to 10 MB
               </span>
             </span>
             <input

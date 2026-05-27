@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
-export const ACCEPT_EXTENSIONS = '.json,.txt,.vtt,.srt';
+export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB (archives allowed)
+export const ACCEPT_EXTENSIONS = ''; // any format — backend auto-detects via AI
 export const MAX_ENTRIES = 10_000;
 
 const fileSchema = z
@@ -17,7 +17,7 @@ const fileSchema = z
       return f.size <= MAX_FILE_SIZE_BYTES;
     },
     {
-      message: 'File exceeds 5 MB',
+      message: 'File exceeds 10 MB',
     },
   );
 
