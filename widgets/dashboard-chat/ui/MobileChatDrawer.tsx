@@ -19,6 +19,7 @@ interface MobileChatDrawerProps {
   initialMessages: Message[];
   totalMessagesCount: number;
   startOffset: number;
+  organizationId?: number;
 }
 
 export function MobileChatDrawer({
@@ -26,6 +27,7 @@ export function MobileChatDrawer({
   initialMessages,
   totalMessagesCount,
   startOffset,
+  organizationId,
 }: MobileChatDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
@@ -164,6 +166,7 @@ export function MobileChatDrawer({
                       initialMessages={initialMessages}
                       totalMessagesCount={totalMessagesCount}
                       startOffset={startOffset}
+                      organizationId={organizationId}
                     />
                   </div>
                 </motion.div>

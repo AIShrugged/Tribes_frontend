@@ -3,7 +3,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { type PropsWithChildren, useMemo, useRef, useState, useTransition } from 'react';
+import {
+  type PropsWithChildren,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -37,7 +43,7 @@ function handleFileChange(
     return;
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    toast.error('File exceeds 5 MB');
+    toast.error('File exceeds 10 MB');
     event.target.value = '';
     onChange();
     return;
@@ -55,7 +61,10 @@ function toDatetimeLocalString(d: Date): string {
 
 function applyFieldErrors(
   fieldErrors: Record<string, string>,
-  setError: (field: keyof TranscriptUploadFormData, error: { message: string }) => void,
+  setError: (
+    field: keyof TranscriptUploadFormData,
+    error: { message: string },
+  ) => void,
 ) {
   for (const [field, msg] of Object.entries(fieldErrors)) {
     setError(field as keyof TranscriptUploadFormData, { message: msg });
@@ -127,7 +136,10 @@ export function TranscriptUploadForm({
     startTransition(async () => {
       const result = await uploadTranscript(data);
       if (result.error) {
-        const userMessage = getUploadErrorMessage(result.errorCode, result.error);
+        const userMessage = getUploadErrorMessage(
+          result.errorCode,
+          result.error,
+        );
         if (result.fieldErrors) applyFieldErrors(result.fieldErrors, setError);
         const hasOnlyFieldErrors =
           result.fieldErrors && Object.keys(result.fieldErrors).length > 0;
@@ -140,7 +152,9 @@ export function TranscriptUploadForm({
       toast.success('Transcript uploaded. Summary will appear in 1–2 minutes.');
       onClose();
       router.push(
-        ROUTES.DASHBOARD.MEETING_DETAIL_TRANSCRIPT(uploadResponse.calendar_event_id),
+        ROUTES.DASHBOARD.MEETING_DETAIL_TRANSCRIPT(
+          uploadResponse.calendar_event_id,
+        ),
       );
     });
   };
@@ -365,7 +379,7 @@ function FilePickerField({
             <span className='text-sm font-medium text-foreground'>
               Transcript file
               <span className='ml-2 text-xs font-normal text-muted-foreground'>
-                JSON, TXT, VTT, or SRT · up to 5 MB
+                Any text format or archive · up to 10 MB
               </span>
             </span>
             <input

@@ -21,7 +21,7 @@ export async function getMessages(
     `${API_URL}/chats/${chatId}/messages?offset=${offset}&limit=${limit}`,
   );
   return {
-    data: [...result.data].sort((a, b) => {
+    data: result.data.toSorted((a, b) => {
       return a.id - b.id;
     }),
     totalCount: result.totalCount,
