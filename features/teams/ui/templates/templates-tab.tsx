@@ -18,37 +18,56 @@ interface Props {
   isReadOnly: boolean;
 }
 
+interface TemplatesState {
+  key: string;
+  summary: MeetingSummaryTemplateResolved | null;
+  agenda: AgendaTemplateResolved | null;
+  loadError: string | null;
+}
+
 export function TemplatesTab({ teamId, isReadOnly }: Props) {
-  const [summary, setSummary] = useState<MeetingSummaryTemplateResolved | null>(
-    null,
-  );
-  const [agenda, setAgenda] = useState<AgendaTemplateResolved | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<TemplatesState>({
+    key: '',
+    summary: null,
+    agenda: null,
+    loadError: null,
+  });
   const [retryCount, setRetryCount] = useState(0);
+  const stateKey = `${teamId}:${retryCount}`;
+  const isCurrentState = templates.key === stateKey;
+  const summary = isCurrentState ? templates.summary : null;
+  const agenda = isCurrentState ? templates.agenda : null;
+  const loadError = isCurrentState ? templates.loadError : null;
 
   useEffect(() => {
     let cancelled = false;
-    setSummary(null);
-    setAgenda(null);
-    setLoadError(null);
 
     Promise.all([getMeetingSummaryTemplate(teamId), getAgendaTemplate(teamId)])
       .then(([s, a]) => {
         if (cancelled) return;
-        setSummary(s);
-        setAgenda(a);
+        setTemplates({
+          key: stateKey,
+          summary: s,
+          agenda: a,
+          loadError: null,
+        });
       })
       .catch((error: unknown) => {
         if (cancelled) return;
         const message =
           error instanceof Error ? error.message : 'Failed to load templates';
-        setLoadError(message);
+        setTemplates({
+          key: stateKey,
+          summary: null,
+          agenda: null,
+          loadError: message,
+        });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [teamId, retryCount]);
+  }, [teamId, stateKey]);
 
   if (loadError) {
     return (
