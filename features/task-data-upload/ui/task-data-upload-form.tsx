@@ -83,9 +83,11 @@ export function TaskDataUploadForm({
         return;
       }
 
-      const { issues_created, issues_updated } = result.data;
+      const uploadResult = result.data;
+      if (!uploadResult) return;
+
       toast.success(
-        `Processed: ${issues_created} new task${issues_created !== 1 ? 's' : ''}, ${issues_updated} updated.`,
+        `Processed: ${uploadResult.issues_created} new task${uploadResult.issues_created !== 1 ? 's' : ''}, ${uploadResult.issues_updated} updated.`,
       );
       onClose();
     });
