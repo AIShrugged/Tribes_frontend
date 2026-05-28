@@ -84,9 +84,10 @@ export function OnboardingPreviewStep({
           {data.goals.map((goal, index) => {
             return (
               <OnboardingGoalCard
-                key={index}
+                key={goal._id}
                 goal={goal}
                 index={index}
+                disabled={isSubmitting}
                 onUpdate={(updated) => {
                   return onGoalUpdate(index, updated);
                 }}

@@ -118,7 +118,7 @@ export function EpicGoalCardClient({
                 >
                   #{task.id} {task.name}
                 </Link>
-                <div className='flex shrink-0 items-center gap-1'>
+                <div className='flex shrink-0 items-center gap-2'>
                   <IssueStatusBadge status={task.status} />
                   <button
                     type='button'
@@ -128,7 +128,7 @@ export function EpicGoalCardClient({
                     }}
                     disabled={isDetaching}
                     className={[
-                      'rounded p-0.5 transition-all',
+                      'rounded p-1.5 transition-all',
                       'opacity-0 group-hover/taskrow:opacity-100',
                       'text-[var(--muted-foreground)] hover:text-amber-500 hover:bg-amber-500/10',
                       'disabled:opacity-30 disabled:pointer-events-none',

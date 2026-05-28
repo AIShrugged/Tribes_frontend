@@ -58,7 +58,12 @@ export interface DraftTeamMember {
   system_user_id: number | null;
 }
 
-export type EditableGoal = DraftGoal;
+export interface EditableGoal {
+  _id: string;
+  title: string;
+  description: string;
+  tasks: DraftTask[];
+}
 
 export interface EditableTeamMember {
   _id: string;
