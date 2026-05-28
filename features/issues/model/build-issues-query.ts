@@ -6,7 +6,7 @@ export function buildIssuesQuery(filters: IssueFilters = {}) {
   if (filters.status) params.set('status', filters.status);
 
   if (filters.type) {
-    params.set('type', filters.type);
+    params.set('type', filters.type === 'task' ? 'organization' : filters.type);
   }
 
   if (filters.assignee) params.set('assignee', String(filters.assignee));

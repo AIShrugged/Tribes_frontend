@@ -27,7 +27,7 @@ function buildKanbanQuery(filters: KanbanFilters = {}): string {
   }
 
   if (filters.type) {
-    params.set('type', filters.type);
+    params.set('type', filters.type === 'task' ? 'organization' : filters.type);
   }
 
   if (filters.assignee_id) {
