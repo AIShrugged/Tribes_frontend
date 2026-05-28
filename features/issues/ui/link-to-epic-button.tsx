@@ -15,9 +15,11 @@ import type { Issue } from '@/features/issues/model/types';
 export function LinkToEpicButton({
   taskId,
   epics,
+  onSuccess,
 }: {
   taskId: number;
   epics: Issue[];
+  onSuccess?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
@@ -35,6 +37,7 @@ export function LinkToEpicButton({
       } else {
         toast.success('Task linked to goal');
         setOpen(false);
+        onSuccess?.();
       }
     } finally {
       setIsLinking(false);

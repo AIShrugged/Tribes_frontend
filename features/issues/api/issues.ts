@@ -427,6 +427,46 @@ export async function linkTaskToEpic(
 }
 
 /**
+ * detachTaskFromEpic removes a task from its parent epic by setting epic_id to null.
+ * @param taskId - id of the task to detach.
+ * @returns updated issue or error.
+ */
+export async function detachTaskFromEpic(
+  taskId: number,
+): Promise<ActionResult<Issue>> {
+  if (!Number.isInteger(taskId) || taskId <= 0) {
+    return { data: null, error: 'Invalid task ID' };
+  }
+
+  try {
+    const { data } = await httpClient<Issue>(`${API_URL}/issues/${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ epic_id: null }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    revalidatePath('/dashboard/issues', 'layout');
+
+    return { data: data!, error: null };
+  } catch (error) {
+    if (error instanceof ServerError) {
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to remove task from goal',
+      );
+
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
+    }
+
+    throw error;
+  }
+}
+
+/**
  * getTasksForEpicForm fetches non-epic issues for the child task selector on the epic form.
  * @param organizationId - optional org scope.
  * @returns issues list (max 200).

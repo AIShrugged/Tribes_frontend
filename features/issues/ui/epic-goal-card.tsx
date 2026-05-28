@@ -1,7 +1,7 @@
+import { UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-import { IssueStatusBadge } from '@/entities/issue';
 import { getIssues } from '@/features/issues/api/issues';
 import {
   computeProgress,
@@ -10,23 +10,9 @@ import {
 import { ROUTES } from '@/shared/lib/routes';
 import { Skeleton } from '@/shared/ui/layout/skeleton';
 
+import { EpicGoalCardClient } from './epic-goal-card-client';
+
 import type { Issue } from '@/features/issues/model/types';
-
-function EpicTaskRow({ task }: { task: Issue }) {
-  const href = `${ROUTES.DASHBOARD.ISSUES}/${task.id.toString()}`;
-
-  return (
-    <li className='group/taskrow flex items-center justify-between gap-2 rounded px-3 py-2 hover:bg-[var(--surface-2)] transition-colors'>
-      <Link
-        href={href}
-        className='flex-1 truncate text-xs text-[var(--foreground)] hover:underline'
-      >
-        #{task.id} {task.name}
-      </Link>
-      <IssueStatusBadge status={task.status} />
-    </li>
-  );
-}
 
 async function EpicTasksList({ epicId }: { epicId: number }) {
   const result = await getIssues({ epic_id: epicId, limit: 100, offset: 0 });
@@ -37,66 +23,7 @@ async function EpicTasksList({ epicId }: { epicId: number }) {
   const barColor = getProgressColor(progress);
 
   return (
-    <EpicGoalCardContent
-      tasks={tasks}
-      progress={progress}
-      barColor={barColor}
-    />
-  );
-}
-
-function EpicGoalCardContent({
-  tasks,
-  progress,
-  barColor,
-}: {
-  tasks: Issue[];
-  progress: ReturnType<typeof computeProgress>;
-  barColor: string;
-}) {
-  return (
-    <>
-      <div className='px-4 pb-2'>
-        <div className='flex items-center justify-between mb-1'>
-          <span className='text-xs text-[var(--muted-foreground)]'>
-            {progress.isEmpty
-              ? 'No tasks yet'
-              : `${progress.done.toString()}/${progress.total.toString()} done`}
-          </span>
-          <span className='text-xs font-medium text-[var(--foreground)]'>
-            {progress.isEmpty ? '—' : `${progress.percent.toString()}%`}
-          </span>
-        </div>
-        <div
-          className='h-1.5 w-full rounded-full bg-[var(--surface-3)] overflow-hidden'
-          role='progressbar'
-          aria-valuenow={progress.percent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div
-            className={`h-full rounded-full transition-[width] duration-500 ${barColor}`}
-            style={{ width: `${progress.percent.toString()}%` }}
-          />
-        </div>
-        {!progress.isEmpty && (
-          <div className='mt-1 flex gap-3 text-[10px] text-[var(--muted-foreground)]'>
-            {progress.active > 0 && (
-              <span>{progress.active.toString()} active</span>
-            )}
-            {progress.open > 0 && <span>{progress.open.toString()} open</span>}
-          </div>
-        )}
-      </div>
-
-      {tasks.length > 0 && (
-        <ul className='border-t border-[var(--border)] divide-y divide-[var(--border)]/50'>
-          {tasks.map((task) => {
-            return <EpicTaskRow key={task.id} task={task} />;
-          })}
-        </ul>
-      )}
-    </>
+    <EpicGoalCardClient tasks={tasks} progress={progress} barColor={barColor} />
   );
 }
 
@@ -139,6 +66,12 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
           {epic.description && (
             <p className='mt-0.5 text-xs text-[var(--muted-foreground)] line-clamp-1'>
               {epic.description}
+            </p>
+          )}
+          {epic.assignee != null && (
+            <p className='mt-0.5 flex items-center gap-1 text-[10px] text-[var(--muted-foreground)]/70'>
+              <UserCircle className='h-3 w-3 shrink-0' aria-hidden='true' />
+              <span className='truncate'>{epic.assignee.name}</span>
             </p>
           )}
         </div>
