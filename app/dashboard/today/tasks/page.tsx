@@ -1,52 +1,7 @@
-import {
-  AiNudge,
-  AiPrepPanel,
-  ClosedTasksBlock,
-  StaleItems,
-  TaskStatsBlock,
-  getTodayBriefing,
-  WaitingOnYou,
-} from '@/features/today-briefing';
-import { Card, CardBody } from '@/shared/ui/card';
-import PageHeader from '@/widgets/layout/ui/page-header';
+import { redirect } from 'next/navigation';
 
-export default async function TodayTasksPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ date?: string }>;
-}) {
-  const { date } = (await searchParams) ?? {};
-  const data = await getTodayBriefing(date);
+import { ROUTES } from '@/shared/lib/routes';
 
-  return (
-    <Card className='flex flex-col'>
-      <PageHeader title='Tasks' />
-      <div className='px-6 pt-4 flex flex-col gap-4'>
-        <TaskStatsBlock />
-        <ClosedTasksBlock />
-      </div>
-      <CardBody>
-        <div className='flex flex-col gap-8'>
-          {data.events.map((event) => {
-            return (
-              <div key={event.id} className='flex flex-col gap-8'>
-                <AiPrepPanel
-                  event={event}
-                  tasks={event.tasks}
-                  carriedTasks={data.carried_tasks}
-                />
-              </div>
-            );
-          })}
-
-          {data.events.length > 0 && (
-            <AiNudge text={data.nudge} date={data.date} />
-          )}
-
-          <WaitingOnYou tasks={data.waiting_on_you} />
-          <StaleItems tasks={data.stale} />
-        </div>
-      </CardBody>
-    </Card>
-  );
+export default function TodayTasksPage() {
+  redirect(ROUTES.DASHBOARD.TODAY_PROGRESS);
 }
