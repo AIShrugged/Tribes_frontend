@@ -24,8 +24,8 @@ import {
 } from '@/features/task-data-upload/model/types';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
-import InputDropdown from '@/shared/ui/input/InputDropdown';
 import Error from '@/shared/ui/input/Error';
+import InputDropdown from '@/shared/ui/input/InputDropdown';
 
 import type { TeamProps } from '@/entities/team';
 
@@ -49,10 +49,10 @@ export function TaskDataUploadForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const autoTeamId = teams.length === 1 ? teams[0].id : undefined;
-  const teamOptions = teams.map((t) => ({
+  const teamOptions = teams.map((t) => {return {
     value: String(t.id),
     label: t.name,
-  }));
+  }});
 
   const {
     handleSubmit,
@@ -116,17 +116,17 @@ export function TaskDataUploadForm({
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    onChange: (file: File | undefined) => void,
+    onChange: (file?: File) => void,
   ) => {
     const file = event.target.files?.[0];
     if (!file) {
-      onChange(undefined);
+      onChange();
       return;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
       toast.error('File exceeds 10 MB');
       event.target.value = '';
-      onChange(undefined);
+      onChange();
       return;
     }
     onChange(file);
@@ -173,11 +173,11 @@ export function TaskDataUploadForm({
         <div className='rounded-md border border-border bg-muted/30 p-3 text-sm'>
           <p>
             <strong>{statusResult.issues_created}</strong> new task
-            {statusResult.issues_created !== 1 ? 's' : ''} created
+            {statusResult.issues_created === 1 ? '' : 's'} created
           </p>
           <p>
             <strong>{statusResult.issues_updated}</strong> existing task
-            {statusResult.issues_updated !== 1 ? 's' : ''} updated
+            {statusResult.issues_updated === 1 ? '' : 's'} updated
           </p>
         </div>
 
@@ -185,12 +185,12 @@ export function TaskDataUploadForm({
           <div className='max-h-48 overflow-y-auto text-sm'>
             <p className='mb-1 font-medium text-muted-foreground'>Tasks:</p>
             <ul className='space-y-1'>
-              {statusResult.issues.map((issue) => (
+              {statusResult.issues.map((issue) => {return (
                 <li key={issue.id} className='flex items-center gap-1.5'>
                   <span className='text-green-500'>+ new</span>
                   <span className='truncate'>{issue.name}</span>
                 </li>
-              ))}
+              )})}
             </ul>
           </div>
         )}
@@ -268,7 +268,7 @@ export function TaskDataUploadForm({
       <Controller
         control={control}
         name='file'
-        render={({ field }) => (
+        render={({ field }) => {return (
           <div className='flex flex-col gap-1.5'>
             <label
               htmlFor='task-data-upload-file'
@@ -299,7 +299,7 @@ export function TaskDataUploadForm({
               <Error id='file-error'>{fieldErrorMessage('file')}</Error>
             )}
           </div>
-        )}
+        )}}
       />
 
       {/* Team picker */}
@@ -307,14 +307,14 @@ export function TaskDataUploadForm({
         <Controller
           control={control}
           name='team_id'
-          render={({ field }) => (
+          render={({ field }) => {return (
             <div className='flex flex-col gap-1.5'>
               <label className='text-sm font-medium text-foreground'>
                 Team
               </label>
               <InputDropdown
                 options={teamOptions}
-                value={field.value !== undefined ? String(field.value) : ''}
+                value={field.value === undefined ? '' : String(field.value)}
                 onChange={(v) => {
                   return field.onChange(Number(v));
                 }}
@@ -324,7 +324,7 @@ export function TaskDataUploadForm({
                 error={fieldErrorMessage('team_id')}
               />
             </div>
-          )}
+          )}}
         />
       )}
 

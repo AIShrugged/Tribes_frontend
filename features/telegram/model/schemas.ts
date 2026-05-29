@@ -24,8 +24,6 @@ export const addTelegramChatSchema = z.object({
     .transform((v) => {
       return v === '' || v === undefined ? null : v;
     }),
-  // TenantScopeFields works with string values — coerce to number at submit time
-  organization_id: z.string().min(1, 'Select an organization'),
   team_id: z.string().optional(),
 });
 

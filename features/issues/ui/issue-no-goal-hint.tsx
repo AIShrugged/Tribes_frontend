@@ -8,8 +8,9 @@ import { LinkToEpicButton } from '@/features/issues/ui/link-to-epic-button';
 
 import type { Issue } from '@/features/issues/model/types';
 
-const storageKey = (issueId: number) =>
-  `issue-hint-v1-${issueId}-no-goal-dismissed`;
+const storageKey = (issueId: number) => {
+  return `issue-hint-v1-${issueId}-no-goal-dismissed`;
+};
 
 export function IssueNoGoalHint({
   issueId,
@@ -30,11 +31,9 @@ export function IssueNoGoalHint({
       return;
     }
     try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDismissed(sessionStorage.getItem(storageKey(issueId)) === '1');
     } catch {
       // sessionStorage blocked (e.g. Safari private mode) → default to not dismissed
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDismissed(false);
     }
   }, [issueId]);
