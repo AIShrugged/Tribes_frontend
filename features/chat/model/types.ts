@@ -2,8 +2,8 @@
 export interface Chat {
   id: number;
   title: string | null;
-  organization_id?: number | null;
-  team_id?: number | null;
+  organization_id: number | null;
+  team_id: number | null;
   created_at: string;
   updated_at: string;
 }

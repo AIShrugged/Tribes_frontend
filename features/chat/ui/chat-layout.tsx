@@ -21,14 +21,14 @@ interface ChatLayoutProps {
   initialChats: Chat[];
   totalCount: number;
   activeChatId?: number;
-  currentChat?: Chat;
+  currentChat: Chat;
   chatId: number;
   initialArtifacts: ArtifactsResponse | null;
   initialMessages: Message[];
   totalMessagesCount: number;
   startOffset: number;
   organizations?: OrganizationProps[];
-  organizationId?: number;
+  organizationId: number;
 }
 
 /**
@@ -108,16 +108,7 @@ export function ChatLayout({
     },
     [artifactsWidth],
   );
-  const [chat, setChat] = useState<Chat>(
-    currentChat ?? {
-      id: chatId,
-      title: null,
-      organization_id: null,
-      team_id: null,
-      created_at: '',
-      updated_at: '',
-    },
-  );
+  const [chat, setChat] = useState<Chat>(currentChat);
 
   return (
     <div className='flex flex-col h-full rounded-[var(--radius-card)] overflow-hidden border border-border bg-card'>

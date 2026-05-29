@@ -76,6 +76,8 @@ const makeChat = (id: number): Chat => {
   return {
     id,
     title: `Chat ${id}`,
+    organization_id: null,
+    team_id: null,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
   };
@@ -106,11 +108,13 @@ const defaultProps = {
   initialChats: [makeChat(1), makeChat(2)],
   totalCount: 2,
   activeChatId: 1,
+  currentChat: makeChat(1),
   chatId: 1,
   initialArtifacts: null,
   initialMessages: [makeMessage(1)],
   totalMessagesCount: 1,
   startOffset: 0,
+  organizationId: 42,
 };
 
 describe('ChatLayout', () => {

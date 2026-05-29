@@ -1,5 +1,4 @@
-import { getChats } from '@/features/chat/api/chats';
-import { getMessages } from '@/features/chat/api/messages';
+import { getChats, getMessages } from '@/features/chat';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { DashboardChatPanel } from '@/widgets/dashboard-chat/ui/DashboardChatPanel';
 
