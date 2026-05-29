@@ -27,12 +27,12 @@ export default async function IssuesTabsLayout({
     ]);
 
   return (
-    <div className='flex flex-col h-full overflow-hidden p-2'>
+    <div className='flex flex-col h-full overflow-clip p-2'>
       <div className='shrink-0 mb-4 flex items-center justify-between gap-3'>
         <IssuesTabsNav />
         <TaskDataUploadButton organizationId={String(cookieOrgId)} />
       </div>
-      <div className='flex-1 overflow-y-auto flex flex-col'>
+      <div className='flex-1 flex flex-col min-h-0'>
         <Suspense fallback={<IssuesTabsNavSkeleton />}>
           <IssuesLayoutClient
             organizations={organizationsResponse.data ?? []}
