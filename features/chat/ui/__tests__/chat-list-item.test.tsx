@@ -35,6 +35,8 @@ const makeChat = (overrides = {}) => {
   return {
     id: 1,
     title: 'My Chat',
+    organization_id: null,
+    team_id: null,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
     ...overrides,
