@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
@@ -620,6 +621,7 @@ export async function uploadPendingAttachment(
 
     return { data: normalizeIssueAttachment(data), error: null };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     if (error instanceof ServerError) {
       const parsed = parseApiError(
         error.responseBody ?? '',
@@ -633,7 +635,7 @@ export async function uploadPendingAttachment(
       };
     }
 
-    throw error;
+    return { data: null, error: 'Upload failed. Please try again.' };
   }
 }
 
@@ -652,6 +654,7 @@ export async function deletePendingAttachment(
 
     return { data: null, error: null };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     if (error instanceof ServerError) {
       const parsed = parseApiError(
         error.responseBody ?? '',
@@ -661,6 +664,6 @@ export async function deletePendingAttachment(
       return { data: null, error: parsed.message, fieldErrors: undefined };
     }
 
-    throw error;
+    return { data: null, error: 'Delete failed. Please try again.' };
   }
 }

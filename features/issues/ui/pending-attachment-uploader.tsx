@@ -37,6 +37,7 @@ export function PendingAttachmentUploader({
   const isMountedRef = useRef<boolean>(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
@@ -100,7 +101,6 @@ export function PendingAttachmentUploader({
           toast.error('Upload failed');
         })
         .finally(() => {
-          if (!isMountedRef.current) return;
           removeOp(opId);
         });
     }
@@ -112,7 +112,9 @@ export function PendingAttachmentUploader({
         <span className='text-sm font-medium text-foreground'>
           Attachments{' '}
           {attachments.length > 0 && (
-            <span className='text-muted-foreground'>({attachments.length})</span>
+            <span className='text-muted-foreground'>
+              ({attachments.length})
+            </span>
           )}
         </span>
         <label
@@ -136,7 +138,9 @@ export function PendingAttachmentUploader({
       </div>
 
       {attachments.length === 0 ? (
-        <p className='text-sm text-muted-foreground'>No attachments added yet.</p>
+        <p className='text-sm text-muted-foreground'>
+          No attachments added yet.
+        </p>
       ) : (
         <ul className='flex flex-col gap-2'>
           {attachments.map((attachment) => {
@@ -177,7 +181,6 @@ export function PendingAttachmentUploader({
                         toast.error('Delete failed');
                       })
                       .finally(() => {
-                        if (!isMountedRef.current) return;
                         removeOp(opId);
                       });
                   }}
