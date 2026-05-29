@@ -1,5 +1,6 @@
 'use client';
 
+import { MotionConfig } from 'framer-motion';
 import React, { type PropsWithChildren } from 'react';
 import { Toaster } from 'sonner';
 
@@ -13,7 +14,7 @@ import { PopupProvider } from '@/app/providers/PopupProvider';
  */
 export default function Providers({ children }: PropsWithChildren) {
   return (
-    <>
+    <MotionConfig reducedMotion='user'>
       <Toaster
         position='top-center'
         richColors
@@ -31,6 +32,6 @@ export default function Providers({ children }: PropsWithChildren) {
       <ModalProvider>
         <PopupProvider>{children}</PopupProvider>
       </ModalProvider>
-    </>
+    </MotionConfig>
   );
 }

@@ -14,6 +14,7 @@ import {
 } from '@/features/issues/model/types';
 import { FilterPresetsPanel } from '@/features/issues/ui/filter-presets-panel';
 import { SharedFiltersBar } from '@/features/issues/ui/shared-filters-bar';
+import { Card } from '@/shared/ui/card';
 import { CollapsibleSection } from '@/shared/ui/layout/collapsible-section';
 
 import type { EpicOption } from '@/entities/issue';
@@ -221,38 +222,41 @@ export function IssuesLayoutClient({
 
   return (
     <FiltersContext.Provider value={contextValue}>
-      <div className='flex flex-col'>
-        <div className='px-2 pt-4 shrink-0'>
-          <CollapsibleSection
-            label='Filters'
-            icon={<SlidersHorizontal className='h-3.5 w-3.5' />}
-            extraContent={
-              <div className='flex items-center gap-2'>
-                {hasAdvancedFilters && (
-                  <span className='h-1.5 w-1.5 rounded-full bg-primary' />
-                )}
-                <FilterPresetsPanel
-                  currentFilters={filters}
-                  onApply={handleFiltersChange}
-                />
-                <IssueCreateButton />
-              </div>
-            }
-          >
-            <SharedFiltersBar
-              key={filters.organization_id}
-              filters={filters}
-              organizations={organizations}
-              persons={persons}
-              epics={epics}
-              onChange={handleFiltersChange}
-              hasTypeToggle
-            />
-          </CollapsibleSection>
-        </div>
+      <section
+        aria-label='Issue filters'
+        className='sticky top-0 z-[2] px-2 pt-3 pb-2 bg-[var(--chrome-bg)] backdrop-blur-sm border-b border-border'
+      >
+        <CollapsibleSection
+          label='Filters'
+          icon={<SlidersHorizontal className='h-3.5 w-3.5' />}
+          extraContent={
+            <div className='flex items-center gap-2'>
+              {hasAdvancedFilters && (
+                <span className='h-1.5 w-1.5 rounded-full bg-primary' />
+              )}
+              <FilterPresetsPanel
+                currentFilters={filters}
+                onApply={handleFiltersChange}
+              />
+              <IssueCreateButton />
+            </div>
+          }
+        >
+          <SharedFiltersBar
+            key={filters.organization_id}
+            filters={filters}
+            organizations={organizations}
+            persons={persons}
+            epics={epics}
+            onChange={handleFiltersChange}
+            hasTypeToggle
+          />
+        </CollapsibleSection>
+      </section>
 
-        <div className={'mt-4'}>{children}</div>
-      </div>
+      <Card className='overflow-hidden'>
+        <div className='mt-4'>{children}</div>
+      </Card>
     </FiltersContext.Provider>
   );
 }

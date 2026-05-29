@@ -8,8 +8,7 @@ import { KanbanBoard, fetchKanbanIssues } from '@/features/kanban';
 
 import type { OrganizationProps } from '@/entities/organization';
 import type { IssueStatus, PersonOption } from '@/features/issues/model/types';
-import type { KanbanIssuesResult } from '@/features/kanban/api/kanban';
-import type { KanbanCard } from '@/features/kanban/model/types';
+import type { KanbanCard, KanbanIssuesResult } from '@/features/kanban';
 
 interface IssuesKanbanTabProps {
   initialResult: KanbanIssuesResult;

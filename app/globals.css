@@ -372,6 +372,29 @@
   }
 }
 
+@utility scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral-700) transparent;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-700);
+    border-radius: 9999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--neutral-600);
+  }
+}
+
 /* AI chat message HTML content styles */
 .chat-html-content {
   font-size: var(--fs-md);
