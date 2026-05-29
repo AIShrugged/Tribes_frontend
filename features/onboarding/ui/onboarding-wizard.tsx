@@ -193,7 +193,7 @@ export function OnboardingWizard({
       }
 
       toast.success('Organization set up!', {
-        description: 'Your goals are ready in the issue tracker.',
+        description: 'Your goals are ready in the Today section.',
         duration: 5000,
       });
       router.push(redirectAfterAccept ?? ROUTES.DASHBOARD.ISSUES_LIST);

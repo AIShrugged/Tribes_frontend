@@ -348,6 +348,7 @@ export async function linkIssuesToEpic(
   );
 
   revalidatePath('/dashboard/issues', 'layout');
+  revalidatePath('/dashboard/today/goals');
 
   return issueIds.filter((_, i) => {
     return results[i].status === 'rejected';
@@ -407,6 +408,7 @@ export async function linkTaskToEpic(
     });
 
     revalidatePath('/dashboard/issues', 'layout');
+    revalidatePath('/dashboard/today/goals');
 
     return { data: data!, error: null };
   } catch (error) {
@@ -447,6 +449,7 @@ export async function detachTaskFromEpic(
     });
 
     revalidatePath('/dashboard/issues', 'layout');
+    revalidatePath('/dashboard/today/goals');
 
     return { data: data!, error: null };
   } catch (error) {

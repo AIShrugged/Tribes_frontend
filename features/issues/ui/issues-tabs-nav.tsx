@@ -7,7 +7,6 @@ const TABS = [
   { href: ROUTES.DASHBOARD.ISSUES_KANBAN, label: 'Kanban' },
   { href: ROUTES.DASHBOARD.ISSUES_LIST, label: 'Tasktracker' },
   { href: ROUTES.DASHBOARD.ISSUES_PROGRESS, label: 'Progress' },
-  { href: ROUTES.DASHBOARD.ISSUES_GOALS, label: 'Goals' },
 ] as const;
 
 /**

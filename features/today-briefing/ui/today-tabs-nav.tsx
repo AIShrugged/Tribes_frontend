@@ -19,6 +19,11 @@ const TABS = [
     label: 'Critical Path',
     match: 'exact' as const,
   },
+  {
+    href: ROUTES.DASHBOARD.TODAY_GOALS,
+    label: 'Goals',
+    match: 'exact' as const,
+  },
 ] as const;
 
 /**
