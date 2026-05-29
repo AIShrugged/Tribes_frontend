@@ -5,4 +5,4 @@ export {
   getKanbanIssues,
 } from './api/kanban';
 export type { KanbanIssuesResult } from './api/kanban';
-export type { KanbanFilters } from './model/types';
+export type { KanbanCard, KanbanFilters } from './model/types';

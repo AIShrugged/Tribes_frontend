@@ -11,7 +11,6 @@ import { getOrganizations } from '@/features/organization';
 import { TaskDataUploadButton } from '@/features/task-data-upload';
 import { getCurrentUserId } from '@/shared/lib/getCurrentUserId';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
-import { Card } from '@/shared/ui/card';
 
 import type { PropsWithChildren } from 'react';
 
@@ -33,20 +32,18 @@ export default async function IssuesTabsLayout({
         <IssuesTabsNav />
         <TaskDataUploadButton organizationId={String(cookieOrgId)} />
       </div>
-      <div className='flex-1 overflow-y-auto'>
-        <Card className='overflow-hidden'>
-          <Suspense fallback={<IssuesTabsNavSkeleton />}>
-            <IssuesLayoutClient
-              organizations={organizationsResponse.data ?? []}
-              persons={persons}
-              epics={epics}
-              currentUserId={currentUserId ?? null}
-              cookieOrgId={String(cookieOrgId)}
-            >
-              {children}
-            </IssuesLayoutClient>
-          </Suspense>
-        </Card>
+      <div className='flex-1 overflow-y-auto flex flex-col'>
+        <Suspense fallback={<IssuesTabsNavSkeleton />}>
+          <IssuesLayoutClient
+            organizations={organizationsResponse.data ?? []}
+            persons={persons}
+            epics={epics}
+            currentUserId={currentUserId ?? null}
+            cookieOrgId={String(cookieOrgId)}
+          >
+            {children}
+          </IssuesLayoutClient>
+        </Suspense>
       </div>
     </div>
   );
