@@ -10,12 +10,10 @@ import { EmptyState } from '@/shared/ui/feedback/empty-state';
 import { AddTelegramChatModal } from './add-telegram-chat-modal';
 import { TelegramChatCard } from './telegram-chat-card';
 
-import type { OrganizationProps } from '@/entities/organization';
 import type { TelegramChatRegistration } from '@/entities/telegram';
 
 interface TelegramChatsManagementProps {
   initialChats: TelegramChatRegistration[];
-  organizations: OrganizationProps[];
   selectedOrganizationId: number;
   orgMap: Record<number, string>;
   botUsername: string;
@@ -23,7 +21,6 @@ interface TelegramChatsManagementProps {
 
 export function TelegramChatsManagement({
   initialChats,
-  organizations,
   selectedOrganizationId,
   orgMap,
   botUsername,
@@ -60,7 +57,6 @@ export function TelegramChatsManagement({
         onClose={() => {
           setIsModalOpen(false);
         }}
-        organizations={organizations}
         selectedOrganizationId={selectedOrganizationId}
         botUsername={botUsername}
       />

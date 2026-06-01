@@ -14,8 +14,9 @@ import {
   IssueForm,
   IssueLinkedTask,
   EpicChildIssues,
+  IssueNoGoalHint,
+  IssueAuditLogSection,
 } from '@/features/issues';
-import { IssueAuditLogSection } from '@/features/issues/ui/issue-audit-log-section';
 import { getOrganizations } from '@/features/organization';
 import { getUser } from '@/features/user';
 import { ROUTES } from '@/shared/lib/routes';
@@ -101,6 +102,9 @@ export default async function IssueDetailPage({
             />
             <div className='overflow-y-auto'>
               <CardBody>
+                {issue.type !== 'epic' && issue.epic_id === null && (
+                  <IssueNoGoalHint issueId={issue.id} epics={epics} />
+                )}
                 <IssueForm
                   key={issue.id}
                   issue={issue}

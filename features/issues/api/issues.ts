@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
@@ -347,6 +348,7 @@ export async function linkIssuesToEpic(
   );
 
   revalidatePath('/dashboard/issues', 'layout');
+  revalidatePath('/dashboard/today/goals');
 
   return issueIds.filter((_, i) => {
     return results[i].status === 'rejected';
@@ -406,6 +408,7 @@ export async function linkTaskToEpic(
     });
 
     revalidatePath('/dashboard/issues', 'layout');
+    revalidatePath('/dashboard/today/goals');
 
     return { data: data!, error: null };
   } catch (error) {
@@ -413,6 +416,47 @@ export async function linkTaskToEpic(
       const parsed = parseApiError(
         error.responseBody ?? '',
         'Failed to link task',
+      );
+
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * detachTaskFromEpic removes a task from its parent epic by setting epic_id to null.
+ * @param taskId - id of the task to detach.
+ * @returns updated issue or error.
+ */
+export async function detachTaskFromEpic(
+  taskId: number,
+): Promise<ActionResult<Issue>> {
+  if (!Number.isInteger(taskId) || taskId <= 0) {
+    return { data: null, error: 'Invalid task ID' };
+  }
+
+  try {
+    const { data } = await httpClient<Issue>(`${API_URL}/issues/${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ epic_id: null }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    revalidatePath('/dashboard/issues', 'layout');
+    revalidatePath('/dashboard/today/goals');
+
+    return { data: data!, error: null };
+  } catch (error) {
+    if (error instanceof ServerError) {
+      const parsed = parseApiError(
+        error.responseBody ?? '',
+        'Failed to remove task from goal',
       );
 
       return {
@@ -580,6 +624,7 @@ export async function uploadPendingAttachment(
 
     return { data: normalizeIssueAttachment(data), error: null };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     if (error instanceof ServerError) {
       const parsed = parseApiError(
         error.responseBody ?? '',
@@ -593,7 +638,7 @@ export async function uploadPendingAttachment(
       };
     }
 
-    throw error;
+    return { data: null, error: 'Upload failed. Please try again.' };
   }
 }
 
@@ -612,6 +657,7 @@ export async function deletePendingAttachment(
 
     return { data: null, error: null };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     if (error instanceof ServerError) {
       const parsed = parseApiError(
         error.responseBody ?? '',
@@ -621,6 +667,6 @@ export async function deletePendingAttachment(
       return { data: null, error: parsed.message, fieldErrors: undefined };
     }
 
-    throw error;
+    return { data: null, error: 'Delete failed. Please try again.' };
   }
 }

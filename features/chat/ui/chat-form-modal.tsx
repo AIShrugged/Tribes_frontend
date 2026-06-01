@@ -25,7 +25,7 @@ interface ChatFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   organizations: OrganizationProps[];
-  organizationId?: number;
+  organizationId: number;
   chat?: Chat | null;
   onSaved: (chat: Chat, mode: 'create' | 'update') => void;
 }
@@ -103,19 +103,11 @@ export function ChatFormModal({
   const onSubmit = (values: ChatFormValues) => {
     setRootError('');
 
-    if (!isEdit && organizationId === undefined) {
-      setRootError('Select an organization to create a chat.');
-
-      return;
-    }
-
     startTransition(async () => {
       try {
         const payload = {
           title: values.title.trim() || null,
-          ...(organizationId !== undefined && {
-            organization_id: organizationId,
-          }),
+          organization_id: organizationId,
         };
         const result = chat
           ? await updateChat(chat.id, payload)
@@ -152,10 +144,6 @@ export function ChatFormModal({
       ? 'organization context selected in the app header.'
       : 'user context.'
   }`;
-
-  if (!isEdit && organizationId === undefined) {
-    helperText = 'Select an organization to create a chat.';
-  }
 
   if (isEdit && hasAssignedScope) {
     helperText = chat?.team_id

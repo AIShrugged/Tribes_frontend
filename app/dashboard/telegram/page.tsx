@@ -20,7 +20,6 @@ export default async function TelegramPage() {
   return (
     <TelegramChatsManagement
       initialChats={chats}
-      organizations={orgList}
       selectedOrganizationId={organizationId}
       orgMap={orgMap}
       botUsername={TELEGRAM_BOT_USERNAME ?? 'your_bot'}

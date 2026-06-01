@@ -100,6 +100,34 @@ export function TelegramChatCard({
                   }}
                 />
               ) : null}
+              {isConfirming ? (
+                <div className='flex items-center gap-2'>
+                  <p className='whitespace-nowrap text-sm text-muted-foreground'>
+                    Remove?
+                  </p>
+                  <Button
+                    type='button'
+                    variant='danger'
+                    size='sm'
+                    loading={isPending}
+                    loadingText='Removing…'
+                    onClick={handleConfirmDelete}
+                  >
+                    Remove
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='secondary'
+                    size='sm'
+                    disabled={isPending}
+                    onClick={() => {
+                      setIsConfirming(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -146,32 +174,6 @@ export function TelegramChatCard({
             </div>
           ) : null}
 
-          {isConfirming ? (
-            <div className='flex items-center gap-3'>
-              <p className='text-sm text-muted-foreground'>Remove this chat?</p>
-              <Button
-                type='button'
-                variant='danger'
-                size='sm'
-                loading={isPending}
-                loadingText='Removing…'
-                onClick={handleConfirmDelete}
-              >
-                Remove
-              </Button>
-              <Button
-                type='button'
-                variant='secondary'
-                size='sm'
-                disabled={isPending}
-                onClick={() => {
-                  setIsConfirming(false);
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : null}
         </div>
       </CardBody>
     </Card>

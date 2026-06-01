@@ -489,7 +489,7 @@ export function IssuesPage({
         </div>
       ) : (
         <div className='overflow-hidden border border-border bg-card'>
-          <div className='overflow-x-auto'>
+          <div className='overflow-x-auto scrollbar-custom'>
             <table className='w-full min-w-[1180px] table-fixed text-sm'>
               <colgroup>
                 <col className='w-[45px]' />

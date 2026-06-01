@@ -239,7 +239,12 @@ export function KanbanBoard({
 
   return (
     <div className='flex flex-col gap-3 p-2 relative'>
-      <div className='flex gap-3 overflow-x-auto pb-4'>
+      <div
+        className='flex gap-3 overflow-x-auto pb-4 scrollbar-custom'
+        tabIndex={0}
+        role='region'
+        aria-label='Kanban board'
+      >
         {KANBAN_COLUMNS.map((col) => {
           const isDoneColumn = col.id === 'done';
           return (

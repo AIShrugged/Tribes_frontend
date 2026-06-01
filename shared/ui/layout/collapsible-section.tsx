@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 type CollapsibleSectionProps = React.PropsWithChildren<{
   label: string;
@@ -21,6 +21,7 @@ export function CollapsibleSection({
   extraContent,
 }: CollapsibleSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
+  const contentId = useId();
 
   return (
     <div className={className}>
@@ -34,6 +35,7 @@ export function CollapsibleSection({
           }}
           aria-label={open ? `Hide ${label}` : `Show ${label}`}
           aria-expanded={open}
+          aria-controls={contentId}
           className='flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none'
         >
           {icon}
@@ -48,10 +50,14 @@ export function CollapsibleSection({
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
+            id={contentId}
+            role='region'
+            aria-label={label}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
           >
             {children}
           </motion.div>

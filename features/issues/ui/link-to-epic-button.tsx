@@ -1,6 +1,7 @@
 'use client';
 
 import { Link2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -15,10 +16,13 @@ import type { Issue } from '@/features/issues/model/types';
 export function LinkToEpicButton({
   taskId,
   epics,
+  onSuccess,
 }: {
   taskId: number;
   epics: Issue[];
+  onSuccess?: () => void;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
 
@@ -35,6 +39,8 @@ export function LinkToEpicButton({
       } else {
         toast.success('Task linked to goal');
         setOpen(false);
+        onSuccess?.();
+        router.refresh();
       }
     } finally {
       setIsLinking(false);

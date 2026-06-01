@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -14,15 +14,14 @@ import {
 } from '@/features/telegram/model/schemas';
 import { Button } from '@/shared/ui/button';
 import Input from '@/shared/ui/input/Input';
-import { TenantScopeFields } from '@/shared/ui/input/tenant-scope-fields';
+import InputDropdown from '@/shared/ui/input/InputDropdown';
 import { Modal } from '@/shared/ui/modal/modal';
 
-import type { OrganizationProps } from '@/entities/organization';
+import type { TeamProps } from '@/entities/team';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  organizations: OrganizationProps[];
   selectedOrganizationId: number;
   botUsername: string;
 }
@@ -30,11 +29,26 @@ interface Props {
 export function AddTelegramChatModal({
   isOpen,
   onClose,
-  organizations,
   selectedOrganizationId,
   botUsername,
 }: Props) {
   const [isPending, startTransition] = useTransition();
+  const [teams, setTeams] = useState<TeamProps[]>([]);
+  const [isTeamsLoading, setIsTeamsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsTeamsLoading(true);
+    getTeams(String(selectedOrganizationId))
+      .then(({ data }) => {
+        setTeams(data ?? []);
+      })
+      .catch(() => {
+        setTeams([]);
+      })
+      .finally(() => {
+        setIsTeamsLoading(false);
+      });
+  }, [selectedOrganizationId]);
 
   const {
     register,
@@ -47,12 +61,10 @@ export function AddTelegramChatModal({
     resolver: zodResolver(addTelegramChatSchema),
     defaultValues: {
       name: '',
-      organization_id: String(selectedOrganizationId),
       team_id: '',
     },
   });
 
-  const organizationId = watch('organization_id');
   const teamId = watch('team_id');
 
   const handleClose = () => {
@@ -65,7 +77,7 @@ export function AddTelegramChatModal({
       const result = await createTelegramWorkspaceChat({
         telegram_chat_id: values.telegram_chat_id,
         message_thread_id: values.message_thread_id ?? null,
-        organization_id: Number(values.organization_id),
+        organization_id: selectedOrganizationId,
         team_id: values.team_id ? Number(values.team_id) : null,
         name: values.name ?? null,
       });
@@ -116,12 +128,12 @@ export function AddTelegramChatModal({
               label='Topic ID'
               type='number'
               value={String(watch('message_thread_id') ?? '')}
-              placeholder='Например: 336'
+              placeholder='e.g. 336'
               error={errors.message_thread_id?.message}
               disabled={isPending}
             />
             <p className='px-1 text-xs text-muted-foreground'>
-              Оставьте пустым, чтобы подключить весь чат
+              Leave empty to connect the entire chat
             </p>
           </div>
           <Input
@@ -134,20 +146,22 @@ export function AddTelegramChatModal({
           />
         </div>
 
-        <TenantScopeFields
-          organizations={organizations}
-          organizationId={organizationId}
-          teamId={teamId ?? ''}
-          fetchTeams={getTeams}
-          onOrganizationChange={(value) => {
-            setValue('organization_id', value, { shouldValidate: true });
-            setValue('team_id', '');
+        <InputDropdown
+          label='Team (optional)'
+          placeholder={isTeamsLoading ? 'Loading teams…' : 'No team'}
+          options={[
+            { value: '', label: 'No team' },
+            ...teams.map((team) => {
+              return { value: String(team.id), label: team.name };
+            }),
+          ]}
+          value={teamId ?? ''}
+          onChange={(value) => {
+            setValue('team_id', value as string, { shouldValidate: true });
           }}
-          onTeamChange={(value) => {
-            setValue('team_id', value, { shouldValidate: true });
-          }}
-          organizationError={errors.organization_id?.message}
-          disabled={isPending}
+          error={errors.team_id?.message}
+          disabled={isPending || isTeamsLoading}
+          searchable
         />
 
         <div className='rounded-[var(--radius-card)] border border-border bg-background/40 p-4 text-sm text-muted-foreground'>

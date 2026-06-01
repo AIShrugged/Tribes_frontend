@@ -20,7 +20,7 @@ interface ChatListProps {
   totalCount: number;
   activeChatId?: number;
   organizations?: OrganizationProps[];
-  organizationId?: number;
+  organizationId: number;
   onActiveChatUpdate?: (chat: Chat) => void;
 }
 
@@ -55,11 +55,16 @@ export function ChatList({
   const [editingChat, setEditingChat] = useState<Chat | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  // Generation counter: incremented on every org/data reset so in-flight
+  // loadMore calls from a previous org can detect they are stale and discard results.
+  const generationRef = useRef(0);
 
   useEffect(() => {
+    generationRef.current += 1;
     setChats(initialChats);
     setOffset(initialChats.length);
     setHasMore(initialChats.length < totalCount);
+    setIsLoading(false);
   }, [initialChats, totalCount]);
 
   /**
@@ -67,7 +72,8 @@ export function ChatList({
    * @returns Promise.
    */
   const loadMore = useCallback(async () => {
-    if (isLoading || !hasMore || organizationId === undefined) return;
+    if (isLoading || !hasMore) return;
+    const generation = generationRef.current;
     setIsLoading(true);
     try {
       const { data: more, totalCount: total } = await getChats(
@@ -76,6 +82,7 @@ export function ChatList({
         PAGE_SIZE,
       );
 
+      if (generationRef.current !== generation) return;
       setChats((prev) => {
         return [...prev, ...more];
       });
@@ -87,15 +94,22 @@ export function ChatList({
     } catch {
       toast.error('Failed to load more chats. Try again.');
     } finally {
-      setIsLoading(false);
+      if (generationRef.current === generation) setIsLoading(false);
     }
   }, [isLoading, hasMore, organizationId, offset]);
+
+  // Keep a stable ref so the observer never needs to be recreated — prevents
+  // the double-fire bug in React 19 where IntersectionObserver re-fires on every re-observe().
+  const loadMoreRef = useRef(loadMore);
+  useEffect(() => {
+    loadMoreRef.current = loadMore;
+  }, [loadMore]);
 
   useEffect(() => {
     if (!sentinelRef.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && hasMore && !isLoading) void loadMore();
+        if (entry.isIntersecting) loadMoreRef.current().catch(() => {});
       },
       { rootMargin: '20px' },
     );
@@ -105,7 +119,7 @@ export function ChatList({
     return () => {
       return observer.disconnect();
     };
-  }, [hasMore, isLoading, loadMore]);
+  }, []);
 
   /**
    *
@@ -182,11 +196,9 @@ export function ChatList({
           <button
             type='button'
             onClick={() => {
-              if (organizationId === undefined) return;
               setEditingChat(null);
               setIsModalOpen(true);
             }}
-            disabled={organizationId === undefined}
             className='flex items-center gap-1 text-xs text-primary hover:opacity-70 transition-opacity cursor-pointer'
             aria-label='New chat'
           >
@@ -208,13 +220,7 @@ export function ChatList({
 
       {/* List */}
       <div className='flex-1 overflow-y-auto py-2 px-2 flex flex-col gap-0.5'>
-        {organizationId === undefined && !isLoading && (
-          <p className='text-xs text-muted-foreground text-center py-8'>
-            Select an organization to use chats.
-          </p>
-        )}
-
-        {organizationId !== undefined && chats.length === 0 && !isLoading && (
+        {chats.length === 0 && !isLoading && (
           <p className='text-xs text-muted-foreground text-center py-8'>
             No chats yet. Create your first one!
           </p>

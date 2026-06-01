@@ -10,18 +10,18 @@ const TABS = [
     match: 'exact' as const,
   },
   {
-    href: ROUTES.DASHBOARD.TODAY_TASKS,
+    href: ROUTES.DASHBOARD.TODAY_PROGRESS,
     label: 'Tasks',
     match: 'exact' as const,
   },
   {
     href: ROUTES.DASHBOARD.TODAY_ACTIVITY,
-    label: 'Activity',
+    label: 'Critical Path',
     match: 'exact' as const,
   },
   {
-    href: ROUTES.DASHBOARD.TODAY_PROGRESS,
-    label: 'Progress',
+    href: ROUTES.DASHBOARD.TODAY_GOALS,
+    label: 'Goals',
     match: 'exact' as const,
   },
 ] as const;

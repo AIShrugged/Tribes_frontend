@@ -1,6 +1,5 @@
 'use server';
 
-import { VALID_ISSUE_BACKEND_TYPES } from '@/entities/issue';
 import { clearSession } from '@/shared/api/session';
 import { parseApiError } from '@/shared/lib/apiError';
 import { API_URL } from '@/shared/lib/config';
@@ -27,10 +26,8 @@ function buildKanbanQuery(filters: KanbanFilters = {}): string {
     params.set('team_id', String(filters.team_id));
   }
 
-  if (filters.type === 'task') {
-    params.set('exclude_type', 'epic');
-  } else if (filters.type && VALID_ISSUE_BACKEND_TYPES.has(filters.type)) {
-    params.set('type', filters.type);
+  if (filters.type) {
+    params.set('type', filters.type === 'task' ? 'organization' : filters.type);
   }
 
   if (filters.assignee_id) {

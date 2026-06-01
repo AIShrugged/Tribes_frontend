@@ -1,6 +1,6 @@
 import { Calendar, CalendarDays, CheckCircle2 } from 'lucide-react';
 
-import { getIssueStats } from '@/features/issues/api/issue-stats';
+import { getIssueStats } from '@/features/issues';
 import { DeltaBadge } from '@/shared/ui/stats/delta-badge';
 
 import type { ReactNode } from 'react';

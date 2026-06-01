@@ -1,7 +1,7 @@
 import { AlertCircle, CheckCircle2, ListChecks, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-import { getIssueStats } from '@/features/issues/api/issue-stats';
+import { getIssueStats } from '@/features/issues';
 import { ROUTES } from '@/shared/lib/routes';
 import { DeltaBadge } from '@/shared/ui/stats/delta-badge';
 

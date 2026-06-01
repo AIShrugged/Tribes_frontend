@@ -1,7 +1,7 @@
 'use client';
 
 import { Paperclip, Trash2, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -21,6 +21,11 @@ interface PendingAttachmentUploaderProps {
   onPendingChange: (hasPending: boolean) => void;
 }
 
+function getUploadLabel(count: number): string {
+  if (count > 1) return `Uploading (${count})...`;
+  return 'Uploading...';
+}
+
 export function PendingAttachmentUploader({
   uploadToken,
   attachments,
@@ -28,18 +33,20 @@ export function PendingAttachmentUploader({
   onDeleted,
   onPendingChange,
 }: PendingAttachmentUploaderProps) {
-  // Set of in-flight operation IDs — structurally immune to going negative.
-  // Covers both uploads and deletes so submit is blocked during either.
-  const [pendingOps, setPendingOps] = useState<Set<string>>(() => {
-    return new Set();
-  });
+  const [pendingOps, setPendingOps] = useState<Set<string>>(new Set());
+  const isMountedRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   function addOp(id: string) {
     setPendingOps((prev) => {
       const next = new Set(prev);
-
       next.add(id);
-      onPendingChange(next.size > 0);
       return next;
     });
   }
@@ -47,67 +54,94 @@ export function PendingAttachmentUploader({
   function removeOp(id: string) {
     setPendingOps((prev) => {
       const next = new Set(prev);
-
       next.delete(id);
-      onPendingChange(next.size > 0);
       return next;
     });
   }
 
   const isBusy = pendingOps.size > 0;
 
+  useEffect(() => {
+    onPendingChange(isBusy);
+  }, [isBusy, onPendingChange]);
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const MAX_FILES_PER_EVENT = 10;
+    if (files.length > MAX_FILES_PER_EVENT) {
+      toast.error(`Maximum ${MAX_FILES_PER_EVENT} files at a time`);
+      event.target.value = '';
+      return;
+    }
+
+    event.target.value = '';
+
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`"${file.name}" exceeds 10 MB limit`);
+        continue;
+      }
+
+      const opId = crypto.randomUUID();
+
+      addOp(opId);
+      uploadPendingAttachment(file, uploadToken)
+        .then((result) => {
+          if (!isMountedRef.current) return;
+          if (result.error) {
+            toast.error(result.error);
+            return;
+          }
+          if (result.data) onUploaded(result.data);
+        })
+        .catch(() => {
+          if (!isMountedRef.current) return;
+          toast.error('Upload failed');
+        })
+        .finally(() => {
+          removeOp(opId);
+        });
+    }
+  }
+
   return (
     <div className='flex flex-col gap-3'>
       <div className='flex items-center justify-between'>
-        <span className='text-sm font-medium text-foreground'>Attachments</span>
+        <span className='text-sm font-medium text-foreground'>
+          Attachments{' '}
+          {attachments.length > 0 && (
+            <span className='text-muted-foreground'>
+              ({attachments.length})
+            </span>
+          )}
+        </span>
         <label
           className={[
             'inline-flex cursor-pointer items-center gap-2 rounded-[var(--radius-button)]',
             'border border-input bg-background px-3 py-1.5 text-sm font-medium',
-            'text-foreground hover:bg-accent',
+            'text-foreground hover:bg-accent transition-colors',
             isBusy ? 'pointer-events-none opacity-50' : '',
           ].join(' ')}
         >
           <Upload className='h-3.5 w-3.5' />
-          {isBusy ? 'Uploading...' : 'Add file'}
+          {isBusy ? getUploadLabel(pendingOps.size) : 'Add file'}
           <input
             type='file'
+            multiple
             className='hidden'
             disabled={isBusy}
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-
-              if (!file) return;
-              event.target.value = '';
-
-              if (file.size > 10 * 1024 * 1024) {
-                toast.error('File exceeds 10 MB limit');
-                return;
-              }
-
-              const opId = crypto.randomUUID();
-
-              addOp(opId);
-              uploadPendingAttachment(file, uploadToken)
-                .then((result) => {
-                  if (result.error) {
-                    toast.error(result.error);
-                    return;
-                  }
-                  if (result.data) onUploaded(result.data);
-                })
-                .catch(() => {
-                  toast.error('Upload failed');
-                })
-                .finally(() => {
-                  removeOp(opId);
-                });
-            }}
+            onChange={handleFileChange}
           />
         </label>
       </div>
 
-      {attachments.length > 0 && (
+      {attachments.length === 0 ? (
+        <p className='text-sm text-muted-foreground'>
+          No attachments added yet.
+        </p>
+      ) : (
         <ul className='flex flex-col gap-2'>
           {attachments.map((attachment) => {
             return (
@@ -125,8 +159,9 @@ export function PendingAttachmentUploader({
                 </div>
                 <Button
                   type='button'
-                  variant={BUTTON_VARIANT.secondary}
-                  className='h-7 w-7 shrink-0 p-0'
+                  variant={BUTTON_VARIANT.ghost}
+                  fullWidth={false}
+                  className='h-7 w-7 shrink-0 p-0 text-muted-foreground hover:text-destructive'
                   disabled={isBusy}
                   onClick={() => {
                     const opId = crypto.randomUUID();
@@ -134,6 +169,7 @@ export function PendingAttachmentUploader({
                     addOp(opId);
                     deletePendingAttachment(attachment.id)
                       .then((result) => {
+                        if (!isMountedRef.current) return;
                         if (result.error) {
                           toast.error(result.error);
                           return;
@@ -141,6 +177,7 @@ export function PendingAttachmentUploader({
                         onDeleted(attachment.id);
                       })
                       .catch(() => {
+                        if (!isMountedRef.current) return;
                         toast.error('Delete failed');
                       })
                       .finally(() => {
