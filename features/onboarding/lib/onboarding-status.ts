@@ -7,15 +7,15 @@ export function formatOnboardingDate(onboardedAt: string): string {
 }
 
 export function getOnboardingStatusText(onboardedAt?: string | null): string {
-  if (!onboardedAt) return 'Онбординг ещё не проводился';
+  if (!onboardedAt) return 'Onboarding has not been run yet';
 
   try {
-    return `Последний онбординг: ${formatOnboardingDate(onboardedAt)}`;
+    return `Last onboarding: ${formatOnboardingDate(onboardedAt)}`;
   } catch {
-    return `Последний онбординг: ${onboardedAt}`;
+    return `Last onboarding: ${onboardedAt}`;
   }
 }
 
 export function getOnboardingActionLabel(onboardedAt?: string | null): string {
-  return onboardedAt ? 'Обновить онбординг' : 'Провести онбординг';
+  return onboardedAt ? 'Update onboarding' : 'Run onboarding';
 }
