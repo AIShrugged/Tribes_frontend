@@ -33,19 +33,21 @@ function InsightSkeleton() {
         <Skeleton className='h-4 w-4 rounded-full' />
         <Skeleton className='h-4 w-32' />
       </div>
-      {[1, 2, 3].map((i) => {return (
-        <div
-          key={i}
-          className='rounded-[var(--radius-card)] border border-border bg-card p-4'
-        >
-          <Skeleton className='h-3.5 w-36 mb-3' />
-          <div className='flex flex-wrap gap-2'>
-            <Skeleton className='h-5 w-24 rounded-full' />
-            <Skeleton className='h-5 w-32 rounded-full' />
-            <Skeleton className='h-5 w-20 rounded-full' />
+      {[1, 2, 3].map((i) => {
+        return (
+          <div
+            key={i}
+            className='rounded-[var(--radius-card)] border border-border bg-card p-4'
+          >
+            <Skeleton className='h-3.5 w-36 mb-3' />
+            <div className='flex flex-wrap gap-2'>
+              <Skeleton className='h-5 w-24 rounded-full' />
+              <Skeleton className='h-5 w-32 rounded-full' />
+              <Skeleton className='h-5 w-20 rounded-full' />
+            </div>
           </div>
-        </div>
-      )})}
+        );
+      })}
     </div>
   );
 }

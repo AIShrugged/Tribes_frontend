@@ -27,7 +27,14 @@ jest.mock('next/navigation', () => {
 
 const mockCreateChat = jest.fn(() => {
   return Promise.resolve({
-    data: { id: 99, title: null, organization_id: null, team_id: null, created_at: '', updated_at: '' },
+    data: {
+      id: 99,
+      title: null,
+      organization_id: null,
+      team_id: null,
+      created_at: '',
+      updated_at: '',
+    },
     error: null,
   });
 });
@@ -101,7 +108,14 @@ describe('ChatList', () => {
   beforeEach(() => {
     mockPush.mockClear();
     mockCreateChat.mockResolvedValue({
-      data: { id: 99, title: null, organization_id: null, team_id: null, created_at: '', updated_at: '' },
+      data: {
+        id: 99,
+        title: null,
+        organization_id: null,
+        team_id: null,
+        created_at: '',
+        updated_at: '',
+      },
       error: null,
     });
     mockGetChats.mockResolvedValue({ data: [], totalCount: 0 });

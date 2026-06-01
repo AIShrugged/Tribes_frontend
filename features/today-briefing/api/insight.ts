@@ -32,9 +32,9 @@ export const getMyInsightProfile = cache(
 
     // Prefer google_calendar identity — null channel never matches, safe
     const primary =
-      identities.find(
-        (identity) => {return identity.channel === 'google_calendar'},
-      ) ?? identities[0];
+      identities.find((identity) => {
+        return identity.channel === 'google_calendar';
+      }) ?? identities[0];
 
     // Guard against non-integer IDs before URL construction
     if (!Number.isInteger(primary.id) || primary.id <= 0) {

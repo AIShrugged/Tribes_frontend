@@ -16,7 +16,9 @@ jest.mock('@/shared/ui/input/Input', () => {
         label: string;
         value: string;
         onChange: React.ChangeEventHandler<HTMLInputElement>;
-      }) => {return <input aria-label={label} value={value} onChange={onChange} />},
+      }) => {
+        return <input aria-label={label} value={value} onChange={onChange} />;
+      },
     ),
   };
 });
@@ -33,7 +35,11 @@ jest.mock('@/shared/ui/input/textarea', () => {
         label: string;
         value: string;
         onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
-      }) => {return <textarea aria-label={label} value={value} onChange={onChange} />},
+      }) => {
+        return (
+          <textarea aria-label={label} value={value} onChange={onChange} />
+        );
+      },
     ),
   };
 });
@@ -51,25 +57,35 @@ jest.mock('@/shared/ui/button/Button', () => {
         onClick?: () => void;
         disabled?: boolean;
         'aria-label'?: string;
-      }>) => {return (
-        <button
-          onClick={onClick}
-          disabled={disabled}
-          aria-label={ariaLabel}
-          {...rest}
-        >
-          {children}
-        </button>
-      )},
+      }>) => {
+        return (
+          <button
+            onClick={onClick}
+            disabled={disabled}
+            aria-label={ariaLabel}
+            {...rest}
+          >
+            {children}
+          </button>
+        );
+      },
     ),
   };
 });
 
-jest.mock('lucide-react', () => {return {
-  Trash2: () => {return <span data-testid='trash-icon' />},
-  ChevronDown: () => {return <span data-testid='chevron-down' />},
-  ChevronUp: () => {return <span data-testid='chevron-up' />},
-}});
+jest.mock('lucide-react', () => {
+  return {
+    Trash2: () => {
+      return <span data-testid='trash-icon' />;
+    },
+    ChevronDown: () => {
+      return <span data-testid='chevron-down' />;
+    },
+    ChevronUp: () => {
+      return <span data-testid='chevron-up' />;
+    },
+  };
+});
 
 import { OnboardingGoalCard } from '../onboarding-goal-card';
 
@@ -127,7 +143,9 @@ describe('OnboardingGoalCard', () => {
         onRemove={jest.fn()}
       />,
     );
-    expect(screen.getByRole('textbox', { name: /goal title/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', { name: /goal title/i }),
+    ).toBeInTheDocument();
   });
 
   it('index > 0 card starts collapsed (inputs not visible)', () => {
@@ -139,7 +157,9 @@ describe('OnboardingGoalCard', () => {
         onRemove={jest.fn()}
       />,
     );
-    expect(screen.queryByRole('textbox', { name: /goal title/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('textbox', { name: /goal title/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('clicking the title zone expands a collapsed card', async () => {
@@ -153,7 +173,9 @@ describe('OnboardingGoalCard', () => {
     );
     // Click the title text directly (inside the title zone div)
     await userEvent.click(screen.getByText('Improve onboarding'));
-    expect(screen.getByRole('textbox', { name: /goal title/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', { name: /goal title/i }),
+    ).toBeInTheDocument();
   });
 
   it('clicking the chevron button expands a collapsed card', async () => {
@@ -166,7 +188,9 @@ describe('OnboardingGoalCard', () => {
       />,
     );
     await userEvent.click(screen.getByRole('button', { name: /expand goal/i }));
-    expect(screen.getByRole('textbox', { name: /goal title/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', { name: /goal title/i }),
+    ).toBeInTheDocument();
   });
 
   it('clicking the chevron button collapses an expanded card', async () => {
@@ -178,8 +202,12 @@ describe('OnboardingGoalCard', () => {
         onRemove={jest.fn()}
       />,
     );
-    await userEvent.click(screen.getByRole('button', { name: /collapse goal/i }));
-    expect(screen.queryByRole('textbox', { name: /goal title/i })).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole('button', { name: /collapse goal/i }),
+    );
+    expect(
+      screen.queryByRole('textbox', { name: /goal title/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('when expanded, inputs render with correct values', () => {
@@ -191,8 +219,12 @@ describe('OnboardingGoalCard', () => {
         onRemove={jest.fn()}
       />,
     );
-    expect(screen.getByRole('textbox', { name: /goal title/i })).toHaveValue('Improve onboarding');
-    expect(screen.getByRole('textbox', { name: /description/i })).toHaveValue('Make onboarding smoother');
+    expect(screen.getByRole('textbox', { name: /goal title/i })).toHaveValue(
+      'Improve onboarding',
+    );
+    expect(screen.getByRole('textbox', { name: /description/i })).toHaveValue(
+      'Make onboarding smoother',
+    );
   });
 
   it('changing title input calls onUpdate with merged goal', async () => {
@@ -296,7 +328,9 @@ describe('OnboardingGoalCard', () => {
       />,
     );
     expect(
-      screen.getByRole('button', { name: /remove goal 1: improve onboarding/i }),
+      screen.getByRole('button', {
+        name: /remove goal 1: improve onboarding/i,
+      }),
     ).toBeInTheDocument();
   });
 
@@ -313,9 +347,8 @@ describe('OnboardingGoalCard', () => {
     expect(chevron).toHaveAttribute('aria-expanded', 'false');
 
     await userEvent.click(chevron);
-    expect(screen.getByRole('button', { name: /collapse goal/i })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    expect(
+      screen.getByRole('button', { name: /collapse goal/i }),
+    ).toHaveAttribute('aria-expanded', 'true');
   });
 });

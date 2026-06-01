@@ -35,11 +35,17 @@ export function OnboardingGoalCard({
           role='button'
           tabIndex={0}
           className='flex flex-1 cursor-pointer items-center gap-2 min-w-0'
-          onClick={() => {return setExpanded((v) => {return !v})}}
+          onClick={() => {
+            return setExpanded((v) => {
+              return !v;
+            });
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              setExpanded((v) => {return !v});
+              setExpanded((v) => {
+                return !v;
+              });
             }
           }}
         >
@@ -72,7 +78,11 @@ export function OnboardingGoalCard({
             type='button'
             aria-label={expanded ? 'Collapse goal' : 'Expand goal'}
             aria-expanded={expanded}
-            onClick={() => {return setExpanded((v) => {return !v})}}
+            onClick={() => {
+              return setExpanded((v) => {
+                return !v;
+              });
+            }}
             className='rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground'
           >
             {expanded ? (
@@ -89,12 +99,16 @@ export function OnboardingGoalCard({
           <Input
             label='Goal title'
             value={goal.title}
-            onChange={(e) => {return onUpdate({ ...goal, title: e.target.value })}}
+            onChange={(e) => {
+              return onUpdate({ ...goal, title: e.target.value });
+            }}
           />
           <Textarea
             label='Description'
             value={goal.description}
-            onChange={(e) => {return onUpdate({ ...goal, description: e.target.value })}}
+            onChange={(e) => {
+              return onUpdate({ ...goal, description: e.target.value });
+            }}
           />
         </div>
       )}

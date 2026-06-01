@@ -49,10 +49,12 @@ export function TaskDataUploadForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const autoTeamId = teams.length === 1 ? teams[0].id : undefined;
-  const teamOptions = teams.map((t) => {return {
-    value: String(t.id),
-    label: t.name,
-  }});
+  const teamOptions = teams.map((t) => {
+    return {
+      value: String(t.id),
+      label: t.name,
+    };
+  });
 
   const {
     handleSubmit,
@@ -94,7 +96,9 @@ export function TaskDataUploadForm({
           setPhase('done');
           stopPolling();
         } else if (data.status === 'failed') {
-          setRootError('Processing failed. Please try again with a different file.');
+          setRootError(
+            'Processing failed. Please try again with a different file.',
+          );
           setPhase('error');
           stopPolling();
         }
@@ -185,12 +189,14 @@ export function TaskDataUploadForm({
           <div className='max-h-48 overflow-y-auto text-sm'>
             <p className='mb-1 font-medium text-muted-foreground'>Tasks:</p>
             <ul className='space-y-1'>
-              {statusResult.issues.map((issue) => {return (
-                <li key={issue.id} className='flex items-center gap-1.5'>
-                  <span className='text-green-500'>+ new</span>
-                  <span className='truncate'>{issue.name}</span>
-                </li>
-              )})}
+              {statusResult.issues.map((issue) => {
+                return (
+                  <li key={issue.id} className='flex items-center gap-1.5'>
+                    <span className='text-green-500'>+ new</span>
+                    <span className='truncate'>{issue.name}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
@@ -219,9 +225,7 @@ export function TaskDataUploadForm({
           <XCircle className='size-5' />
           <span className='text-sm font-medium'>Processing failed</span>
         </div>
-        {rootError && (
-          <p className='text-sm text-destructive'>{rootError}</p>
-        )}
+        {rootError && <p className='text-sm text-destructive'>{rootError}</p>}
         <div className='flex justify-end gap-2 pt-2'>
           <Button
             type='button'
@@ -244,10 +248,7 @@ export function TaskDataUploadForm({
 
   // ── Upload form + processing progress ──
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className='flex flex-col gap-4 p-4'
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4 p-4'>
       {/* Real-time progress from backend */}
       {phase === 'processing' && (
         <div className='rounded-md border border-border bg-muted/30 p-3 text-sm'>
@@ -268,38 +269,40 @@ export function TaskDataUploadForm({
       <Controller
         control={control}
         name='file'
-        render={({ field }) => {return (
-          <div className='flex flex-col gap-1.5'>
-            <label
-              htmlFor='task-data-upload-file'
-              className='text-sm font-medium text-foreground'
-            >
-              File with task data
-              <span className='ml-2 text-xs font-normal text-muted-foreground'>
-                Any text format or archive · up to 10 MB
-              </span>
-            </label>
-            <input
-              id='task-data-upload-file'
-              ref={fileInputRef}
-              type='file'
-              aria-label='Task data file'
-              disabled={phase === 'processing'}
-              className='text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50'
-              onChange={(e) => {
-                return handleFileChange(e, field.onChange);
-              }}
-            />
-            {field.value && (
-              <p className='text-xs text-muted-foreground'>
-                {field.value.name} · {(field.value.size / 1024).toFixed(1)} KB
-              </p>
-            )}
-            {fieldErrorMessage('file') && (
-              <Error id='file-error'>{fieldErrorMessage('file')}</Error>
-            )}
-          </div>
-        )}}
+        render={({ field }) => {
+          return (
+            <div className='flex flex-col gap-1.5'>
+              <label
+                htmlFor='task-data-upload-file'
+                className='text-sm font-medium text-foreground'
+              >
+                File with task data
+                <span className='ml-2 text-xs font-normal text-muted-foreground'>
+                  Any text format or archive · up to 10 MB
+                </span>
+              </label>
+              <input
+                id='task-data-upload-file'
+                ref={fileInputRef}
+                type='file'
+                aria-label='Task data file'
+                disabled={phase === 'processing'}
+                className='text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50'
+                onChange={(e) => {
+                  return handleFileChange(e, field.onChange);
+                }}
+              />
+              {field.value && (
+                <p className='text-xs text-muted-foreground'>
+                  {field.value.name} · {(field.value.size / 1024).toFixed(1)} KB
+                </p>
+              )}
+              {fieldErrorMessage('file') && (
+                <Error id='file-error'>{fieldErrorMessage('file')}</Error>
+              )}
+            </div>
+          );
+        }}
       />
 
       {/* Team picker */}
@@ -307,24 +310,26 @@ export function TaskDataUploadForm({
         <Controller
           control={control}
           name='team_id'
-          render={({ field }) => {return (
-            <div className='flex flex-col gap-1.5'>
-              <label className='text-sm font-medium text-foreground'>
-                Team
-              </label>
-              <InputDropdown
-                options={teamOptions}
-                value={field.value === undefined ? '' : String(field.value)}
-                onChange={(v) => {
-                  return field.onChange(Number(v));
-                }}
-                placeholder='Select a team'
-                searchable
-                disabled={phase === 'processing'}
-                error={fieldErrorMessage('team_id')}
-              />
-            </div>
-          )}}
+          render={({ field }) => {
+            return (
+              <div className='flex flex-col gap-1.5'>
+                <label className='text-sm font-medium text-foreground'>
+                  Team
+                </label>
+                <InputDropdown
+                  options={teamOptions}
+                  value={field.value === undefined ? '' : String(field.value)}
+                  onChange={(v) => {
+                    return field.onChange(Number(v));
+                  }}
+                  placeholder='Select a team'
+                  searchable
+                  disabled={phase === 'processing'}
+                  error={fieldErrorMessage('team_id')}
+                />
+              </div>
+            );
+          }}
         />
       )}
 
@@ -349,13 +354,9 @@ export function TaskDataUploadForm({
         </Button>
         <Button
           type='submit'
-          disabled={
-            phase === 'processing' || isPending || teams.length === 0
-          }
+          disabled={phase === 'processing' || isPending || teams.length === 0}
         >
-          {phase === 'processing'
-            ? 'Processing…'
-            : 'Upload & extract tasks'}
+          {phase === 'processing' ? 'Processing…' : 'Upload & extract tasks'}
         </Button>
       </div>
     </form>

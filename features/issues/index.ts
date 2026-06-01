@@ -72,8 +72,5 @@ export type {
 } from './model/types';
 export { IssueNoGoalHint } from './ui/issue-no-goal-hint';
 export { IssueAuditLogSection } from './ui/issue-audit-log-section';
-export {
-  EpicGoalCard,
-  EpicGoalCardSkeleton,
-} from './ui/epic-goal-card';
+export { EpicGoalCard, EpicGoalCardSkeleton } from './ui/epic-goal-card';
 export { UnlinkedTasksSection } from './ui/unlinked-tasks-section';

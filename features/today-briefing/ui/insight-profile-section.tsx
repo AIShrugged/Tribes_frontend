@@ -60,9 +60,9 @@ function PillList({ label, items }: { label: string; items: string[] }) {
         {label.replaceAll('_', ' ')}
       </span>
       <div className='flex flex-wrap gap-1.5'>
-        {items.map((item) => {return (
-          <Pill key={item}>{item}</Pill>
-        )})}
+        {items.map((item) => {
+          return <Pill key={item}>{item}</Pill>;
+        })}
       </div>
     </div>
   );
@@ -83,10 +83,7 @@ function CommunicationStyleContent({
         <KeyValue label='preferred format' value={content.preferred_format} />
       ) : null}
       {content.language_patterns && content.language_patterns.length > 0 ? (
-        <PillList
-          label='language patterns'
-          items={content.language_patterns}
-        />
+        <PillList label='language patterns' items={content.language_patterns} />
       ) : null}
     </div>
   );
@@ -173,7 +170,10 @@ function PsychologicalProfileContent({
   return (
     <div className='flex flex-col gap-3'>
       {content.personality_traits && content.personality_traits.length > 0 ? (
-        <PillList label='personality traits' items={content.personality_traits} />
+        <PillList
+          label='personality traits'
+          items={content.personality_traits}
+        />
       ) : null}
       {content.stress_indicators && content.stress_indicators.length > 0 ? (
         <PillList label='stress indicators' items={content.stress_indicators} />
@@ -209,9 +209,7 @@ function CategoryContent({
       );
     }
     case 'strengths': {
-      return (
-        <StrengthsContent content={content as InsightContentStrengths} />
-      );
+      return <StrengthsContent content={content as InsightContentStrengths} />;
     }
     case 'development_areas': {
       return (
@@ -286,9 +284,9 @@ export async function InsightProfileSection() {
         </h2>
       </div>
       <div className='flex flex-col gap-2'>
-        {profile.profiles.map((cat) => {return (
-          <InsightCategoryCard key={cat.category} category={cat} />
-        )})}
+        {profile.profiles.map((cat) => {
+          return <InsightCategoryCard key={cat.category} category={cat} />;
+        })}
       </div>
     </section>
   );

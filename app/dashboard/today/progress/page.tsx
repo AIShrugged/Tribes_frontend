@@ -23,7 +23,9 @@ const VALID_PERIODS = new Set<IssueHistoryPeriod>(['day', 'week', 'month']);
 async function AiNudgeSection({ date }: { date?: string }) {
   const briefing = await getTodayBriefing(date);
   if (briefing.events.length === 0 || !briefing.nudge) return null;
-  return <AiNudge key={briefing.date} text={briefing.nudge} date={briefing.date} />;
+  return (
+    <AiNudge key={briefing.date} text={briefing.nudge} date={briefing.date} />
+  );
 }
 
 async function AiPrepSection({ date }: { date?: string }) {
@@ -31,14 +33,16 @@ async function AiPrepSection({ date }: { date?: string }) {
   if (briefing.events.length === 0) return null;
   return (
     <div className='flex flex-col gap-8'>
-      {briefing.events.map((event) => {return (
-        <AiPrepPanel
-          key={event.id}
-          event={event}
-          tasks={event.tasks}
-          carriedTasks={briefing.carried_tasks}
-        />
-      )})}
+      {briefing.events.map((event) => {
+        return (
+          <AiPrepPanel
+            key={event.id}
+            event={event}
+            tasks={event.tasks}
+            carriedTasks={briefing.carried_tasks}
+          />
+        );
+      })}
       <WaitingOnYou tasks={briefing.waiting_on_you} />
       <StaleItems tasks={briefing.stale} />
     </div>
