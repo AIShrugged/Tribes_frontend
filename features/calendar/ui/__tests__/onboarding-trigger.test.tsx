@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -8,19 +8,24 @@ jest.mock('@/features/calendar/api/calendar', () => {
   };
 });
 
+jest.mock('@/features/calendar/lib/navigation', () => {
+  return {
+    redirectToExternal: jest.fn(),
+  };
+});
+
 import { attachCalendar } from '@/features/calendar/api/calendar';
+import { redirectToExternal } from '@/features/calendar/lib/navigation';
 import OnboardingTrigger from '@/features/calendar/ui/onboarding-trigger';
 
 const mockAttachCalendar = attachCalendar as jest.Mock;
+const mockRedirectToExternal = redirectToExternal as jest.Mock;
 const user = userEvent.setup({ delay: null });
+const redirectUrl = 'https://accounts.google.com/oauth';
 
 describe('OnboardingTrigger', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).location;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).location = { href: '' };
   });
 
   it('renders "No calendar connected." text', () => {
@@ -43,46 +48,42 @@ describe('OnboardingTrigger', () => {
   it('shows "Redirecting to Google..." while pending', async () => {
     mockAttachCalendar.mockReturnValue(new Promise(() => {}));
     render(<OnboardingTrigger organizationId={42} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByText(/redirecting to google/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button'));
+    expect(
+      await screen.findByText(/redirecting to google/i),
+    ).toBeInTheDocument();
   });
 
   it('disables the button while pending', async () => {
     mockAttachCalendar.mockReturnValue(new Promise(() => {}));
     render(<OnboardingTrigger organizationId={42} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByRole('button')).toBeDisabled();
+    await user.click(screen.getByRole('button'));
+    expect(
+      await screen.findByRole('button', { name: 'Connecting...' }),
+    ).toBeDisabled();
   });
 
   it('calls attachCalendar with organizationId on click', async () => {
-    mockAttachCalendar.mockResolvedValue('https://accounts.google.com/oauth');
+    mockAttachCalendar.mockResolvedValue(redirectUrl);
     render(<OnboardingTrigger organizationId={42} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
+    await user.click(screen.getByRole('button'));
     expect(mockAttachCalendar).toHaveBeenCalledWith(42);
+    expect(mockRedirectToExternal).toHaveBeenCalledWith(redirectUrl);
     expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
   });
 
   it('shows error message when attachCalendar throws', async () => {
     mockAttachCalendar.mockRejectedValue(new Error('OAuth failed'));
     render(<OnboardingTrigger organizationId={42} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByText('OAuth failed')).toBeInTheDocument();
+    await user.click(screen.getByRole('button'));
+    expect(await screen.findByText('OAuth failed')).toBeInTheDocument();
   });
 
   it('re-enables the button after an error', async () => {
     mockAttachCalendar.mockRejectedValue(new Error('fail'));
     render(<OnboardingTrigger organizationId={42} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
+    await user.click(screen.getByRole('button'));
+    expect(await screen.findByText('fail')).toBeInTheDocument();
     expect(screen.getByRole('button')).not.toBeDisabled();
   });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useTransition } from 'react';
+import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -13,13 +13,8 @@ import { VARIANT_MAPPER, type VariantType } from '@/shared/lib/fieldMapper';
 import { Button } from '@/shared/ui/button/Button';
 
 import type { TeamAddMemberDTO } from '@/entities/team';
-import type { ModalContextValue } from '@/shared/types/modal';
 
 const FORM_ID = 'team-member-add-form';
-
-interface Props extends ModalContextValue {
-  teamId: number;
-}
 
 /**
  * TeamMemberAddForm component.
@@ -27,8 +22,14 @@ interface Props extends ModalContextValue {
  * @param props.close
  * @param props.teamId
  */
-export default function TeamMemberAddForm({ close, teamId }: Props) {
-  const [isPending, startTransition] = useTransition();
+export default function TeamMemberAddForm({
+  close,
+  teamId,
+}: {
+  close: () => void;
+  teamId: number;
+}) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     control,
     handleSubmit,
@@ -44,8 +45,10 @@ export default function TeamMemberAddForm({ close, teamId }: Props) {
    * @param data - data.
    * @returns Result.
    */
-  const onSubmit = (data: TeamAddMemberDTO) => {
-    startTransition(async () => {
+  const onSubmit = async (data: TeamAddMemberDTO) => {
+    setIsSubmitting(true);
+
+    try {
       const result = await sendInvite(teamId, data);
 
       if (result.error) {
@@ -55,7 +58,9 @@ export default function TeamMemberAddForm({ close, teamId }: Props) {
 
       toast.success('Invitation sent');
       close();
-    });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -87,7 +92,7 @@ export default function TeamMemberAddForm({ close, teamId }: Props) {
         );
       })}
       <div className={'flex flex-col gap-3'}>
-        <Button loading={isPending} disabled={isPending || !isDirty}>
+        <Button loading={isSubmitting} disabled={isSubmitting || !isDirty}>
           {'Invite'}
         </Button>
       </div>

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import TeamCreateForm from '@/features/teams/ui/team-create-form';
@@ -85,9 +85,7 @@ describe('TeamCreateForm', () => {
   it('calls createTeam and navigates on successful create', async () => {
     render(<TeamCreateForm values={blankTeam} organization_id='org-5' />);
     await user.type(screen.getByRole('textbox'), 'New Team');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => {
       expect(mockCreateTeam).toHaveBeenCalledWith(
         'org-5',
@@ -105,9 +103,7 @@ describe('TeamCreateForm', () => {
     mockCreateTeam.mockResolvedValue({ error: 'Name already taken' });
     render(<TeamCreateForm values={blankTeam} organization_id='1' />);
     await user.type(screen.getByRole('textbox'), 'Dup Team');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Name already taken');
     });
@@ -121,9 +117,7 @@ describe('TeamCreateForm', () => {
     mockCreateTeam.mockRejectedValue(new Error('Network failure'));
     render(<TeamCreateForm values={blankTeam} organization_id='1' />);
     await user.type(screen.getByRole('textbox'), 'Fail Team');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Network failure');
     });
@@ -135,9 +129,7 @@ describe('TeamCreateForm', () => {
 
     await user.clear(input);
     await user.type(input, 'Updated Name');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => {
       expect(mockUpdateTeam).toHaveBeenCalledWith(
         42,

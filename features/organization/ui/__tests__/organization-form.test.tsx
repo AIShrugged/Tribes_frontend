@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -156,9 +156,7 @@ describe('OrganizationForm', () => {
   it('calls createOrganization on submit', async () => {
     render(<OrganizationForm />);
     await user.type(screen.getByTestId(FIELD_NAME), 'New Company');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => {
       expect(mockCreateOrganization).toHaveBeenCalledWith({
         name: 'New Company',
@@ -170,13 +168,9 @@ describe('OrganizationForm', () => {
     mockCreateOrganization.mockRejectedValue(new Error('Already exists'));
     render(<OrganizationForm />);
     await user.type(screen.getByTestId(FIELD_NAME), 'Dup Co');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save/i }));
-    });
-    await waitFor(() => {
-      expect(screen.getByTestId('error-name')).toHaveTextContent(
-        'Already exists',
-      );
-    });
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    expect(await screen.findByTestId('error-name')).toHaveTextContent(
+      'Already exists',
+    );
   });
 });

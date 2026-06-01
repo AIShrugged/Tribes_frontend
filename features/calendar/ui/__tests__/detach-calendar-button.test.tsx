@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { toast } from 'sonner';
@@ -33,12 +33,10 @@ describe('DetachCalendarButton', () => {
 
   it('shows confirmation step after clicking "Disconnect calendar"', async () => {
     render(<DetachCalendarButton sourceId={1} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /disconnect calendar/i }),
-      );
-    });
-    expect(screen.getByText(/are you sure/i)).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: /disconnect calendar/i }),
+    );
+    expect(await screen.findByText(/are you sure/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /yes, disconnect/i }),
     ).toBeInTheDocument();
@@ -47,14 +45,10 @@ describe('DetachCalendarButton', () => {
 
   it('cancels and returns to initial state', async () => {
     render(<DetachCalendarButton sourceId={1} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /disconnect calendar/i }),
-      );
-    });
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /cancel/i }));
-    });
+    await user.click(
+      screen.getByRole('button', { name: /disconnect calendar/i }),
+    );
+    await user.click(await screen.findByRole('button', { name: /cancel/i }));
     expect(
       screen.getByRole('button', { name: /disconnect calendar/i }),
     ).toBeInTheDocument();
@@ -64,16 +58,12 @@ describe('DetachCalendarButton', () => {
   it('calls detachCalendar with correct sourceId on confirm', async () => {
     mockDetachCalendar.mockResolvedValue({ data: undefined, error: null });
     render(<DetachCalendarButton sourceId={42} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /disconnect calendar/i }),
-      );
-    });
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /yes, disconnect/i }),
-      );
-    });
+    await user.click(
+      screen.getByRole('button', { name: /disconnect calendar/i }),
+    );
+    await user.click(
+      await screen.findByRole('button', { name: /yes, disconnect/i }),
+    );
     expect(mockDetachCalendar).toHaveBeenCalledWith(42);
   });
 
@@ -82,16 +72,12 @@ describe('DetachCalendarButton', () => {
     // a value to the client. We simulate that by returning no error.
     mockDetachCalendar.mockResolvedValue({ data: undefined, error: null });
     render(<DetachCalendarButton sourceId={1} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /disconnect calendar/i }),
-      );
-    });
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /yes, disconnect/i }),
-      );
-    });
+    await user.click(
+      screen.getByRole('button', { name: /disconnect calendar/i }),
+    );
+    await user.click(
+      await screen.findByRole('button', { name: /yes, disconnect/i }),
+    );
     expect(toast.error).not.toHaveBeenCalled();
   });
 
@@ -101,35 +87,29 @@ describe('DetachCalendarButton', () => {
       error: 'Failed to disconnect Google Calendar. Please try again.',
     });
     render(<DetachCalendarButton sourceId={1} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /disconnect calendar/i }),
-      );
-    });
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /yes, disconnect/i }),
-      );
-    });
-    expect(toast.error).toHaveBeenCalledWith(
-      'Failed to disconnect Google Calendar. Please try again.',
+    await user.click(
+      screen.getByRole('button', { name: /disconnect calendar/i }),
     );
+    await user.click(
+      await screen.findByRole('button', { name: /yes, disconnect/i }),
+    );
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'Failed to disconnect Google Calendar. Please try again.',
+      );
+    });
   });
 
   it('shows "Disconnecting..." and disables buttons while pending', async () => {
     mockDetachCalendar.mockReturnValue(new Promise(() => {}));
     render(<DetachCalendarButton sourceId={1} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /disconnect calendar/i }),
-      );
-    });
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /yes, disconnect/i }),
-      );
-    });
-    expect(screen.getByText(/disconnecting/i)).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: /disconnect calendar/i }),
+    );
+    await user.click(
+      await screen.findByRole('button', { name: /yes, disconnect/i }),
+    );
+    expect(await screen.findByText(/disconnecting/i)).toBeInTheDocument();
     for (const btn of screen.getAllByRole('button')) {
       expect(btn).toBeDisabled();
     }
@@ -141,17 +121,15 @@ describe('DetachCalendarButton', () => {
       error: 'Some error',
     });
     render(<DetachCalendarButton sourceId={1} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /disconnect calendar/i }),
-      );
+    await user.click(
+      screen.getByRole('button', { name: /disconnect calendar/i }),
+    );
+    await user.click(
+      await screen.findByRole('button', { name: /yes, disconnect/i }),
+    );
+    await waitFor(() => {
+      expect(screen.queryByText(/are you sure/i)).not.toBeInTheDocument();
     });
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /yes, disconnect/i }),
-      );
-    });
-    expect(screen.queryByText(/are you sure/i)).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /disconnect calendar/i }),
     ).toBeInTheDocument();

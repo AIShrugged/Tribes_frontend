@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { UserMenuPopup } from '@/features/user/ui/user-menu-popup';
 
@@ -34,6 +35,8 @@ const mockUser: UserProps = {
 };
 
 describe('UserMenuPopup', () => {
+  const user = userEvent.setup({ delay: null });
+
   it('renders Profile menu item', () => {
     render(<UserMenuPopup close={jest.fn()} user={mockUser} />);
     expect(screen.getByRole('button', { name: 'Profile' })).toBeInTheDocument();
@@ -46,22 +49,19 @@ describe('UserMenuPopup', () => {
 
   it('navigates to profile on Profile click', async () => {
     render(<UserMenuPopup close={jest.fn()} user={mockUser} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Profile' }));
-    // Wait for transition
-    await new Promise((r) => {
-      return setTimeout(r, 50);
+    await user.click(screen.getByRole('button', { name: 'Profile' }));
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/dashboard/profile');
     });
-    expect(mockPush).toHaveBeenCalledWith('/dashboard/profile');
   });
 
   it('calls close when Log out is clicked', async () => {
     const close = jest.fn();
 
     render(<UserMenuPopup close={close} user={mockUser} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
-    await new Promise((r) => {
-      return setTimeout(r, 50);
+    await user.click(screen.getByRole('button', { name: 'Log out' }));
+    await waitFor(() => {
+      expect(close).toHaveBeenCalled();
     });
-    expect(close).toHaveBeenCalled();
   });
 });

@@ -85,6 +85,12 @@ function renderBar(
   );
 }
 
+async function waitForParticipantsIdle() {
+  await waitFor(() => {
+    expect(screen.getAllByRole('combobox')[1]).not.toHaveClass('opacity-60');
+  });
+}
+
 describe('MeetingsCalendarFiltersBar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -114,22 +120,23 @@ describe('MeetingsCalendarFiltersBar', () => {
     await waitFor(() => {
       expect(getTeamUsers).toHaveBeenCalledWith(1);
     });
+    await waitForParticipantsIdle();
   });
 
   it('removes "Select a team first" tooltip after team_id is set', async () => {
     renderBar({ team_id: 1, user_id: null });
 
-    await waitFor(() => {
-      expect(screen.queryByTitle(TOOLTIP_SELECT_TEAM)).not.toBeInTheDocument();
-    });
+    await waitForParticipantsIdle();
+    expect(screen.queryByTitle(TOOLTIP_SELECT_TEAM)).not.toBeInTheDocument();
   });
 
-  it('shows Clear filters button when team_id is active', () => {
+  it('shows Clear filters button when team_id is active', async () => {
     renderBar({ team_id: 1, user_id: null });
 
     expect(
       screen.getByRole('button', { name: 'Clear filters' }),
     ).toBeInTheDocument();
+    await waitForParticipantsIdle();
   });
 
   it('hides Clear filters button when no active filters', () => {
@@ -140,12 +147,13 @@ describe('MeetingsCalendarFiltersBar', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('shows Clear filters button when user_id is active', () => {
+  it('shows Clear filters button when user_id is active', async () => {
     renderBar({ team_id: 1, user_id: 101 });
 
     expect(
       screen.getByRole('button', { name: 'Clear filters' }),
     ).toBeInTheDocument();
+    await waitForParticipantsIdle();
   });
 
   it('calls toast.error when getTeamUsers rejects', async () => {
@@ -159,14 +167,14 @@ describe('MeetingsCalendarFiltersBar', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to load participants');
     });
+    await waitForParticipantsIdle();
   });
 
   it('restores "Select a team first" tooltip when team_id becomes null', async () => {
     const { rerender } = renderBar({ team_id: 1, user_id: null });
 
-    await waitFor(() => {
-      expect(screen.queryByTitle(TOOLTIP_SELECT_TEAM)).not.toBeInTheDocument();
-    });
+    await waitForParticipantsIdle();
+    expect(screen.queryByTitle(TOOLTIP_SELECT_TEAM)).not.toBeInTheDocument();
 
     rerender(
       <MeetingsCalendarFiltersBar

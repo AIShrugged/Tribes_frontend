@@ -9,6 +9,7 @@ import {
   useEffect,
   useRef,
   useSyncExternalStore,
+  startTransition,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
@@ -42,6 +43,25 @@ const getServerMountedSnapshot = () => {
  *
  */
 function noop() {}
+
+function getOrganizationDisplayState(
+  organizations: OrganizationProps[],
+  organizationActiveId: number | null,
+) {
+  const active = organizations.find((o) => {
+    return String(o.id) === String(organizationActiveId);
+  });
+  const sortedOrganizations = active
+    ? [
+        active,
+        ...organizations.filter((o) => {
+          return o.id !== active.id;
+        }),
+      ]
+    : organizations;
+
+  return { active, sortedOrganizations };
+}
 
 /**
  * OrgItem — renders a single organization row inside the dropdown.
@@ -121,17 +141,10 @@ export default function OrganizationDropdown({
     left: number;
     minWidth: number;
   } | null>(null);
-  const active = organizations.find((o) => {
-    return String(o.id) === String(organizationActiveId);
-  });
-  const sortedOrganizations = active
-    ? [
-        active,
-        ...organizations.filter((o) => {
-          return o.id !== active.id;
-        }),
-      ]
-    : organizations;
+  const { active, sortedOrganizations } = getOrganizationDisplayState(
+    organizations,
+    organizationActiveId,
+  );
 
   useEffect(() => {
     const needsDefault = !organizationActiveId && organizations.length > 0;
@@ -140,7 +153,9 @@ export default function OrganizationDropdown({
       const formData = new FormData();
 
       formData.append('organization_id', String(organizations[0].id));
-      action(formData);
+      startTransition(() => {
+        action(formData);
+      });
     }
   }, []);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -20,7 +20,7 @@ interface ProfileFormData {
  * @param props.user - The current authenticated user.
  */
 export function ProfileForm({ user }: { user: UserProps }) {
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -34,8 +34,10 @@ export function ProfileForm({ user }: { user: UserProps }) {
    * @param data - Form data.
    * @returns {void}
    */
-  const onSubmit = (data: ProfileFormData) => {
-    startTransition(async () => {
+  const onSubmit = async (data: ProfileFormData) => {
+    setIsSubmitting(true);
+
+    try {
       const result = await updateProfile(data);
 
       if (result.error) {
@@ -45,7 +47,9 @@ export function ProfileForm({ user }: { user: UserProps }) {
       }
 
       toast.success('Profile updated successfully');
-    });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -60,8 +64,8 @@ export function ProfileForm({ user }: { user: UserProps }) {
       <div className='w-full md:w-[170px]'>
         <Button
           type='submit'
-          loading={isPending}
-          disabled={isPending || !isDirty}
+          loading={isSubmitting}
+          disabled={isSubmitting || !isDirty}
         >
           Save changes
         </Button>

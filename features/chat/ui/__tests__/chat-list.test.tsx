@@ -1,5 +1,5 @@
 import { beforeAll } from '@jest/globals';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ChatList } from '@/features/chat/ui/chat-list';
@@ -185,12 +185,10 @@ describe('ChatList', () => {
         organizationId={42}
       />,
     );
-    await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
-      await userEvent.click(
-        screen.getByRole('button', { name: /create chat/i }),
-      );
-    });
+    await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: /create chat/i }),
+    );
     await waitFor(() => {
       expect(screen.getByTestId('chat-item-99')).toBeInTheDocument();
     });
@@ -201,12 +199,10 @@ describe('ChatList', () => {
 
   it('navigates to the new chat after creation', async () => {
     render(<ChatList initialChats={[]} totalCount={0} organizationId={42} />);
-    await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
-      await userEvent.click(
-        screen.getByRole('button', { name: /create chat/i }),
-      );
-    });
+    await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: /create chat/i }),
+    );
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('/99'));
     });
@@ -219,12 +215,10 @@ describe('ChatList', () => {
 
     mockCreateChat.mockRejectedValueOnce(new Error('Server error'));
     render(<ChatList initialChats={[]} totalCount={0} organizationId={42} />);
-    await act(async () => {
-      await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
-      await userEvent.click(
-        screen.getByRole('button', { name: /create chat/i }),
-      );
-    });
+    await userEvent.click(screen.getByRole('button', { name: /new chat/i }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: /create chat/i }),
+    );
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Server error');
     });

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useTransition } from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -36,7 +36,7 @@ export default function OrganizationForm({
   const FORM_ID = 'organization-form';
   const isEdit = Boolean(values?.id);
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     control,
     handleSubmit,
@@ -52,27 +52,29 @@ export default function OrganizationForm({
    * @param data - data.
    * @returns Result.
    */
-  const onSubmit = (data: OrganizationDTO) => {
-    startTransition(async () => {
-      try {
-        if (isEdit && values?.id) {
-          await updateOrganization(values.id, {
-            name: data.name,
-          });
+  const onSubmit = async (data: OrganizationDTO) => {
+    setIsSubmitting(true);
 
-          toast.success('Organization updated');
-          router.refresh();
-
-          return;
-        }
-
-        await createOrganization(data);
-      } catch (error) {
-        setError('name', {
-          message: (error as Error).message,
+    try {
+      if (isEdit && values?.id) {
+        await updateOrganization(values.id, {
+          name: data.name,
         });
+
+        toast.success('Organization updated');
+        router.refresh();
+
+        return;
       }
-    });
+
+      await createOrganization(data);
+    } catch (error) {
+      setError('name', {
+        message: (error as Error).message,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -110,8 +112,8 @@ export default function OrganizationForm({
             <Button
               type={'submit'}
               form={FORM_ID}
-              loading={isPending}
-              disabled={isPending || !isDirty}
+              loading={isSubmitting}
+              disabled={isSubmitting || !isDirty}
             >
               {'Save'}
             </Button>
@@ -124,8 +126,8 @@ export default function OrganizationForm({
           <Button
             type={'submit'}
             form={FORM_ID}
-            loading={isPending}
-            disabled={isPending || !isDirty}
+            loading={isSubmitting}
+            disabled={isSubmitting || !isDirty}
           >
             {'Save'}
           </Button>
