@@ -4,7 +4,6 @@ export { MeetingsColumnView } from './ui/meetings-column-view';
 export { DateSwitcher } from './ui/date-switcher';
 export { MeetingCard } from './ui/meeting-card';
 export { MeetingDetailTabsNav } from './ui/meeting-detail-tabs-nav';
-export { MeetingsTabsNav } from './ui/meetings-tabs-nav';
 export { BotToggleButton } from './ui/bot-toggle-button';
 export { MeetingJoinButton } from './ui/meeting-join-button';
 export { MeetingCalendarPopover } from './ui/meeting-calendar-popover';
