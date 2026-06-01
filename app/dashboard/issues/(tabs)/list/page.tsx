@@ -65,8 +65,6 @@ export default async function IssuesListPage({
   }
 
   const rawOrgId = orgId;
-  const rawTeamId =
-    typeof params.team_id === 'string' ? Number(params.team_id) : null;
   const rawAuthorId =
     typeof params.author_id === 'string' ? Number(params.author_id) : null;
   const rawEpicId =
@@ -75,10 +73,7 @@ export default async function IssuesListPage({
   const issues = await getIssues({
     organization_id:
       Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : cookieOrgId,
-    team_id:
-      rawTeamId !== null && Number.isFinite(rawTeamId) && rawTeamId > 0
-        ? rawTeamId
-        : null,
+    team_id: null,
     status: statusParam,
     type: typeParam,
     assignee: resolvedAssignee,

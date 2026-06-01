@@ -35,7 +35,7 @@ type IssuesLayoutClientProps = React.PropsWithChildren<{
 }>;
 
 const KEEP_WHEN_EMPTY = new Set(['assignee_id']);
-const STALE_PARAMS = ['assignee'] as const;
+const STALE_PARAMS = ['assignee', 'team_id'] as const;
 
 /**
  * IssuesLayoutClient — client component that owns filter state and URL sync
@@ -65,7 +65,7 @@ export function IssuesLayoutClient({
 
     return {
       organization_id: searchParams.get('organization_id') ?? cookieOrgId,
-      team_id: searchParams.get('team_id') ?? '',
+      team_id: '',
       search: searchParams.get('search') ?? '',
       type: isIssueType(typeRaw) ? typeRaw : '',
       assignee_id: assigneeIdRaw,
@@ -95,13 +95,13 @@ export function IssuesLayoutClient({
   const isFirstFiltersRender = useRef(true);
 
   // Mid-render org-change detection: when cookieOrgId prop changes (after router.refresh()
-  // delivers new Server Component props), reset org and team filters immediately.
+  // delivers new Server Component props), reset org filters immediately.
   // columnsVersion is bumped in a useEffect below (refs cannot be written during render).
   const [prevCookieOrgId, setPrevCookieOrgId] = useState(cookieOrgId);
   if (cookieOrgId !== prevCookieOrgId) {
     setPrevCookieOrgId(cookieOrgId);
     setFilters((prev) => {
-      return { ...prev, organization_id: cookieOrgId, team_id: '' };
+      return { ...prev, organization_id: cookieOrgId };
     });
     setFiltersVersion((v) => {
       return v + 1;
@@ -152,7 +152,7 @@ export function IssuesLayoutClient({
 
   const handleFiltersChange = useCallback((patch: Partial<SharedFilters>) => {
     setFilters((prev) => {
-      const next = { ...prev, ...patch };
+      const next = { ...prev, ...patch, team_id: '' };
       if (patch.type === 'epic' && prev.type !== 'epic') {
         next.epic_id = '';
       }
@@ -184,7 +184,6 @@ export function IssuesLayoutClient({
 
     updateUrl({
       organization_id: filters.organization_id,
-      team_id: filters.team_id,
       search: filters.search,
       type: filters.type,
       assignee_id: filters.assignee_id,

@@ -3,10 +3,8 @@
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { getTeams } from '@/entities/team/api/team';
 import { ISSUE_STATUS_OPTIONS } from '@/features/issues/model/types';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
-import { TenantScopeFields } from '@/shared/ui/input/tenant-scope-fields';
 
 import type { EpicOption } from '@/entities/issue';
 import type { OrganizationProps } from '@/entities/organization';
@@ -84,6 +82,13 @@ export function SharedFiltersBar({
 
   const authorOptions = [{ value: '', label: 'Any author' }, ...mappedPersons];
 
+  const organizationOptions = organizations.map((organization) => {
+    return {
+      value: String(organization.id),
+      label: organization.name,
+    };
+  });
+
   const epicOptions = [
     { value: '', label: 'Any epic' },
     ...epics.map((epic) => {
@@ -120,19 +125,18 @@ export function SharedFiltersBar({
         />
       </div>
 
-      <TenantScopeFields
-        organizations={organizations}
-        organizationId={filters.organization_id}
-        teamId={filters.team_id}
-        fetchTeams={getTeams}
-        onOrganizationChange={(value) => {
-          onChange({ organization_id: value, team_id: '' });
-        }}
-        onTeamChange={(value) => {
-          onChange({ team_id: value });
-        }}
-        disabled={disabled}
-      />
+      <div className='grid gap-2 sm:grid-cols-2 xl:grid-cols-4'>
+        <InputDropdown
+          label='Organization'
+          options={organizationOptions}
+          value={filters.organization_id}
+          onChange={(value) => {
+            onChange({ organization_id: value as string });
+          }}
+          searchable
+          disabled={disabled}
+        />
+      </div>
 
       <div className='grid gap-2 sm:grid-cols-2 xl:grid-cols-4'>
         <InputDropdown

@@ -4,10 +4,9 @@ import { ROUTES } from '@/shared/lib/routes';
 import { PageTabsNav } from '@/shared/ui/navigation/page-tabs-nav';
 
 const TABS = [
-  { href: ROUTES.DASHBOARD.AGENT_TASKS, label: 'Tasks' },
   { href: ROUTES.DASHBOARD.AGENT_PROFILES, label: 'Agents' },
   { href: ROUTES.DASHBOARD.AGENT_ACTIVITY, label: 'Activity' },
-  { href: ROUTES.DASHBOARD.AGENT_PROMPTS, label: 'Prompts' },
+  { href: ROUTES.DASHBOARD.AGENT_PROMPTS, label: 'System prompts' },
 ] as const;
 
 /**

@@ -28,8 +28,6 @@ export default async function IssuesKanbanPage({
   const isUnassigned = assigneeIdParam === 'unassigned';
 
   const rawOrgId = orgId;
-  const rawTeamId =
-    typeof params.team_id === 'string' ? Number(params.team_id) : null;
   const rawAssigneeId =
     assigneeIdParam && !isUnassigned ? Number(assigneeIdParam) : null;
   const rawAuthorId =
@@ -40,10 +38,7 @@ export default async function IssuesKanbanPage({
   const kanbanFilters: KanbanFilters = {
     organization_id:
       Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : cookieOrgId,
-    team_id:
-      rawTeamId !== null && Number.isFinite(rawTeamId) && rawTeamId > 0
-        ? rawTeamId
-        : null,
+    team_id: null,
     type: typeParam || undefined,
     assignee_id:
       rawAssigneeId !== null && Number.isFinite(rawAssigneeId)
