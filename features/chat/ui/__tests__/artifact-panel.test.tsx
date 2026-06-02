@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -124,13 +124,16 @@ describe('ArtifactPanel', () => {
 
   it('calls getArtifacts and refreshes on Refresh button click', async () => {
     render(<ArtifactPanel chatId={1} initialArtifacts={makeArtifacts()} />);
-    await act(async () => {
-      await user.click(
-        screen.getByRole('button', { name: /refresh artifacts/i }),
-      );
+    const refreshButton = screen.getByRole('button', {
+      name: /refresh artifacts/i,
     });
+
+    await user.click(refreshButton);
     await waitFor(() => {
       expect(mockGetArtifacts).toHaveBeenCalledWith(1);
+    });
+    await waitFor(() => {
+      expect(refreshButton).not.toBeDisabled();
     });
   });
 

@@ -5,6 +5,10 @@ import React, { type PropsWithChildren, Suspense } from 'react';
 
 import { ThemeProvider } from '@/app/providers/ThemeProvider';
 import { MenuSidebar, SidebarFooter } from '@/features/menu';
+import {
+  getOnboardingActionLabel,
+  getOnboardingStatusText,
+} from '@/features/onboarding';
 import { OrganizationSelector, getOrganization } from '@/features/organization';
 import { User, getUser } from '@/features/user';
 import { updateThemePreference } from '@/features/user-profile/api/preferences';
@@ -39,13 +43,19 @@ export default async function Layout({ children }: PropsWithChildren) {
     }
   }
 
-  let showOnboardingCta = false;
+  let onboardingCta: {
+    label: string;
+    status: string;
+  } | null = null;
 
-  if (!isOnboarded && hasSkipped && orgIdFromCookie) {
+  if (orgIdFromCookie) {
     try {
       const { data: ctaOrg } = await getOrganization(orgIdFromCookie);
 
-      showOnboardingCta = !ctaOrg?.onboarded_at;
+      onboardingCta = {
+        label: getOnboardingActionLabel(ctaOrg?.onboarded_at),
+        status: getOnboardingStatusText(ctaOrg?.onboarded_at),
+      };
     } catch {
       // silently skip — do not block layout render
     }
@@ -109,12 +119,13 @@ export default async function Layout({ children }: PropsWithChildren) {
               <OrganizationSelector />
             </div>
             <div className='flex items-center gap-2 flex-shrink-0'>
-              {showOnboardingCta && (
+              {onboardingCta && (
                 <Link
                   href={ROUTES.DASHBOARD.ONBOARDING}
+                  title={onboardingCta.status}
                   className='inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-violet-500/50 bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-400 hover:bg-violet-500/20 transition-colors flex-shrink-0'
                 >
-                  Setup org (Onboarding)
+                  {onboardingCta.label}
                 </Link>
               )}
               <User />

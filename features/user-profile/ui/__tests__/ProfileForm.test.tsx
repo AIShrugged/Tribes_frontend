@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ProfileForm } from '@/features/user-profile/ui/ProfileForm';
@@ -92,9 +92,7 @@ describe('ProfileForm', () => {
 
     await user.clear(nameInput);
     await user.type(nameInput, 'Jane Smith');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save changes/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
     await waitFor(() => {
       expect(mockUpdateProfile).toHaveBeenCalledWith({ name: 'Jane Smith' });
     });
@@ -108,9 +106,7 @@ describe('ProfileForm', () => {
     render(<ProfileForm user={makeUser()} />);
     await user.clear(screen.getByDisplayValue('Jane Doe'));
     await user.type(screen.getByRole('textbox'), 'New Name');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save changes/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith(
         'Profile updated successfully',
@@ -127,9 +123,7 @@ describe('ProfileForm', () => {
     render(<ProfileForm user={makeUser()} />);
     await user.clear(screen.getByDisplayValue('Jane Doe'));
     await user.type(screen.getByRole('textbox'), 'Bad Name');
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /save changes/i }));
-    });
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Server error');
     });

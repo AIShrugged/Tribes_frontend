@@ -185,10 +185,12 @@ export function reducer(state: WizardStep, action: WizardAction): WizardStep {
         inputState,
         previewData: {
           organization: draft.result.organization,
-          goals: draft.result.goals.map((g) => {return {
-            _id: crypto.randomUUID(),
-            ...g,
-          }}),
+          goals: draft.result.goals.map((g) => {
+            return {
+              _id: crypto.randomUUID(),
+              ...g,
+            };
+          }),
           team: draft.result.team.map((m) => {
             return toEditableTeamMember(m);
           }),
@@ -331,10 +333,12 @@ export function buildInitialState(
     inputState: EMPTY_INPUT,
     previewData: {
       organization: complete.organization,
-      goals: complete.goals.map((g) => {return {
-        _id: crypto.randomUUID(),
-        ...g,
-      }}),
+      goals: complete.goals.map((g) => {
+        return {
+          _id: crypto.randomUUID(),
+          ...g,
+        };
+      }),
       team: complete.team.map((m) => {
         return toEditableTeamMember(m);
       }),

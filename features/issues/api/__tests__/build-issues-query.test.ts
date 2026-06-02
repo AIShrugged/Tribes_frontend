@@ -20,11 +20,11 @@ function parseQuery(qs: string): URLSearchParams {
 }
 
 describe('buildIssuesQuery', () => {
-  it('sends exclude_type=epic when type is "task"', () => {
+  it('sends type=organization when type is "task"', () => {
     const qs = buildIssuesQuery({ type: 'task' });
     const params = parseQuery(qs);
-    expect(params.get('exclude_type')).toBe('epic');
-    expect(params.has('type')).toBe(false);
+    expect(params.get('type')).toBe('organization');
+    expect(params.has('exclude_type')).toBe(false);
   });
 
   it('sends type=epic when type is "epic"', () => {

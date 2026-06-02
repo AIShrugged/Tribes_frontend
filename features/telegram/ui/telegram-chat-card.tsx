@@ -173,7 +173,6 @@ export function TelegramChatCard({
               </p>
             </div>
           ) : null}
-
         </div>
       </CardBody>
     </Card>

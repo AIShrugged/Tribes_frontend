@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ChatMessage } from '@/features/chat/ui/chat-message';
@@ -109,27 +109,25 @@ describe('ChatMessage', () => {
 
   it('shows check icon after clicking copy', async () => {
     render(<ChatMessage message={baseMessage} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /copy message/i }));
-    });
-    expect(screen.getByTestId('check-icon')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /copy message/i }));
+    expect(await screen.findByTestId('check-icon')).toBeInTheDocument();
   });
 
   it('calls clipboard.writeText with message content', async () => {
     render(<ChatMessage message={baseMessage} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /copy message/i }));
+    await user.click(screen.getByRole('button', { name: /copy message/i }));
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        MESSAGE_CONTENT,
+      );
     });
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(MESSAGE_CONTENT);
   });
 
   it('resets back to copy icon after 2 seconds', async () => {
     jest.useFakeTimers();
     render(<ChatMessage message={baseMessage} />);
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: /copy message/i }));
-    });
-    expect(screen.getByTestId('check-icon')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /copy message/i }));
+    expect(await screen.findByTestId('check-icon')).toBeInTheDocument();
     act(() => {
       jest.advanceTimersByTime(2000);
     });

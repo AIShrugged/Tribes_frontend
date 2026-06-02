@@ -139,7 +139,7 @@ describe('MenuSidebar', () => {
 
   it('renders default menu items', async () => {
     render(await MenuSidebar());
-    expect(screen.getByText('Meetings')).toBeInTheDocument();
+    expect(screen.getByText('Calendar')).toBeInTheDocument();
     expect(screen.getByText('Tasks')).toBeInTheDocument();
   });
 
@@ -156,7 +156,7 @@ describe('getMenuItems', () => {
       return item.label;
     });
 
-    expect(labels).toContain('Meetings');
+    expect(labels).toContain('Calendar');
     expect(labels).toContain('Tasks');
     expect(labels).not.toContain('Teams');
   });

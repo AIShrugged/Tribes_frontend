@@ -196,6 +196,7 @@ export function OnboardingWizard({
         description: 'Your goals are ready in the Today section.',
         duration: 5000,
       });
+      router.refresh();
       router.push(redirectAfterAccept ?? ROUTES.DASHBOARD.ISSUES_LIST);
     } finally {
       isSubmittingRef.current = false;

@@ -3,6 +3,10 @@ export {
   generateStructure,
   getLatestDraft,
 } from './api/onboarding';
+export {
+  getOnboardingActionLabel,
+  getOnboardingStatusText,
+} from './lib/onboarding-status';
 export { OnboardingWizard } from './ui/onboarding-wizard';
 export {
   deletePendingAttachment,

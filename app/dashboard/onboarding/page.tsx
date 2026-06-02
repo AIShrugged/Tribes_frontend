@@ -1,6 +1,10 @@
 import { redirect } from 'next/navigation';
 
-import { OnboardingWizard, getLatestDraft } from '@/features/onboarding';
+import {
+  OnboardingWizard,
+  getLatestDraft,
+  getOnboardingStatusText,
+} from '@/features/onboarding';
 import { getOrganization } from '@/features/organization/api/organization';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { ROUTES } from '@/shared/lib/routes';
@@ -15,13 +19,16 @@ export default async function OnboardingPage() {
     getLatestDraft(orgId),
   ]);
 
-  if (!org || org.onboarded_at) {
+  if (!org) {
     redirect(ROUTES.DASHBOARD.TODAY);
   }
 
   return (
     <Card>
       <CardBody>
+        <div className='mb-4 text-sm text-muted-foreground'>
+          {getOnboardingStatusText(org.onboarded_at)}
+        </div>
         <OnboardingWizard
           orgId={org.id}
           orgName={org.name}

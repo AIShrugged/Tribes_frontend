@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useTransition } from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -31,7 +31,7 @@ export default function TeamCreateForm({
   const FORM_ID = 'team-create-form';
   const isEdit = Boolean(values?.id);
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     control,
     handleSubmit,
@@ -41,41 +41,53 @@ export default function TeamCreateForm({
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
+  const finishSuccess = (teamId: number) => {
+    if (onSuccess) {
+      onSuccess(teamId);
+      return;
+    }
+
+    router.push(ROUTES.DASHBOARD.TEAMS);
+  };
+  const updateExistingTeam = async (data: TeamCreateDTO) => {
+    await updateTeam(values.id, data);
+    finishSuccess(values.id);
+  };
+  const createNewTeam = async (data: TeamCreateDTO) => {
+    const result = await createTeam(organization_id, data);
+
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+
+    if (result.data) {
+      finishSuccess(result.data.id);
+      return;
+    }
+
+    router.push(ROUTES.DASHBOARD.TEAMS);
+  };
   /**
    * onSubmit.
    * @param data - data.
    * @returns Result.
    */
-  const onSubmit = (data: TeamCreateDTO) => {
-    startTransition(async () => {
-      try {
-        if (isEdit) {
-          await updateTeam(values.id, data);
+  const onSubmit = async (data: TeamCreateDTO) => {
+    setIsSubmitting(true);
 
-          if (onSuccess) {
-            onSuccess(values.id);
-          } else {
-            router.push(ROUTES.DASHBOARD.TEAMS);
-          }
-        } else {
-          const result = await createTeam(organization_id, data);
-
-          if (result.error) {
-            toast.error(result.error);
-
-            return;
-          }
-
-          if (onSuccess && result.data) {
-            onSuccess(result.data.id);
-          } else {
-            router.push(ROUTES.DASHBOARD.TEAMS);
-          }
-        }
-      } catch (error) {
-        toast.error((error as Error).message);
+    try {
+      if (isEdit) {
+        await updateExistingTeam(data);
+        return;
       }
-    });
+
+      await createNewTeam(data);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -108,8 +120,8 @@ export default function TeamCreateForm({
       })}
       <div className={'mt-auto w-full md:w-[170px]'}>
         <Button
-          loading={isPending}
-          disabled={isPending || !isDirty}
+          loading={isSubmitting}
+          disabled={isSubmitting || !isDirty}
           type='submit'
         >
           {'Save'}

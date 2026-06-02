@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -8,19 +8,24 @@ jest.mock('@/features/calendar/api/calendar', () => {
   };
 });
 
+jest.mock('@/features/calendar/lib/navigation', () => {
+  return {
+    redirectToExternal: jest.fn(),
+  };
+});
+
 import { attachCalendar } from '@/features/calendar/api/calendar';
+import { redirectToExternal } from '@/features/calendar/lib/navigation';
 import { AttachCalendarButton } from '@/features/calendar/ui/attach-calendar-button';
 
 const mockAttachCalendar = attachCalendar as jest.Mock;
+const mockRedirectToExternal = redirectToExternal as jest.Mock;
 const user = userEvent.setup({ delay: null });
+const redirectUrl = 'https://accounts.google.com/oauth';
 
 describe('AttachCalendarButton', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).location;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).location = { href: '' };
   });
 
   it('renders children as button label', () => {
@@ -38,26 +43,22 @@ describe('AttachCalendarButton', () => {
   });
 
   it('calls attachCalendar with organizationId on click', async () => {
-    mockAttachCalendar.mockResolvedValue('https://accounts.google.com/oauth');
+    mockAttachCalendar.mockResolvedValue(redirectUrl);
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
+    await user.click(screen.getByRole('button'));
     expect(mockAttachCalendar).toHaveBeenCalledWith(42);
+    expect(mockRedirectToExternal).toHaveBeenCalledWith(redirectUrl);
   });
 
   it('navigates to the redirect URL on success', async () => {
-    mockAttachCalendar.mockResolvedValue('https://accounts.google.com/oauth');
+    mockAttachCalendar.mockResolvedValue(redirectUrl);
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    // attachCalendar resolved — confirms the redirect URL was received
-    expect(mockAttachCalendar).toHaveBeenCalledWith(42);
+    await user.click(screen.getByRole('button'));
+    expect(mockRedirectToExternal).toHaveBeenCalledWith(redirectUrl);
     // No error should appear after successful navigation
     expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
   });
@@ -67,10 +68,10 @@ describe('AttachCalendarButton', () => {
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByRole('button')).toHaveTextContent('Connecting...');
+    await user.click(screen.getByRole('button'));
+    expect(
+      await screen.findByRole('button', { name: 'Connecting...' }),
+    ).toBeInTheDocument();
   });
 
   it('disables the button while pending', async () => {
@@ -78,10 +79,10 @@ describe('AttachCalendarButton', () => {
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByRole('button')).toBeDisabled();
+    await user.click(screen.getByRole('button'));
+    expect(
+      await screen.findByRole('button', { name: 'Connecting...' }),
+    ).toBeDisabled();
   });
 
   it('prevents double-click: only calls attachCalendar once', async () => {
@@ -90,13 +91,9 @@ describe('AttachCalendarButton', () => {
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
     const button = screen.getByRole('button');
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     // Button is now disabled; second click is a no-op
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     expect(mockAttachCalendar).toHaveBeenCalledTimes(1);
   });
 
@@ -105,10 +102,8 @@ describe('AttachCalendarButton', () => {
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByText('OAuth failed')).toBeInTheDocument();
+    await user.click(screen.getByRole('button'));
+    expect(await screen.findByText('OAuth failed')).toBeInTheDocument();
   });
 
   it('shows fallback error for non-Error throws', async () => {
@@ -116,10 +111,8 @@ describe('AttachCalendarButton', () => {
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    await user.click(screen.getByRole('button'));
+    expect(await screen.findByText('Something went wrong')).toBeInTheDocument();
   });
 
   it('re-enables button after error', async () => {
@@ -127,9 +120,8 @@ describe('AttachCalendarButton', () => {
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
+    await user.click(screen.getByRole('button'));
+    expect(await screen.findByText('fail')).toBeInTheDocument();
     expect(screen.getByRole('button')).not.toBeDisabled();
   });
 
@@ -150,10 +142,10 @@ describe('AttachCalendarButton', () => {
         Connect
       </AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
-    expect(screen.getByText('Redirecting to Google...')).toBeInTheDocument();
+    await user.click(screen.getByRole('button'));
+    expect(
+      await screen.findByText('Redirecting to Google...'),
+    ).toBeInTheDocument();
   });
 
   it('does not show pendingText when not provided', async () => {
@@ -161,9 +153,7 @@ describe('AttachCalendarButton', () => {
     render(
       <AttachCalendarButton organizationId={42}>Connect</AttachCalendarButton>,
     );
-    await act(async () => {
-      await user.click(screen.getByRole('button'));
-    });
+    await user.click(screen.getByRole('button'));
     expect(
       screen.queryByText('Redirecting to Google...'),
     ).not.toBeInTheDocument();

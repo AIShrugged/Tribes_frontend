@@ -27,7 +27,7 @@ export default async function IssuesTabsLayout({
 
   return (
     <div className='flex flex-col p-2'>
-      <div className='shrink-0 mb-4 flex items-center justify-between gap-3'>
+      <div className='shrink-0 mb-4'>
         <IssuesTabsNav />
       </div>
       <Suspense fallback={<IssuesTabsNavSkeleton />}>

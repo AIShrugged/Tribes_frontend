@@ -1,6 +1,10 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { toast } from 'sonner';
+
+import { sendInvite } from '@/features/teams/api/team';
+import TeamMemberAddForm from '@/features/teams/ui/team-member-add-form';
 
 jest.mock('sonner', () => {
   return {
@@ -62,11 +66,6 @@ jest.mock('@/shared/ui/button/Button', () => {
   };
 });
 
-import { toast } from 'sonner';
-
-import { sendInvite } from '@/features/teams/api/team';
-import TeamMemberAddForm from '@/features/teams/ui/team-member-add-form';
-
 const mockSendInvite = sendInvite as jest.Mock;
 const FIELD_EMAIL = 'field-email';
 const TEST_EMAIL = 'test@example.com';
@@ -107,19 +106,19 @@ describe('TeamMemberAddForm', () => {
   it('calls sendInvite with teamId and form data on submit', async () => {
     render(<TeamMemberAddForm close={close} teamId={7} />);
     await user.type(screen.getByTestId(FIELD_EMAIL), TEST_EMAIL);
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Invite' }));
+    await user.click(screen.getByRole('button', { name: 'Invite' }));
+    await waitFor(() => {
+      expect(mockSendInvite).toHaveBeenCalledWith(7, { email: TEST_EMAIL });
     });
-    expect(mockSendInvite).toHaveBeenCalledWith(7, { email: TEST_EMAIL });
   });
 
   it('shows success toast and calls close on success', async () => {
     render(<TeamMemberAddForm close={close} teamId={7} />);
     await user.type(screen.getByTestId(FIELD_EMAIL), TEST_EMAIL);
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Invite' }));
+    await user.click(screen.getByRole('button', { name: 'Invite' }));
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Invitation sent');
     });
-    expect(toast.success).toHaveBeenCalledWith('Invitation sent');
     expect(close).toHaveBeenCalledTimes(1);
   });
 
@@ -130,10 +129,8 @@ describe('TeamMemberAddForm', () => {
     });
     render(<TeamMemberAddForm close={close} teamId={7} />);
     await user.type(screen.getByTestId(FIELD_EMAIL), TEST_EMAIL);
-    await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Invite' }));
-    });
-    expect(screen.getByTestId('error-email')).toHaveTextContent(
+    await user.click(screen.getByRole('button', { name: 'Invite' }));
+    expect(await screen.findByTestId('error-email')).toHaveTextContent(
       'Email already invited',
     );
     expect(close).not.toHaveBeenCalled();

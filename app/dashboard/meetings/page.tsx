@@ -3,5 +3,5 @@ import { redirect } from 'next/navigation';
 import { ROUTES } from '@/shared/lib/routes';
 
 export default function MeetingsPage() {
-  redirect(ROUTES.DASHBOARD.MEETINGS_LIST);
+  redirect(ROUTES.DASHBOARD.MEETINGS_CALENDAR);
 }

@@ -24,7 +24,9 @@ jest.mock('sonner', () => {
 
 jest.mock('@/features/organization/api/organization', () => {
   return {
-    setActiveOrganization: jest.fn().mockResolvedValue({ ok: true }),
+    setActiveOrganization: jest.fn(() => {
+      return { ok: true };
+    }),
   };
 });
 

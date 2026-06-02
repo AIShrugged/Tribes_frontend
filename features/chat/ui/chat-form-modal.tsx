@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ import { Modal } from '@/shared/ui/modal/modal';
 
 import type { OrganizationProps } from '@/entities/organization';
 import type { Chat } from '@/features/chat/model/types';
+import type { UseFormSetError } from 'react-hook-form';
 
 // Create schema uses the same string type but title is optional (nullable on submit)
 const CreateChatFormSchema = z.object({
@@ -38,6 +39,74 @@ const EMPTY_VALUES: ChatFormValues = {
   title: '',
 };
 
+function getChatDefaultValues(chat?: Chat | null): ChatFormValues {
+  return chat ? { title: chat.title ?? '' } : EMPTY_VALUES;
+}
+
+function getChatFormSchema(isEdit: boolean) {
+  return isEdit ? UpdateChatSchema : CreateChatFormSchema;
+}
+
+function hasChatAssignedScope(chat?: Chat | null): boolean {
+  return (
+    (chat?.organization_id ?? null) !== null || (chat?.team_id ?? null) !== null
+  );
+}
+
+function saveChat(
+  chat: Chat | null | undefined,
+  organizationId: number,
+  values: ChatFormValues,
+) {
+  const payload = {
+    title: values.title.trim() || null,
+    organization_id: organizationId,
+  };
+
+  return chat ? updateChat(chat.id, payload) : createChat(payload);
+}
+
+function getSaveErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Failed to save chat';
+}
+
+function applyChatFieldErrors(
+  fieldErrors: Record<string, string> | undefined,
+  setError: UseFormSetError<ChatFormValues>,
+) {
+  if (!fieldErrors) return;
+
+  const titleError = fieldErrors.title;
+
+  if (titleError) {
+    setError('title', { message: titleError });
+  }
+}
+
+function getChatHelperText({
+  chat,
+  hasAssignedScope,
+  hasOrganizationContext,
+  isEdit,
+}: {
+  chat?: Chat | null;
+  hasAssignedScope: boolean;
+  hasOrganizationContext: boolean;
+  isEdit: boolean;
+}) {
+  if (isEdit && hasAssignedScope) {
+    return chat?.team_id
+      ? `This chat has a fixed scope: Org #${chat.organization_id} · Team #${chat.team_id}.`
+      : `This chat has a fixed scope: Org #${chat?.organization_id}.`;
+  }
+
+  return `Personal web chats are not permanently bound. They use the current ${
+    hasOrganizationContext
+      ? 'organization context selected in the app header.'
+      : 'user context.'
+  }`;
+}
+
 /**
  * ChatFormModal renders create/edit flow for personal web chats.
  * @param props - component props.
@@ -58,21 +127,13 @@ export function ChatFormModal({
 }: ChatFormModalProps) {
   const isEdit = Boolean(chat);
   const hasOrganizationContext = organizations.length > 0;
-  const hasAssignedScope =
-    (chat?.organization_id ?? null) !== null ||
-    (chat?.team_id ?? null) !== null;
-  const [isPending, startTransition] = useTransition();
+  const hasAssignedScope = hasChatAssignedScope(chat);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [rootError, setRootError] = useState('');
-  const defaultValues = useMemo<ChatFormValues>(() => {
-    if (!chat) {
-      return EMPTY_VALUES;
-    }
-
-    return {
-      title: chat.title ?? '',
-    };
+  const defaultValues = useMemo(() => {
+    return getChatDefaultValues(chat);
   }, [chat]);
-  const schema = isEdit ? UpdateChatSchema : CreateChatFormSchema;
+  const schema = getChatFormSchema(isEdit);
   const {
     register,
     watch,
@@ -100,56 +161,38 @@ export function ChatFormModal({
    * @param values - form values.
    * @returns Result.
    */
-  const onSubmit = (values: ChatFormValues) => {
+  const onSubmit = async (values: ChatFormValues) => {
     setRootError('');
+    setIsSubmitting(true);
 
-    startTransition(async () => {
-      try {
-        const payload = {
-          title: values.title.trim() || null,
-          organization_id: organizationId,
-        };
-        const result = chat
-          ? await updateChat(chat.id, payload)
-          : await createChat(payload);
+    try {
+      const result = await saveChat(chat, organizationId, values);
 
-        if (result.error) {
-          if (result.fieldErrors) {
-            for (const [field, message] of Object.entries(result.fieldErrors)) {
-              if (field === 'title') {
-                setError(field, { message });
-              }
-            }
-          }
+      if (result.error) {
+        applyChatFieldErrors(result.fieldErrors, setError);
+        setRootError(result.error);
 
-          setRootError(result.error);
-
-          return;
-        }
-
-        toast.success(isEdit ? 'Chat updated' : 'Chat created');
-        onSaved(result.data!, isEdit ? 'update' : 'create');
-        onClose();
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Failed to save chat';
-
-        setRootError(message);
-        toast.error(message);
+        return;
       }
-    });
-  };
-  let helperText = `Personal web chats are not permanently bound. They use the current ${
-    hasOrganizationContext
-      ? 'organization context selected in the app header.'
-      : 'user context.'
-  }`;
 
-  if (isEdit && hasAssignedScope) {
-    helperText = chat?.team_id
-      ? `This chat has a fixed scope: Org #${chat.organization_id} · Team #${chat.team_id}.`
-      : `This chat has a fixed scope: Org #${chat?.organization_id}.`;
-  }
+      toast.success(isEdit ? 'Chat updated' : 'Chat created');
+      onSaved(result.data!, isEdit ? 'update' : 'create');
+      onClose();
+    } catch (error) {
+      const message = getSaveErrorMessage(error);
+
+      setRootError(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const helperText = getChatHelperText({
+    chat,
+    hasAssignedScope,
+    hasOrganizationContext,
+    isEdit,
+  });
 
   return (
     <Modal
@@ -185,11 +228,11 @@ export function ChatFormModal({
             type='button'
             variant={BUTTON_VARIANT.secondary}
             onClick={onClose}
-            disabled={isPending}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
-          <Button type='submit' loading={isPending}>
+          <Button type='submit' loading={isSubmitting}>
             {isEdit ? 'Save changes' : 'Create chat'}
           </Button>
         </div>

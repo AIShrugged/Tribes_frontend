@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { attachCalendar } from '@/features/calendar/api/calendar';
+import { redirectToExternal } from '@/features/calendar/lib/navigation';
 
 import type { PropsWithChildren } from 'react';
 
@@ -26,7 +27,7 @@ export function AttachCalendarButton({
     setIsPending(true);
 
     try {
-      globalThis.location.href = await attachCalendar(organizationId);
+      redirectToExternal(await attachCalendar(organizationId));
       // On success: browser navigates away. isPending stays true intentionally —
       // the button stays disabled while the page unloads.
     } catch (error_) {

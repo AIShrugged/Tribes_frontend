@@ -36,14 +36,16 @@ async function AiPrepSection({ date }: { date?: string }) {
   if (briefing.events.length === 0) return null;
   return (
     <div className='flex flex-col gap-8'>
-      {briefing.events.map((event) => {return (
-        <AiPrepPanel
-          key={event.id}
-          event={event}
-          tasks={event.tasks}
-          carriedTasks={briefing.carried_tasks}
-        />
-      )})}
+      {briefing.events.map((event) => {
+        return (
+          <AiPrepPanel
+            key={event.id}
+            event={event}
+            tasks={event.tasks}
+            carriedTasks={briefing.carried_tasks}
+          />
+        );
+      })}
       <WaitingOnYou tasks={briefing.waiting_on_you} />
       <StaleItems tasks={briefing.stale} />
     </div>

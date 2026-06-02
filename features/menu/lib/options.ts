@@ -31,9 +31,10 @@ export function getMenuItems(): MenuProps[] {
     },
     {
       id: 'meetings',
-      label: 'Meetings',
+      label: 'Calendar',
       icon: 'calendar',
-      href: ROUTES.DASHBOARD.MEETINGS,
+      href: ROUTES.DASHBOARD.CALENDAR,
+      activeHref: ROUTES.DASHBOARD.MEETINGS,
       position: 2,
     },
     {
