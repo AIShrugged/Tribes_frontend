@@ -21,16 +21,17 @@ export default async function OnboardingPage() {
     redirect(ROUTES.AUTH.ORGANIZATION);
   }
 
+  const draftToRestore =
+    org.onboarded_at && initialDraft?.status === 'completed'
+      ? null
+      : initialDraft;
+
   return (
-    <div className='w-full'>
-      <div className='mb-4 text-sm text-muted-foreground'>
-        {getOnboardingStatusText(org.onboarded_at)}
-      </div>
-      <OnboardingWizard
-        orgId={org.id}
-        orgName={org.name}
-        initialDraft={initialDraft}
-      />
-    </div>
+    <OnboardingWizard
+      orgId={org.id}
+      orgName={org.name}
+      initialDraft={draftToRestore}
+      statusText={getOnboardingStatusText(org.onboarded_at)}
+    />
   );
 }

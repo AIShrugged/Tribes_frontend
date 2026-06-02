@@ -1,7 +1,8 @@
 'use client';
 
+import { Check, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useReducer, useRef, useState } from 'react';
+import { useReducer, useRef, useState, type PropsWithChildren } from 'react';
 import { toast } from 'sonner';
 
 import { ROUTES } from '@/shared/lib/routes';
@@ -32,6 +33,138 @@ interface StatusScreenProps {
   message: string;
   primaryAction: { label: string; onClick: () => void };
   secondaryAction: { label: string; onClick: () => void };
+}
+
+type ShellStep = 'input' | 'processing' | 'preview';
+
+const SHELL_STEPS: Array<{
+  id: ShellStep;
+  title: string;
+  hint: string;
+}> = [
+  {
+    id: 'input',
+    title: 'Describe your organization',
+    hint: 'A paragraph is enough.',
+  },
+  {
+    id: 'processing',
+    title: 'Review the AI draft',
+    hint: 'Goals, tasks and team — all editable.',
+  },
+  {
+    id: 'preview',
+    title: 'Launch your workspace',
+    hint: 'Everything lives in the issue tracker.',
+  },
+];
+
+function OnboardingShell({
+  children,
+  currentStep,
+  statusText,
+}: PropsWithChildren<{
+  currentStep: ShellStep;
+  statusText?: string;
+}>) {
+  const activeIndex = SHELL_STEPS.findIndex((step) => {
+    return step.id === currentStep;
+  });
+
+  return (
+    <div className='relative min-h-screen overflow-hidden bg-[#030407] text-foreground'>
+      <div
+        aria-hidden='true'
+        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,oklch(56%_0.205_271_/_0.36)_0%,transparent_35%),radial-gradient(circle_at_86%_94%,oklch(56%_0.205_271_/_0.22)_0%,transparent_34%)]'
+      />
+      <div
+        aria-hidden='true'
+        className='pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(oklch(22%_0.012_260_/_0.6)_1px,transparent_1px),linear-gradient(90deg,oklch(22%_0.012_260_/_0.6)_1px,transparent_1px)] [background-position:-1px_-1px] [background-size:56px_56px] [mask-image:linear-gradient(90deg,black_0%,black_78%,transparent_100%)]'
+      />
+
+      <div className='relative mx-auto grid min-h-screen w-full max-w-[1440px] items-center gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[360px_minmax(0,720px)] lg:gap-12 lg:px-12 lg:py-10 xl:grid-cols-[420px_minmax(0,760px)] xl:gap-14 xl:px-16'>
+        <aside className='flex flex-col gap-8 lg:min-h-[min(760px,calc(100vh-80px))] lg:py-4'>
+          <div className='inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.04em] text-muted-foreground'>
+            <span className='inline-flex h-8 w-8 items-center justify-center rounded-[var(--r-md)] bg-primary text-primary-foreground shadow-[0_12px_28px_-14px_var(--primary)]'>
+              <Shield className='h-4 w-4' />
+            </span>
+            TRIBES
+          </div>
+
+          <div className='flex flex-col gap-5'>
+            <h1 className='max-w-[10.5ch] text-[clamp(2.25rem,4vw,3rem)] font-semibold leading-[1.08] text-foreground'>
+              Let&apos;s get your workspace{' '}
+              <em className='font-serif text-[0.92em] font-normal italic text-[var(--primary-300)]'>
+                ready
+              </em>
+              .
+            </h1>
+            <p className='max-w-[340px] text-[clamp(1rem,1.7vw,1.25rem)] leading-[1.5] text-muted-foreground'>
+              Tell us a bit about what you do — we&apos;ll draft your goals,
+              tasks and team in seconds.
+            </p>
+          </div>
+
+          <ol className='mt-1 flex flex-col gap-5'>
+            {SHELL_STEPS.map((step, index) => {
+              const isActive = index === activeIndex;
+              const isDone = index < activeIndex;
+
+              return (
+                <li
+                  key={step.id}
+                  className='grid grid-cols-[30px_1fr] items-start gap-3'
+                >
+                  <span
+                    className={[
+                      'inline-flex h-7 w-7 items-center justify-center rounded-full border text-sm font-semibold',
+                      isDone
+                        ? 'border-transparent bg-[var(--success-500)] text-white'
+                        : '',
+                      isActive
+                        ? 'border-transparent bg-primary text-primary-foreground shadow-[0_0_0_5px_color-mix(in_oklab,var(--primary)_22%,transparent)]'
+                        : '',
+                      !isDone && !isActive
+                        ? 'border-border bg-[#07090d] text-muted-foreground'
+                        : '',
+                    ].join(' ')}
+                  >
+                    {isDone ? <Check className='h-3.5 w-3.5' /> : index + 1}
+                  </span>
+                  <span className='flex flex-col gap-0.5'>
+                    <span
+                      className={[
+                        'text-base',
+                        isActive || isDone
+                          ? 'font-medium text-foreground'
+                          : 'font-normal text-muted-foreground',
+                      ].join(' ')}
+                    >
+                      {step.title}
+                    </span>
+                    <span className='text-xs text-[var(--neutral-500)]'>
+                      {step.hint}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+
+          <div className='mt-auto inline-flex items-center gap-2 text-xs text-[var(--neutral-500)]'>
+            <span className='h-2 w-2 rounded-full bg-[var(--success-500)] shadow-[0_0_0_4px_color-mix(in_oklab,var(--success-500)_18%,transparent)]' />
+            {currentStep === 'input'
+              ? 'Draft auto-saved'
+              : (statusText ?? 'Draft auto-saved')}
+          </div>
+        </aside>
+
+        <main className='w-full min-w-0 rounded-[20px] border border-border bg-[#07090d]/90 p-5 shadow-[0_24px_80px_-40px_rgb(0_0_0_/_0.9)] backdrop-blur-2xl sm:p-7 lg:p-8'>
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }
 
 function WizardStatusScreen({
@@ -70,6 +203,7 @@ interface Props {
   orgId: number;
   orgName: string;
   initialDraft: OnboardingDraftResponse | null;
+  statusText?: string;
   redirectAfterSkip?: string;
   redirectAfterAccept?: string;
 }
@@ -78,6 +212,7 @@ export function OnboardingWizard({
   orgId,
   orgName,
   initialDraft,
+  statusText,
   redirectAfterSkip,
   redirectAfterAccept,
 }: Props) {
@@ -217,75 +352,83 @@ export function OnboardingWizard({
 
   if (state.step === 'processing') {
     return (
-      <OnboardingProcessingStep
-        onCancel={async () => {
-          dispatch({ type: 'CANCEL_GENERATION' });
-          await handleSkip();
-        }}
-      />
+      <OnboardingShell currentStep='processing' statusText={statusText}>
+        <OnboardingProcessingStep
+          onCancel={async () => {
+            dispatch({ type: 'CANCEL_GENERATION' });
+            await handleSkip();
+          }}
+        />
+      </OnboardingShell>
     );
   }
 
   if (state.step === 'timeout') {
     return (
-      <WizardStatusScreen
-        title='Generation is taking longer than expected'
-        message='The AI is still working. You can wait or come back later — your draft will be saved automatically.'
-        primaryAction={{
-          label: 'Keep waiting',
-          onClick: () => {
-            return dispatch({ type: 'GENERATE_STARTED' });
-          },
-        }}
-        secondaryAction={{ label: 'Go to dashboard', onClick: handleSkip }}
-      />
+      <OnboardingShell currentStep='processing' statusText={statusText}>
+        <WizardStatusScreen
+          title='Generation is taking longer than expected'
+          message='The AI is still working. You can wait or come back later — your draft will be saved automatically.'
+          primaryAction={{
+            label: 'Keep waiting',
+            onClick: () => {
+              return dispatch({ type: 'GENERATE_STARTED' });
+            },
+          }}
+          secondaryAction={{ label: 'Go to dashboard', onClick: handleSkip }}
+        />
+      </OnboardingShell>
     );
   }
 
   if (state.step === 'error') {
     return (
-      <WizardStatusScreen
-        title='Something went wrong'
-        message={state.message}
-        primaryAction={{
-          label: 'Try again',
-          onClick: () => {
-            return dispatch({ type: 'BACK_TO_INPUT' });
-          },
-        }}
-        secondaryAction={{ label: 'Skip for now', onClick: handleSkip }}
-      />
+      <OnboardingShell currentStep='input' statusText={statusText}>
+        <WizardStatusScreen
+          title='Something went wrong'
+          message={state.message}
+          primaryAction={{
+            label: 'Try again',
+            onClick: () => {
+              return dispatch({ type: 'BACK_TO_INPUT' });
+            },
+          }}
+          secondaryAction={{ label: 'Skip for now', onClick: handleSkip }}
+        />
+      </OnboardingShell>
     );
   }
 
   if (state.step === 'preview') {
     return (
-      <OnboardingPreviewStep
-        data={state.previewData}
-        isSubmitting={isSubmitting}
-        onOrgDescriptionChange={(value) => {
-          return dispatch({ type: 'ORG_DESC_CHANGE', value });
-        }}
-        onGoalUpdate={(index, goal) => {
-          return dispatch({ type: 'GOAL_UPDATE', index, goal });
-        }}
-        onGoalRemove={(index) => {
-          return dispatch({ type: 'GOAL_REMOVE', index });
-        }}
-        onMemberUpdate={(id, member) => {
-          return dispatch({ type: 'MEMBER_UPDATE', id, member });
-        }}
-        onMemberRemove={(id) => {
-          return dispatch({ type: 'MEMBER_REMOVE', id });
-        }}
-        onMemberAdd={() => {
-          return dispatch({ type: 'MEMBER_ADD' });
-        }}
-        onAccept={handleAccept}
-        onBack={() => {
-          return dispatch({ type: 'BACK_TO_INPUT' });
-        }}
-      />
+      <OnboardingShell currentStep='preview' statusText={statusText}>
+        <OnboardingPreviewStep
+          data={state.previewData}
+          isSubmitting={isSubmitting}
+          onOrgDescriptionChange={(value) => {
+            return dispatch({ type: 'ORG_DESC_CHANGE', value });
+          }}
+          onGoalUpdate={(index, goal) => {
+            return dispatch({ type: 'GOAL_UPDATE', index, goal });
+          }}
+          onGoalRemove={(index) => {
+            return dispatch({ type: 'GOAL_REMOVE', index });
+          }}
+          onMemberUpdate={(id, member) => {
+            return dispatch({ type: 'MEMBER_UPDATE', id, member });
+          }}
+          onMemberRemove={(id) => {
+            return dispatch({ type: 'MEMBER_REMOVE', id });
+          }}
+          onMemberAdd={() => {
+            return dispatch({ type: 'MEMBER_ADD' });
+          }}
+          onAccept={handleAccept}
+          onBack={() => {
+            return dispatch({ type: 'BACK_TO_INPUT' });
+          }}
+        />
+      </OnboardingShell>
     );
   }
 
@@ -294,37 +437,39 @@ export function OnboardingWizard({
     state.step === 'needs_info' ? state.needsInfoData : undefined;
 
   return (
-    <OnboardingInputStep
-      state={inputState}
-      needsInfoData={needsInfoData}
-      isSubmitting={isSubmitting}
-      hasFilePending={hasFilePending}
-      template={inputState.template}
-      organizationId={orgId}
-      onTemplateChange={(value) => {
-        return dispatch({ type: 'SET_TEMPLATE', value });
-      }}
-      onDescriptionChange={(value) => {
-        return dispatch({ type: 'SET_DESCRIPTION', value });
-      }}
-      onLinkAdd={() => {
-        return dispatch({ type: 'LINK_ADD' });
-      }}
-      onLinkChange={(index, value) => {
-        return dispatch({ type: 'LINK_CHANGE', index, value });
-      }}
-      onLinkRemove={(index) => {
-        return dispatch({ type: 'LINK_REMOVE', index });
-      }}
-      onUploaded={(attachment) => {
-        return dispatch({ type: 'ATTACHMENT_UPLOADED', attachment });
-      }}
-      onDeleted={(id) => {
-        return dispatch({ type: 'ATTACHMENT_DELETED', id });
-      }}
-      onPendingChange={setHasFilePending}
-      onSubmit={handleGenerate}
-      onSkip={handleSkip}
-    />
+    <OnboardingShell currentStep='input' statusText={statusText}>
+      <OnboardingInputStep
+        state={inputState}
+        needsInfoData={needsInfoData}
+        isSubmitting={isSubmitting}
+        hasFilePending={hasFilePending}
+        template={inputState.template}
+        organizationId={orgId}
+        onTemplateChange={(value) => {
+          return dispatch({ type: 'SET_TEMPLATE', value });
+        }}
+        onDescriptionChange={(value) => {
+          return dispatch({ type: 'SET_DESCRIPTION', value });
+        }}
+        onLinkAdd={() => {
+          return dispatch({ type: 'LINK_ADD' });
+        }}
+        onLinkChange={(index, value) => {
+          return dispatch({ type: 'LINK_CHANGE', index, value });
+        }}
+        onLinkRemove={(index) => {
+          return dispatch({ type: 'LINK_REMOVE', index });
+        }}
+        onUploaded={(attachment) => {
+          return dispatch({ type: 'ATTACHMENT_UPLOADED', attachment });
+        }}
+        onDeleted={(id) => {
+          return dispatch({ type: 'ATTACHMENT_DELETED', id });
+        }}
+        onPendingChange={setHasFilePending}
+        onSubmit={handleGenerate}
+        onSkip={handleSkip}
+      />
+    </OnboardingShell>
   );
 }

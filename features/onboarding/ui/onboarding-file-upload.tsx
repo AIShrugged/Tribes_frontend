@@ -1,6 +1,6 @@
 'use client';
 
-import { Paperclip, Trash2, Upload } from 'lucide-react';
+import { FileText, Trash2, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -107,84 +107,86 @@ export function OnboardingFileUpload({
   }
 
   return (
-    <div className='flex flex-col gap-3'>
-      <div className='flex items-center justify-between'>
-        <span className='text-sm font-medium text-foreground'>
-          Attachments{' '}
-          {attachments.length > 0 && (
-            <span className='text-muted-foreground'>
-              ({attachments.length})
-            </span>
-          )}
+    <div className='flex flex-col gap-3 border-t border-border pt-3'>
+      <label
+        className={[
+          'relative flex cursor-pointer items-center gap-3 rounded-[var(--r-lg)]',
+          'border border-dashed border-[var(--neutral-700)] bg-[color-mix(in_oklab,var(--primary)_4%,var(--card))] p-4',
+          'text-left transition-colors hover:border-primary hover:bg-[color-mix(in_oklab,var(--primary)_8%,var(--card))]',
+          isBusy ? 'pointer-events-none opacity-60' : '',
+        ].join(' ')}
+      >
+        <span className='inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--r-md)] bg-[color-mix(in_oklab,var(--primary)_14%,transparent)] text-[var(--primary-300)]'>
+          <Upload className='h-4 w-4' />
         </span>
-        <label
-          className={[
-            'inline-flex cursor-pointer items-center gap-2 rounded-[var(--radius-button)]',
-            'border border-input bg-background px-3 py-1.5 text-sm font-medium',
-            'text-foreground hover:bg-accent transition-colors',
-            isBusy ? 'pointer-events-none opacity-50' : '',
-          ].join(' ')}
-        >
-          <Upload className='h-3.5 w-3.5' />
-          {isBusy ? getUploadLabel(pendingOps.size) : 'Add files'}
-          <input
-            type='file'
-            className='hidden'
-            accept='.pdf,.docx,.md,.txt'
-            multiple
-            disabled={isBusy}
-            onChange={(event) => {
-              const files = [...(event.target.files ?? [])];
+        <span className='flex min-w-0 flex-1 flex-col gap-0.5'>
+          <span className='text-sm font-medium text-foreground'>
+            {isBusy ? getUploadLabel(pendingOps.size) : 'Drop files or browse'}
+          </span>
+          <span className='text-xs text-muted-foreground'>
+            PDF, DOCX, MD or TXT up to {formatSize(MAX_SIZE_BYTES)}
+          </span>
+        </span>
+        <span className='hidden rounded-[var(--r-sm)] border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground sm:inline-flex'>
+          Add files
+        </span>
+        <input
+          type='file'
+          className='absolute inset-0 cursor-pointer opacity-0'
+          accept='.pdf,.docx,.md,.txt'
+          multiple
+          disabled={isBusy}
+          onChange={(event) => {
+            const files = [...(event.target.files ?? [])];
 
-              event.target.value = '';
-              if (files.length === 0) return;
+            event.target.value = '';
+            if (files.length === 0) return;
 
-              for (const file of files) {
-                if (file.size > MAX_SIZE_BYTES) {
-                  toast.error(
-                    `"${file.name}" exceeds ${formatSize(MAX_SIZE_BYTES)} limit`,
-                  );
-                  continue;
-                }
-
-                const opId = crypto.randomUUID();
-                const originalName = file.name;
-                const originalSize = file.size;
-
-                addOp(opId);
-                uploadPendingAttachment(file, uploadToken, organizationId)
-                  .then((result) => {
-                    if (!isMountedRef.current) return;
-                    if (result.error) {
-                      toast.error(result.error);
-                      return;
-                    }
-                    if (result.data) {
-                      const id = result.data.id;
-
-                      setFileNames((prev) => {
-                        return new Map(prev).set(id, originalName);
-                      });
-                      setFileSizes((prev) => {
-                        return new Map(prev).set(id, originalSize);
-                      });
-                      onUploaded(result.data);
-                    }
-                  })
-                  .catch(() => {
-                    if (!isMountedRef.current) return;
-                    toast.error(
-                      `Failed to upload "${originalName}". Please try again.`,
-                    );
-                  })
-                  .finally(() => {
-                    removeOp(opId);
-                  });
+            for (const file of files) {
+              if (file.size > MAX_SIZE_BYTES) {
+                toast.error(
+                  `"${file.name}" exceeds ${formatSize(MAX_SIZE_BYTES)} limit`,
+                );
+                continue;
               }
-            }}
-          />
-        </label>
-      </div>
+
+              const opId = crypto.randomUUID();
+              const originalName = file.name;
+              const originalSize = file.size;
+
+              addOp(opId);
+              uploadPendingAttachment(file, uploadToken, organizationId)
+                .then((result) => {
+                  if (!isMountedRef.current) return;
+                  if (result.error) {
+                    toast.error(result.error);
+                    return;
+                  }
+                  if (result.data) {
+                    const id = result.data.id;
+
+                    setFileNames((prev) => {
+                      return new Map(prev).set(id, originalName);
+                    });
+                    setFileSizes((prev) => {
+                      return new Map(prev).set(id, originalSize);
+                    });
+                    onUploaded(result.data);
+                  }
+                })
+                .catch(() => {
+                  if (!isMountedRef.current) return;
+                  toast.error(
+                    `Failed to upload "${originalName}". Please try again.`,
+                  );
+                })
+                .finally(() => {
+                  removeOp(opId);
+                });
+            }
+          }}
+        />
+      </label>
 
       {attachments.length > 0 && (
         <ul className='flex flex-col gap-2'>
@@ -194,15 +196,17 @@ export function OnboardingFileUpload({
             return (
               <li
                 key={attachment.id}
-                className='flex min-w-0 items-center gap-3 rounded-[var(--radius-card)] border border-border bg-background/30 px-3 py-2'
+                className='flex min-w-0 items-center gap-3 rounded-[var(--r-md)] border border-input bg-card px-3 py-2'
               >
-                <Paperclip className='h-4 w-4 shrink-0 text-muted-foreground' />
-                <div className='flex min-w-0 flex-1 items-center gap-2'>
-                  <span className='truncate text-sm text-foreground'>
+                <span className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--r-sm)] bg-secondary text-muted-foreground'>
+                  <FileText className='h-4 w-4' />
+                </span>
+                <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
+                  <span className='truncate text-sm font-medium text-foreground'>
                     {displayName}
                   </span>
                   {fileSizes.has(attachment.id) && (
-                    <span className='shrink-0 text-xs text-muted-foreground'>
+                    <span className='inline-flex items-center gap-1.5 text-[var(--fs-xxs)] text-[var(--neutral-500)] before:h-1 before:w-1 before:rounded-full before:bg-[var(--success-500)]'>
                       {formatSize(fileSizes.get(attachment.id)!)}
                     </span>
                   )}

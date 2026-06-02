@@ -121,7 +121,7 @@ export default async function Layout({ children }: PropsWithChildren) {
             <div className='flex items-center gap-2 flex-shrink-0'>
               {onboardingCta && (
                 <Link
-                  href={ROUTES.DASHBOARD.ONBOARDING}
+                  href={ROUTES.ONBOARDING}
                   title={onboardingCta.status}
                   className='inline-flex items-center gap-1.5 rounded-[var(--radius-button)] border border-violet-500/50 bg-violet-500/10 px-2.5 py-1 text-xs font-medium text-violet-400 hover:bg-violet-500/20 transition-colors flex-shrink-0'
                 >
