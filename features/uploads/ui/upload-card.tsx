@@ -27,7 +27,11 @@ export function UploadCard({ upload }: { upload: UploadLogItem }) {
     router.push(ROUTES.DASHBOARD.UPLOAD_DETAIL(upload.type, upload.id));
   };
 
-  const meta = [upload.uploader_name, upload.team_name, formatDateTime(upload.created_at)]
+  const meta = [
+    upload.uploader_name,
+    upload.team_name,
+    formatDateTime(upload.created_at),
+  ]
     .filter(Boolean)
     .join(' · ');
 
@@ -71,7 +75,8 @@ export function UploadCard({ upload }: { upload: UploadLogItem }) {
 
       {upload.type === 'task_data' && upload.status === 'done' && (
         <p className='mt-2 text-sm text-muted-foreground'>
-          {upload.issues_created ?? 0} created · {upload.issues_updated ?? 0} updated
+          {upload.issues_created ?? 0} created · {upload.issues_updated ?? 0}{' '}
+          updated
         </p>
       )}
     </article>

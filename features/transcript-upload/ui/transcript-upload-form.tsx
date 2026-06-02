@@ -141,7 +141,10 @@ export function TranscriptUploadForm({
   };
 
   const handleUploadError = (
-    result: Extract<Awaited<ReturnType<typeof uploadTranscript>>, { error: string }>,
+    result: Extract<
+      Awaited<ReturnType<typeof uploadTranscript>>,
+      { error: string }
+    >,
   ) => {
     const userMessage = getUploadErrorMessage(result.errorCode, result.error);
     if (result.fieldErrors) applyFieldErrors(result.fieldErrors, setError);

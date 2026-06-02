@@ -28,7 +28,9 @@ export async function getUploads(
   if (params.type) query.set('type', params.type);
   if (params.status) query.set('status', params.status);
 
-  return httpClientList<UploadLogItem>(`${API_URL}/uploads?${query.toString()}`);
+  return httpClientList<UploadLogItem>(
+    `${API_URL}/uploads?${query.toString()}`,
+  );
 }
 
 /** Per-upload detail (discriminated by type). */

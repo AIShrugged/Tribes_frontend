@@ -100,7 +100,9 @@ export function UploadsListClient({
 
       <div className='flex flex-col gap-2'>
         {items.map((upload) => {
-          return <UploadCard key={`${upload.type}-${upload.id}`} upload={upload} />;
+          return (
+            <UploadCard key={`${upload.type}-${upload.id}`} upload={upload} />
+          );
         })}
       </div>
 

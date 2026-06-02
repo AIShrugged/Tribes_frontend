@@ -70,7 +70,10 @@ export function UploadDetailView({
     const tick = async () => {
       pollCount.current += 1;
       try {
-        const fresh = await getUploadDetail(initialDetail.type, initialDetail.id);
+        const fresh = await getUploadDetail(
+          initialDetail.type,
+          initialDetail.id,
+        );
         setDetail(fresh);
         if (!needsPoll(fresh) || pollCount.current >= MAX_POLLS) stop();
       } catch {
