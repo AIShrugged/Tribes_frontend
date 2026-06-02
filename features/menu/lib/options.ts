@@ -13,6 +13,7 @@ import {
   Clock,
   Users,
   CheckSquare,
+  Upload,
 } from 'lucide-react';
 
 import { ROUTES } from '@/shared/lib/routes';
@@ -51,11 +52,11 @@ export function getMenuItems(): MenuProps[] {
       position: 3,
     },
     {
-      id: 'teams',
-      label: 'Teams',
-      icon: 'teams',
-      href: ROUTES.DASHBOARD.TEAMS,
-      position: 5,
+      id: 'uploads',
+      label: 'Uploads',
+      icon: 'upload',
+      href: ROUTES.DASHBOARD.UPLOADS,
+      position: 4,
     },
     {
       id: 'telegram',
@@ -94,4 +95,5 @@ export const ICONS_MAP = {
   clock: Clock,
   users: Users,
   checkSquare: CheckSquare,
+  upload: Upload,
 } as const;

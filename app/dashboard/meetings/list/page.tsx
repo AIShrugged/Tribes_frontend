@@ -12,7 +12,6 @@ import {
 import { MeetingsListClient } from '@/features/meetings/ui/meetings-list-client';
 import { MeetingsListFiltersBar } from '@/features/meetings/ui/meetings-list-filters-bar';
 import { getOrganizations } from '@/features/organization';
-import { TranscriptUploadButton } from '@/features/transcript-upload';
 import { formatDateLabel, toDateParam } from '@/shared/lib/date-nav';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { Card } from '@/shared/ui/card';
@@ -58,7 +57,6 @@ export default async function MeetingsListPage({
           organizations={organizations}
         />
       </Suspense>
-      <TranscriptUploadButton organizationId={String(cookieOrgId)} />
     </div>
   );
 

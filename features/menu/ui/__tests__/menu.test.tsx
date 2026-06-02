@@ -141,7 +141,11 @@ describe('MenuSidebar', () => {
     render(await MenuSidebar());
     expect(screen.getByText('Calendar')).toBeInTheDocument();
     expect(screen.getByText('Tasks')).toBeInTheDocument();
-    expect(screen.getByText('Teams')).toBeInTheDocument();
+  });
+
+  it('does not render a Teams item', async () => {
+    render(await MenuSidebar());
+    expect(screen.queryByText('Teams')).not.toBeInTheDocument();
   });
 });
 
@@ -154,6 +158,6 @@ describe('getMenuItems', () => {
 
     expect(labels).toContain('Calendar');
     expect(labels).toContain('Tasks');
-    expect(labels).toContain('Teams');
+    expect(labels).not.toContain('Teams');
   });
 });

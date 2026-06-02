@@ -23,13 +23,12 @@ describe('getMenuItems', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('includes a Teams item', () => {
+  it('does not include a Teams item', () => {
     const teamsItem = getMenuItems().find((item) => {
       return item.id === 'teams';
     });
 
-    expect(teamsItem).toBeDefined();
-    expect(teamsItem?.label).toBe('Teams');
+    expect(teamsItem).toBeUndefined();
   });
 
   it('includes a Tasks item', () => {

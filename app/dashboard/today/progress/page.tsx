@@ -22,7 +22,10 @@ const VALID_PERIODS = new Set<IssueHistoryPeriod>(['day', 'week', 'month']);
 
 async function AiNudgeSection({ date }: { date?: string }) {
   const briefing = await getTodayBriefing(date);
-  if (briefing.events.length === 0 || !briefing.nudge) return null;
+  // The nudge is built from tasks (overdue / stale / assigned) as well as
+  // meetings, so it stays useful on days with no meetings — only require that
+  // a nudge was actually generated (cached by the daily cron).
+  if (!briefing.nudge) return null;
   return (
     <AiNudge key={briefing.date} text={briefing.nudge} date={briefing.date} />
   );

@@ -4,7 +4,10 @@ import { Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
-import { getDecisions } from '@/features/decisions/api/decisions';
+import {
+  getDecisions,
+  getOrganizationDecisions,
+} from '@/features/decisions/api/decisions';
 import { AddDecisionModal } from '@/features/decisions/ui/add-decision-modal';
 import { DecisionDetailModal } from '@/features/decisions/ui/decision-detail-modal';
 import { DecisionsTable } from '@/features/decisions/ui/decisions-table';
@@ -21,13 +24,26 @@ import type {
 
 const PAGE_SIZE = 20;
 
+interface DecisionsPageProps {
+  /** Team scope — fetches /teams/{teamId}/decisions. */
+  teamId?: number;
+  /** Organization scope — fetches /organizations/{organizationId}/decisions. */
+  organizationId?: number;
+  /**
+   * Teams a new decision can be attached to. In team scope this is implied
+   * from teamId; in org scope it must be provided so the create modal can
+   * offer a team picker (skipped automatically when there is a single team).
+   */
+  teams?: { id: number; name: string }[];
+  sourceTypeFilter?: DecisionSourceType | null;
+}
+
 export function DecisionsPage({
   teamId,
+  organizationId,
+  teams,
   sourceTypeFilter,
-}: {
-  teamId: number;
-  sourceTypeFilter?: DecisionSourceType | null;
-}) {
+}: DecisionsPageProps) {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,13 +63,27 @@ export function DecisionsPage({
     search: debouncedSearch || null,
   };
 
+  // Teams offered by the create modal. Team scope implies a single team;
+  // org scope passes the organization's teams (picker shown when > 1).
+  const modalTeams =
+    teams ?? (teamId === undefined ? [] : [{ id: teamId, name: '' }]);
+
   const loadGenRef = useRef(0);
+
+  const loadDecisions = useCallback(
+    (offset: number) => {
+      return organizationId === undefined
+        ? getDecisions(teamId as number, filters, offset, PAGE_SIZE)
+        : getOrganizationDecisions(organizationId, filters, offset, PAGE_SIZE);
+    },
+    [organizationId, teamId, debouncedSearch, sourceTypeFilter],
+  );
 
   const loadInitial = useCallback(async () => {
     const gen = ++loadGenRef.current;
     setIsLoading(true);
     try {
-      const result = await getDecisions(teamId, filters, 0, PAGE_SIZE);
+      const result = await loadDecisions(0);
       if (gen !== loadGenRef.current) return;
       setDecisions(result.data ?? []);
       setTotalDecisions(result.totalCount);
@@ -63,7 +93,7 @@ export function DecisionsPage({
     } finally {
       if (gen === loadGenRef.current) setIsLoading(false);
     }
-  }, [teamId, debouncedSearch, sourceTypeFilter]);
+  }, [loadDecisions]);
 
   useEffect(() => {
     void loadInitial();
@@ -85,12 +115,7 @@ export function DecisionsPage({
 
     startLoadingMore(async () => {
       try {
-        const result = await getDecisions(
-          teamId,
-          filters,
-          decisions.length,
-          PAGE_SIZE,
-        );
+        const result = await loadDecisions(decisions.length);
         setDecisions((prev) => {
           return [...prev, ...(result.data ?? [])];
         });
@@ -98,14 +123,7 @@ export function DecisionsPage({
         toast.error('Failed to load more decisions');
       }
     });
-  }, [
-    teamId,
-    decisions.length,
-    hasMoreDecisions,
-    isLoadingMore,
-    debouncedSearch,
-    sourceTypeFilter,
-  ]);
+  }, [loadDecisions, decisions.length, hasMoreDecisions, isLoadingMore]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -136,18 +154,20 @@ export function DecisionsPage({
         label='Filters'
         icon={<SlidersHorizontal className='h-3.5 w-3.5' />}
         extraContent={
-          <div className='flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between'>
-            <Button
-              variant={BUTTON_VARIANT.primary}
-              onClick={() => {
-                return setIsModalOpen(true);
-              }}
-              className='flex items-center gap-1.5'
-            >
-              <Plus className='w-4 h-4' />
-              Add decision
-            </Button>
-          </div>
+          modalTeams.length > 0 ? (
+            <div className='flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between'>
+              <Button
+                variant={BUTTON_VARIANT.primary}
+                onClick={() => {
+                  return setIsModalOpen(true);
+                }}
+                className='flex items-center gap-1.5'
+              >
+                <Plus className='w-4 h-4' />
+                Add decision
+              </Button>
+            </div>
+          ) : undefined
         }
       >
         <div className='relative mb-2'>
@@ -207,7 +227,7 @@ export function DecisionsPage({
       )}
 
       <AddDecisionModal
-        teamId={teamId}
+        teams={modalTeams}
         isOpen={isModalOpen}
         onClose={() => {
           return setIsModalOpen(false);
