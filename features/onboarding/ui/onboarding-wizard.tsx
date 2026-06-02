@@ -2,13 +2,7 @@
 
 import { Check, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import {
-  useReducer,
-  useRef,
-  useState,
-  type CSSProperties,
-  type PropsWithChildren,
-} from 'react';
+import { useReducer, useRef, useState, type PropsWithChildren } from 'react';
 import { toast } from 'sonner';
 
 import { ROUTES } from '@/shared/lib/routes';
@@ -65,24 +59,6 @@ const SHELL_STEPS: Array<{
   },
 ];
 
-const DARK_ONBOARDING_THEME = {
-  '--background': 'var(--neutral-1000)',
-  '--foreground': 'var(--neutral-100)',
-  '--card': 'var(--neutral-900)',
-  '--card-foreground': 'var(--neutral-100)',
-  '--surface': 'var(--neutral-900)',
-  '--surface-2': 'var(--neutral-850)',
-  '--surface-3': 'var(--neutral-800)',
-  '--muted-foreground': 'var(--neutral-400)',
-  '--secondary': 'var(--neutral-850)',
-  '--secondary-foreground': 'var(--neutral-300)',
-  '--border': 'oklch(24% 0.01 260)',
-  '--input': 'oklch(24% 0.01 260)',
-  '--ring': 'var(--primary-400)',
-  '--primary': 'var(--primary-500)',
-  '--primary-foreground': 'var(--neutral-0)',
-} as CSSProperties;
-
 function OnboardingShell({
   children,
   currentStep,
@@ -96,17 +72,14 @@ function OnboardingShell({
   });
 
   return (
-    <div
-      className='relative min-h-screen overflow-hidden bg-[#030407] text-foreground'
-      style={DARK_ONBOARDING_THEME}
-    >
+    <div className='relative min-h-screen overflow-hidden bg-background text-foreground'>
       <div
         aria-hidden='true'
-        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,oklch(56%_0.205_271_/_0.36)_0%,transparent_35%),radial-gradient(circle_at_86%_94%,oklch(56%_0.205_271_/_0.22)_0%,transparent_34%)]'
+        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,color-mix(in_oklab,var(--primary)_24%,transparent)_0%,transparent_35%),radial-gradient(circle_at_86%_94%,color-mix(in_oklab,var(--primary)_14%,transparent)_0%,transparent_34%)]'
       />
       <div
         aria-hidden='true'
-        className='pointer-events-none absolute inset-0 opacity-35 [background-image:linear-gradient(oklch(22%_0.012_260_/_0.6)_1px,transparent_1px),linear-gradient(90deg,oklch(22%_0.012_260_/_0.6)_1px,transparent_1px)] [background-position:-1px_-1px] [background-size:56px_56px] [mask-image:linear-gradient(90deg,black_0%,black_78%,transparent_100%)]'
+        className='pointer-events-none absolute inset-0 opacity-45 [background-image:linear-gradient(color-mix(in_oklab,var(--border)_70%,transparent)_1px,transparent_1px),linear-gradient(90deg,color-mix(in_oklab,var(--border)_70%,transparent)_1px,transparent_1px)] [background-position:-1px_-1px] [background-size:56px_56px] [mask-image:linear-gradient(90deg,black_0%,black_78%,transparent_100%)]'
       />
 
       <div className='relative mx-auto grid min-h-screen w-full max-w-[1440px] items-center gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[360px_minmax(0,720px)] lg:gap-12 lg:px-12 lg:py-10 xl:grid-cols-[420px_minmax(0,760px)] xl:gap-14 xl:px-16'>
@@ -152,7 +125,7 @@ function OnboardingShell({
                         ? 'border-transparent bg-primary text-primary-foreground shadow-[0_0_0_5px_color-mix(in_oklab,var(--primary)_22%,transparent)]'
                         : '',
                       !isDone && !isActive
-                        ? 'border-border bg-[#07090d] text-muted-foreground'
+                        ? 'border-border bg-card text-muted-foreground'
                         : '',
                     ].join(' ')}
                   >
@@ -186,7 +159,7 @@ function OnboardingShell({
           </div>
         </aside>
 
-        <main className='w-full min-w-0 rounded-[20px] border border-border bg-[#07090d]/90 p-5 shadow-[0_24px_80px_-40px_rgb(0_0_0_/_0.9)] backdrop-blur-2xl sm:p-7 lg:p-8'>
+        <main className='w-full min-w-0 rounded-[20px] border border-border bg-card/90 p-5 shadow-[var(--shadow-lg)] backdrop-blur-2xl sm:p-7 lg:p-8'>
           {children}
         </main>
       </div>

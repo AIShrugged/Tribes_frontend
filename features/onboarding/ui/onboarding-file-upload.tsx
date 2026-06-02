@@ -111,7 +111,7 @@ export function OnboardingFileUpload({
       <label
         className={[
           'relative flex cursor-pointer items-center gap-3 rounded-[var(--r-lg)]',
-          'border border-dashed border-[var(--neutral-700)] bg-[color-mix(in_oklab,var(--primary)_4%,var(--card))] p-4',
+          'border border-dashed border-border bg-[color-mix(in_oklab,var(--primary)_4%,var(--card))] p-4',
           'text-left transition-colors hover:border-primary hover:bg-[color-mix(in_oklab,var(--primary)_8%,var(--card))]',
           isBusy ? 'pointer-events-none opacity-60' : '',
         ].join(' ')}
