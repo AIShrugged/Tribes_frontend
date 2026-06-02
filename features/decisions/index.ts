@@ -1,3 +1,4 @@
+export { DecisionsPage } from './ui/decisions-page';
 export type {
   Decision,
   DecisionCreateDTO,

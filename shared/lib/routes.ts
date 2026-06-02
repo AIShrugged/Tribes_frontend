@@ -14,6 +14,7 @@ export const ROUTES = {
     TODAY_TASKS: '/dashboard/today/tasks',
     TODAY_ACTIVITY: '/dashboard/today/activity',
     TODAY_PROGRESS: '/dashboard/today/progress',
+    TODAY_DECISIONS: '/dashboard/today/decisions',
     MEETINGS: '/dashboard/meetings',
     TASKS: '/dashboard/tasks',
     CALENDAR: '/dashboard/calendar',
@@ -71,6 +72,16 @@ export const ROUTES = {
     AGENT_PROMPTS: '/dashboard/agents/prompts',
     AGENT_PROMPT_EDIT: (id: number) => {
       return `/dashboard/agents/prompts/${id}`;
+    },
+    UPLOADS: '/dashboard/uploads',
+    UPLOADS_TRANSCRIPTS: '/dashboard/uploads/transcripts',
+    UPLOADS_TASKS: '/dashboard/uploads/tasks',
+    UPLOADS_LOG: '/dashboard/uploads/log',
+    UPLOAD_DETAIL: (type: 'transcript' | 'task_data', id: string | number) => {
+      return `/dashboard/uploads/${type}/${id}`;
+    },
+    ISSUES_DETAIL: (id: string | number) => {
+      return `/dashboard/issues/${id}`;
     },
   },
 } as const;

@@ -37,6 +37,29 @@ export async function getDecisions(
   );
 }
 
+export async function getOrganizationDecisions(
+  organizationId: number,
+  filters?: DecisionFilters,
+  offset = 0,
+  limit = 30,
+) {
+  const params = new URLSearchParams();
+  params.set('offset', String(offset));
+  params.set('limit', String(limit));
+
+  if (filters?.source_type) {
+    params.set('source_type', filters.source_type);
+  }
+
+  if (filters?.search?.trim()) {
+    params.set('search', filters.search.trim());
+  }
+
+  return httpClientList<Decision>(
+    `${API_URL}/organizations/${organizationId}/decisions?${params}`,
+  );
+}
+
 export async function createDecision(
   teamId: number,
   payload: DecisionCreateDTO,
@@ -52,6 +75,7 @@ export async function createDecision(
     );
 
     revalidatePath(`/dashboard/teams`);
+    revalidatePath(`/dashboard/today/decisions`);
 
     if (!response.data) {
       return { data: null, error: 'Failed to save decision' };

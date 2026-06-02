@@ -71,15 +71,24 @@ function applyFieldErrors(
   }
 }
 
+interface TranscriptUploadFormProps {
+  meetings: CalendarEventListItem[];
+  teams: TeamProps[];
+  onClose: () => void;
+  /**
+   * Optional success handler. When provided (inline page usage) it fully owns
+   * post-upload navigation and the default redirect to the meeting transcript is
+   * skipped. When omitted (modal usage) the form closes and redirects as before.
+   */
+  onSuccess?: (calendarEventId: number) => void;
+}
+
 export function TranscriptUploadForm({
   meetings,
   teams,
   onClose,
-}: {
-  meetings: CalendarEventListItem[];
-  teams: TeamProps[];
-  onClose: () => void;
-}) {
+  onSuccess,
+}: TranscriptUploadFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [rootError, setRootError] = useState('');
@@ -131,25 +140,32 @@ export function TranscriptUploadForm({
     }
   };
 
+  const handleUploadError = (
+    result: Extract<Awaited<ReturnType<typeof uploadTranscript>>, { error: string }>,
+  ) => {
+    const userMessage = getUploadErrorMessage(result.errorCode, result.error);
+    if (result.fieldErrors) applyFieldErrors(result.fieldErrors, setError);
+    const hasOnlyFieldErrors =
+      result.fieldErrors && Object.keys(result.fieldErrors).length > 0;
+    if (!hasOnlyFieldErrors) toast.error(userMessage);
+    setRootError(userMessage);
+  };
+
   const onSubmit = (data: TranscriptUploadFormData) => {
     setRootError('');
     startTransition(async () => {
       const result = await uploadTranscript(data);
       if (result.error) {
-        const userMessage = getUploadErrorMessage(
-          result.errorCode,
-          result.error,
-        );
-        if (result.fieldErrors) applyFieldErrors(result.fieldErrors, setError);
-        const hasOnlyFieldErrors =
-          result.fieldErrors && Object.keys(result.fieldErrors).length > 0;
-        if (!hasOnlyFieldErrors) toast.error(userMessage);
-        setRootError(userMessage);
+        handleUploadError(result);
         return;
       }
       const uploadResponse = result.data;
       if (!uploadResponse) return;
       toast.success('Transcript uploaded. Summary will appear in 1–2 minutes.');
+      if (onSuccess) {
+        onSuccess(uploadResponse.calendar_event_id);
+        return;
+      }
       onClose();
       router.push(
         ROUTES.DASHBOARD.MEETING_DETAIL_TRANSCRIPT(

@@ -1,7 +1,7 @@
 import type { MenuProps } from './types';
 import type { UserMenuPreferences } from '@/entities/user';
 
-const PRIMARY_IDS = new Set(['today', 'meetings', 'issues', 'teams']);
+const PRIMARY_IDS = new Set(['today', 'meetings', 'issues']);
 
 export function applyMenuPreferences(
   allItems: MenuProps[],
