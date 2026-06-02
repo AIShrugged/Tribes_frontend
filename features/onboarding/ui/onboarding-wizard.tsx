@@ -2,7 +2,13 @@
 
 import { Check, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useReducer, useRef, useState, type PropsWithChildren } from 'react';
+import {
+  useReducer,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PropsWithChildren,
+} from 'react';
 import { toast } from 'sonner';
 
 import { ROUTES } from '@/shared/lib/routes';
@@ -59,6 +65,24 @@ const SHELL_STEPS: Array<{
   },
 ];
 
+const DARK_ONBOARDING_THEME = {
+  '--background': 'var(--neutral-1000)',
+  '--foreground': 'var(--neutral-100)',
+  '--card': 'var(--neutral-900)',
+  '--card-foreground': 'var(--neutral-100)',
+  '--surface': 'var(--neutral-900)',
+  '--surface-2': 'var(--neutral-850)',
+  '--surface-3': 'var(--neutral-800)',
+  '--muted-foreground': 'var(--neutral-400)',
+  '--secondary': 'var(--neutral-850)',
+  '--secondary-foreground': 'var(--neutral-300)',
+  '--border': 'oklch(24% 0.01 260)',
+  '--input': 'oklch(24% 0.01 260)',
+  '--ring': 'var(--primary-400)',
+  '--primary': 'var(--primary-500)',
+  '--primary-foreground': 'var(--neutral-0)',
+} as CSSProperties;
+
 function OnboardingShell({
   children,
   currentStep,
@@ -72,7 +96,10 @@ function OnboardingShell({
   });
 
   return (
-    <div className='relative min-h-screen overflow-hidden bg-[#030407] text-foreground'>
+    <div
+      className='relative min-h-screen overflow-hidden bg-[#030407] text-foreground'
+      style={DARK_ONBOARDING_THEME}
+    >
       <div
         aria-hidden='true'
         className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,oklch(56%_0.205_271_/_0.36)_0%,transparent_35%),radial-gradient(circle_at_86%_94%,oklch(56%_0.205_271_/_0.22)_0%,transparent_34%)]'
