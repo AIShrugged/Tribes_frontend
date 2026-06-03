@@ -4,7 +4,6 @@ import type {
   PersonOption,
   SharedFilters,
 } from '@/entities/issue';
-import type { OrganizationProps } from '@/entities/organization';
 import type React from 'react';
 
 export interface KanbanCard {
@@ -68,8 +67,6 @@ export const TYPE_COLORS: Record<string, string> = {
 
 export interface KanbanBoardProps {
   columns: Record<IssueStatus, KanbanCard[]>;
-  organizations: OrganizationProps[];
-  persons: PersonOption[];
   filters: SharedFilters;
   onShowArchivedChange: (value: boolean) => void;
 }

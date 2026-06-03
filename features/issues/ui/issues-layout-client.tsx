@@ -18,7 +18,6 @@ import { Card } from '@/shared/ui/card';
 import { CollapsibleSection } from '@/shared/ui/layout/collapsible-section';
 
 import type { EpicOption } from '@/entities/issue';
-import type { OrganizationProps } from '@/entities/organization';
 import type {
   IssueSortField,
   PersonOption,
@@ -27,7 +26,6 @@ import type {
 } from '@/features/issues/model/types';
 
 type IssuesLayoutClientProps = React.PropsWithChildren<{
-  organizations: OrganizationProps[];
   persons: PersonOption[];
   epics: EpicOption[];
   currentUserId: number | null;
@@ -35,7 +33,7 @@ type IssuesLayoutClientProps = React.PropsWithChildren<{
 }>;
 
 const KEEP_WHEN_EMPTY = new Set(['assignee_id']);
-const STALE_PARAMS = ['assignee', 'team_id'] as const;
+const STALE_PARAMS = ['assignee', 'organization_id', 'team_id'] as const;
 
 /**
  * IssuesLayoutClient — client component that owns filter state and URL sync
@@ -43,7 +41,6 @@ const STALE_PARAMS = ['assignee', 'team_id'] as const;
  * Filter state is initialized from URL search params on mount.
  */
 export function IssuesLayoutClient({
-  organizations,
   persons,
   epics,
   currentUserId,
@@ -59,12 +56,15 @@ export function IssuesLayoutClient({
   const [initialFilters] = useState<SharedFilters>(() => {
     const statusRaw = searchParams.get('status') ?? '';
     const typeRaw = searchParams.get('type') ?? '';
-    const assigneeIdRaw = searchParams.has('assignee_id')
-      ? (searchParams.get('assignee_id') ?? '')
-      : (currentUserId?.toString() ?? '');
+    const rawAssigneeId = searchParams.get('assignee_id') ?? '';
+    let assigneeIdRaw = currentUserId?.toString() ?? '';
+
+    if (searchParams.has('assignee_id')) {
+      assigneeIdRaw = rawAssigneeId === 'all' ? '' : rawAssigneeId;
+    }
 
     return {
-      organization_id: searchParams.get('organization_id') ?? cookieOrgId,
+      organization_id: cookieOrgId,
       team_id: '',
       search: searchParams.get('search') ?? '',
       type: isIssueType(typeRaw) ? typeRaw : '',
@@ -183,7 +183,6 @@ export function IssuesLayoutClient({
     }
 
     updateUrl({
-      organization_id: filters.organization_id,
       search: filters.search,
       type: filters.type,
       assignee_id: filters.assignee_id,
@@ -244,7 +243,6 @@ export function IssuesLayoutClient({
           <SharedFiltersBar
             key={filters.organization_id}
             filters={filters}
-            organizations={organizations}
             persons={persons}
             epics={epics}
             onChange={handleFiltersChange}

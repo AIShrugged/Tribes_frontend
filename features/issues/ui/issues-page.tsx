@@ -386,6 +386,16 @@ export function IssuesPage({
     initialItems: scrollInitialItems,
     initialHasMore: firstPage.hasMore,
   });
+  const visibleItems = useMemo(() => {
+    const seen = new Set<number>();
+
+    return items.filter((issue) => {
+      if (seen.has(issue.id)) return false;
+
+      seen.add(issue.id);
+      return true;
+    });
+  }, [items]);
 
   const handleSort = useCallback(
     (field: string) => {
@@ -479,7 +489,7 @@ export function IssuesPage({
 
   return (
     <div className='flex flex-col gap-6'>
-      {items.length === 0 && !isLoading ? (
+      {visibleItems.length === 0 && !isLoading ? (
         <div className='rounded-[var(--radius-card)] border border-border bg-card p-6'>
           <EmptyState
             icon={Bug}
@@ -572,7 +582,7 @@ export function IssuesPage({
                 </tr>
               </thead>
               <tbody>
-                {items.map((issue) => {
+                {visibleItems.map((issue) => {
                   return (
                     <tr
                       key={issue.id}

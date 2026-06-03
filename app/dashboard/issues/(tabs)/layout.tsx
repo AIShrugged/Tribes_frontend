@@ -7,7 +7,6 @@ import {
   IssuesTabsNav,
   IssuesTabsNavSkeleton,
 } from '@/features/issues';
-import { getOrganizations } from '@/features/organization';
 import { getCurrentUserId } from '@/shared/lib/getCurrentUserId';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 
@@ -16,14 +15,12 @@ import type { PropsWithChildren } from 'react';
 export default async function IssuesTabsLayout({
   children,
 }: PropsWithChildren) {
-  const [organizationsResponse, persons, epics, currentUserId, cookieOrgId] =
-    await Promise.all([
-      getOrganizations(),
-      getPersons(),
-      getEpics(),
-      getCurrentUserId(),
-      getOrganizationId(),
-    ]);
+  const cookieOrgId = await getOrganizationId();
+  const [persons, epics, currentUserId] = await Promise.all([
+    getPersons(cookieOrgId),
+    getEpics(cookieOrgId),
+    getCurrentUserId(),
+  ]);
 
   return (
     <div className='flex flex-col p-2'>
@@ -32,7 +29,6 @@ export default async function IssuesTabsLayout({
       </div>
       <Suspense fallback={<IssuesTabsNavSkeleton />}>
         <IssuesLayoutClient
-          organizations={organizationsResponse.data ?? []}
           persons={persons}
           epics={epics}
           currentUserId={currentUserId ?? null}

@@ -19,10 +19,6 @@ export default async function IssuesListPage({
 }) {
   const params = await searchParams;
   const cookieOrgId = await getOrganizationId();
-  const orgId =
-    typeof params.organization_id === 'string'
-      ? Number(params.organization_id)
-      : cookieOrgId;
 
   const statusParam =
     typeof params.status === 'string' && isIssueStatus(params.status)
@@ -50,7 +46,7 @@ export default async function IssuesListPage({
   }
 
   const [persons, currentUserId] = await Promise.all([
-    getPersons(),
+    getPersons(cookieOrgId),
     getCurrentUserId(),
   ]);
 
@@ -59,20 +55,19 @@ export default async function IssuesListPage({
   if (assigneeIdParam === null) {
     resolvedAssignee = currentUserId ?? null;
   } else if (assigneeIdParam.length > 0 && !isUnassigned) {
-    resolvedAssignee = Number(assigneeIdParam);
+    const rawAssigneeId = Number(assigneeIdParam);
+    resolvedAssignee = Number.isFinite(rawAssigneeId) ? rawAssigneeId : null;
   } else {
     resolvedAssignee = null;
   }
 
-  const rawOrgId = orgId;
   const rawAuthorId =
     typeof params.author_id === 'string' ? Number(params.author_id) : null;
   const rawEpicId =
     typeof params.epic_id === 'string' ? Number(params.epic_id) : null;
 
   const issues = await getIssues({
-    organization_id:
-      Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : cookieOrgId,
+    organization_id: cookieOrgId,
     team_id: null,
     status: statusParam,
     type: typeParam,

@@ -17,8 +17,8 @@ import {
   IssueNoGoalHint,
   IssueAuditLogSection,
 } from '@/features/issues';
-import { getOrganizations } from '@/features/organization';
 import { getUser } from '@/features/user';
+import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { ROUTES } from '@/shared/lib/routes';
 import { validateBackHref } from '@/shared/lib/validate-back-href';
 import { Card, CardBody } from '@/shared/ui/card';
@@ -39,41 +39,34 @@ export default async function IssueDetailPage({
   if (!Number.isFinite(issueId) || issueId <= 0) notFound();
 
   const backHref = validateBackHref(from) ?? ROUTES.DASHBOARD.ISSUES_KANBAN;
+  const organizationId = await getOrganizationId();
 
-  const [
-    issue,
-    attachments,
-    organizationsResponse,
-    persons,
-    epics,
-    comments,
-    userResponse,
-  ] = await Promise.all([
-    getIssue(issueId).catch((error: Error) => {
-      if (
-        error.message.includes('404') ||
-        error.message.toLowerCase().includes('not found') ||
-        error.message.toLowerCase().includes('no query results')
-      ) {
-        notFound();
-      }
-      throw error;
-    }),
-    getIssueAttachments(issueId).catch(() => {
-      return [];
-    }),
-    getOrganizations(),
-    getPersons(),
-    getEpics().catch(() => {
-      return [];
-    }),
-    getIssueComments(issueId).catch(() => {
-      return [];
-    }),
-    getUser(),
-  ]);
+  const [issue, attachments, persons, epics, comments, userResponse] =
+    await Promise.all([
+      getIssue(issueId).catch((error: Error) => {
+        if (
+          error.message.includes('404') ||
+          error.message.toLowerCase().includes('not found') ||
+          error.message.toLowerCase().includes('no query results')
+        ) {
+          notFound();
+        }
+        throw error;
+      }),
+      getIssueAttachments(issueId).catch(() => {
+        return [];
+      }),
+      getPersons(organizationId),
+      getEpics(organizationId).catch(() => {
+        return [];
+      }),
+      getIssueComments(issueId).catch(() => {
+        return [];
+      }),
+      getUser(),
+    ]);
 
-  const tasks = await getTasksForEpicForm(issue.organization_id).catch(() => {
+  const tasks = await getTasksForEpicForm(organizationId).catch(() => {
     return [];
   });
 
@@ -108,10 +101,10 @@ export default async function IssueDetailPage({
                 <IssueForm
                   key={issue.id}
                   issue={issue}
-                  organizations={organizationsResponse.data ?? []}
                   persons={persons}
                   epics={epics}
                   tasks={tasks}
+                  defaultOrganizationId={String(organizationId)}
                   currentUser={userResponse.data ?? null}
                 />
               </CardBody>

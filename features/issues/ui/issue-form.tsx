@@ -12,7 +12,6 @@ import {
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { getTeams } from '@/entities/team/api/team';
 import {
   createIssue,
   deleteIssue,
@@ -31,10 +30,8 @@ import { Button } from '@/shared/ui/button/Button';
 import Input from '@/shared/ui/input/Input';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 import InputTextarea from '@/shared/ui/input/InputTextarea';
-import { TenantScopeFields } from '@/shared/ui/input/tenant-scope-fields';
 import { Modal } from '@/shared/ui/modal/modal';
 
-import type { OrganizationProps } from '@/entities/organization';
 import type { UserBasicProps } from '@/entities/user';
 import type {
   EpicOption,
@@ -54,7 +51,6 @@ const DESCRIPTION_TEMPLATE_TASK =
 const DESCRIPTION_TEMPLATE_EPIC = '## Context\n\n\n## Steps\n\n';
 
 interface IssueFormProps {
-  organizations: OrganizationProps[];
   persons: PersonOption[];
   epics?: EpicOption[];
   /** Non-epic issues available as children when type=epic */
@@ -96,7 +92,6 @@ function resolveDisplayType(rawType: string | undefined): string {
 }
 
 export function IssueForm({
-  organizations,
   persons,
   epics = [],
   tasks = [],
@@ -168,10 +163,10 @@ export function IssueForm({
       description,
       type,
       status: issue?.status ?? '',
-      organization_id: issue?.organization_id
-        ? String(issue.organization_id)
-        : defaultOrganizationId,
-      team_id: issue?.team_id ? String(issue.team_id) : '',
+      organization_id:
+        defaultOrganizationId ||
+        (issue?.organization_id ? String(issue.organization_id) : ''),
+      team_id: '',
       epic_id: issue?.epic_id ? String(issue.epic_id) : '',
       assignee_id: issue?.assignee_id ? String(issue.assignee_id) : '',
       author_id: defaultAuthorId,
@@ -196,6 +191,8 @@ export function IssueForm({
   });
 
   const watchedType = useWatch({ control, name: 'type' });
+  const watchedAssigneeId = useWatch({ control, name: 'assignee_id' });
+  const watchedAuthorId = useWatch({ control, name: 'author_id' });
 
   const personOptions = [
     { value: '', label: 'Unassigned' },
@@ -206,6 +203,25 @@ export function IssueForm({
       };
     }),
   ];
+  const personIds = useMemo(() => {
+    return new Set(
+      persons.map((person) => {
+        return String(person.id);
+      }),
+    );
+  }, [persons]);
+
+  useEffect(() => {
+    if (watchedAssigneeId && !personIds.has(watchedAssigneeId)) {
+      setValue('assignee_id', '');
+      clearErrors('assignee_id');
+    }
+
+    if (watchedAuthorId && !personIds.has(watchedAuthorId)) {
+      setValue('author_id', '');
+      clearErrors('author_id');
+    }
+  }, [watchedAssigneeId, watchedAuthorId, personIds, setValue, clearErrors]);
 
   const statusOptions = ISSUE_STATUS_OPTIONS;
 
@@ -247,7 +263,9 @@ export function IssueForm({
       return;
     }
 
-    if (!values.organization_id) {
+    const organizationId = Number(values.organization_id);
+
+    if (!Number.isFinite(organizationId) || organizationId <= 0) {
       setError('organization_id', { message: 'Organization is required' });
       return;
     }
@@ -265,8 +283,8 @@ export function IssueForm({
         description: values.description.trim() || null,
         type: values.type,
         status,
-        organization_id: Number(values.organization_id),
-        team_id: values.team_id ? Number(values.team_id) : null,
+        organization_id: organizationId,
+        team_id: null,
         epic_id: values.epic_id === '' ? null : Number(values.epic_id),
         assignee_id: values.assignee_id ? Number(values.assignee_id) : null,
         author_id: values.author_id ? Number(values.author_id) : null,
@@ -397,34 +415,6 @@ export function IssueForm({
           setRootError('');
         }}
         error={errors.status?.message}
-      />
-
-      <TenantScopeFields
-        organizations={organizations}
-        organizationId={watch('organization_id')}
-        teamId={watch('team_id')}
-        fetchTeams={getTeams}
-        onOrganizationChange={(value) => {
-          setValue('organization_id', value, { shouldDirty: true });
-          setValue('team_id', '', { shouldDirty: true });
-          clearErrors(['organization_id', 'team_id']);
-          const currentAssigneeId = watch('assignee_id');
-          if (currentAssigneeId && value) {
-            const stillValid = persons.some((p) => {
-              return String(p.id) === currentAssigneeId;
-            });
-            if (!stillValid) {
-              setValue('assignee_id', '', { shouldDirty: true });
-            }
-          }
-        }}
-        onTeamChange={(value) => {
-          setValue('team_id', value, { shouldDirty: true });
-          clearErrors('team_id');
-        }}
-        organizationError={errors.organization_id?.message}
-        teamError={errors.team_id?.message}
-        disabled={isPending}
       />
 
       {watchedType !== 'epic' &&

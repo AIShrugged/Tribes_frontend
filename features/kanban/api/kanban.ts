@@ -42,6 +42,10 @@ function buildKanbanQuery(filters: KanbanFilters = {}): string {
     params.set('epic_id', String(filters.epic_id));
   }
 
+  if (filters.search) {
+    params.set('search', filters.search);
+  }
+
   if (filters.unassigned) {
     params.set('unassigned', '1');
   }
@@ -74,6 +78,17 @@ export interface KanbanIssuesResult {
 
 const KANBAN_PAGE_LIMIT = 100;
 const KANBAN_MAX_ITEMS = 500;
+
+function dedupeCardsById(cards: KanbanCard[]): KanbanCard[] {
+  const seen = new Set<number>();
+
+  return cards.filter((card) => {
+    if (seen.has(card.id)) return false;
+
+    seen.add(card.id);
+    return true;
+  });
+}
 
 async function fetchKanbanPage(
   authHeaders: Record<string, string>,
@@ -137,6 +152,8 @@ export async function getKanbanIssues(
       }),
     ].flat();
   }
+
+  allCards = dedupeCardsById(allCards);
 
   const columns: Record<IssueStatus, KanbanCard[]> = {
     open: [],
