@@ -4,7 +4,6 @@ import {
   getTasksForEpicForm,
   IssueForm,
 } from '@/features/issues';
-import { getOrganizations } from '@/features/organization';
 import { getUser } from '@/features/user';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 import { ROUTES } from '@/shared/lib/routes';
@@ -21,17 +20,15 @@ export default async function IssueCreatePage({
 }: IssueCreatePageProps) {
   const { from } = await searchParams;
   const backHref = validateBackHref(from) ?? ROUTES.DASHBOARD.ISSUES_KANBAN;
+  const organizationId = await getOrganizationId();
 
-  const [organizationsResponse, persons, epics, organizationId, userResponse] =
-    await Promise.all([
-      getOrganizations(),
-      getPersons(),
-      getEpics().catch(() => {
-        return [];
-      }),
-      getOrganizationId(),
-      getUser(),
-    ]);
+  const [persons, epics, userResponse] = await Promise.all([
+    getPersons(organizationId),
+    getEpics(organizationId).catch(() => {
+      return [];
+    }),
+    getUser(),
+  ]);
 
   const tasks = await getTasksForEpicForm(organizationId).catch(() => {
     return [];
@@ -43,7 +40,6 @@ export default async function IssueCreatePage({
       <div className='h-full overflow-y-auto'>
         <CardBody>
           <IssueForm
-            organizations={organizationsResponse.data ?? []}
             persons={persons}
             epics={epics}
             tasks={tasks}

@@ -6,25 +6,18 @@ import { useFiltersContext } from '@/features/issues/model/filters-context';
 import { IssueTypeToggle } from '@/features/issues/ui/issue-type-toggle';
 import { KanbanBoard, fetchKanbanIssues } from '@/features/kanban';
 
-import type { OrganizationProps } from '@/entities/organization';
-import type { IssueStatus, PersonOption } from '@/features/issues/model/types';
+import type { IssueStatus } from '@/features/issues/model/types';
 import type { KanbanCard, KanbanIssuesResult } from '@/features/kanban';
 
 interface IssuesKanbanTabProps {
   initialResult: KanbanIssuesResult;
-  organizations: OrganizationProps[];
-  persons: PersonOption[];
 }
 
 /**
  * IssuesKanbanTab — client wrapper that reads filter context and renders KanbanBoard.
  * Refetches kanban data client-side when filters change.
  */
-export function IssuesKanbanTab({
-  initialResult,
-  organizations,
-  persons,
-}: IssuesKanbanTabProps) {
+export function IssuesKanbanTab({ initialResult }: IssuesKanbanTabProps) {
   const {
     filters,
     filtersVersion,
@@ -51,8 +44,6 @@ export function IssuesKanbanTab({
     let cancelled = false;
 
     const run = async () => {
-      // author_id and epic_id are visible in the filter bar but not forwarded here —
-      // the kanban API does not yet support these params (see issue #018).
       const result = await fetchKanbanIssues({
         organization_id: filters.organization_id
           ? Number(filters.organization_id)
@@ -63,6 +54,8 @@ export function IssuesKanbanTab({
           filters.assignee_id && filters.assignee_id !== 'unassigned'
             ? Number(filters.assignee_id)
             : null,
+        author_id: filters.author_id ? Number(filters.author_id) : null,
+        epic_id: filters.epic_id ? Number(filters.epic_id) : null,
         unassigned: filters.assignee_id === 'unassigned',
         search: filters.search || undefined,
       });
@@ -103,8 +96,6 @@ export function IssuesKanbanTab({
       )}
       <KanbanBoard
         columns={columns}
-        organizations={organizations}
-        persons={persons}
         filters={filters}
         onShowArchivedChange={setShowArchived}
       />

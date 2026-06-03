@@ -1,6 +1,5 @@
-import { getPersons, isIssueType, IssuesKanbanTab } from '@/features/issues';
+import { isIssueType, IssuesKanbanTab } from '@/features/issues';
 import { getKanbanIssues } from '@/features/kanban';
-import { getOrganizations } from '@/features/organization';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 
 import type { KanbanFilters } from '@/features/kanban';
@@ -14,10 +13,6 @@ export default async function IssuesKanbanPage({
 }) {
   const params = await searchParams;
   const cookieOrgId = await getOrganizationId();
-  const orgId =
-    typeof params.organization_id === 'string'
-      ? Number(params.organization_id)
-      : cookieOrgId;
 
   const typeParam =
     typeof params.type === 'string' && isIssueType(params.type)
@@ -27,7 +22,6 @@ export default async function IssuesKanbanPage({
     typeof params.assignee_id === 'string' ? params.assignee_id : null;
   const isUnassigned = assigneeIdParam === 'unassigned';
 
-  const rawOrgId = orgId;
   const rawAssigneeId =
     assigneeIdParam && !isUnassigned ? Number(assigneeIdParam) : null;
   const rawAuthorId =
@@ -36,8 +30,7 @@ export default async function IssuesKanbanPage({
     typeof params.epic_id === 'string' ? Number(params.epic_id) : null;
 
   const kanbanFilters: KanbanFilters = {
-    organization_id:
-      Number.isFinite(rawOrgId) && rawOrgId > 0 ? rawOrgId : cookieOrgId,
+    organization_id: cookieOrgId,
     team_id: null,
     type: typeParam || undefined,
     assignee_id:
@@ -56,17 +49,7 @@ export default async function IssuesKanbanPage({
     search: typeof params.search === 'string' ? params.search : undefined,
   };
 
-  const [organizationsResponse, persons, kanbanResult] = await Promise.all([
-    getOrganizations(),
-    getPersons(),
-    getKanbanIssues(kanbanFilters),
-  ]);
+  const kanbanResult = await getKanbanIssues(kanbanFilters);
 
-  return (
-    <IssuesKanbanTab
-      initialResult={kanbanResult}
-      organizations={organizationsResponse.data ?? []}
-      persons={persons}
-    />
-  );
+  return <IssuesKanbanTab initialResult={kanbanResult} />;
 }

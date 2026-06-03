@@ -502,11 +502,17 @@ export async function getTasksForEpicForm(
  * (e.g. when both layout.tsx and page.tsx call it).
  * @returns persons list.
  */
-export const getPersons = cache(async function getPersons(): Promise<
-  PersonOption[]
-> {
+export const getPersons = cache(async function getPersons(
+  organizationId?: number | null,
+): Promise<PersonOption[]> {
+  const params = new URLSearchParams({ limit: '100' });
+
+  if (organizationId) {
+    params.set('organization_id', String(organizationId));
+  }
+
   const { data } = await httpClientList<PersonOption>(
-    `${API_URL}/persons?limit=100`,
+    `${API_URL}/persons?${params.toString()}`,
   );
   return data;
 });

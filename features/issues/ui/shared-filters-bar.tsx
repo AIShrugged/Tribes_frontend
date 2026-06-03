@@ -1,13 +1,12 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ISSUE_STATUS_OPTIONS } from '@/features/issues/model/types';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 
 import type { EpicOption } from '@/entities/issue';
-import type { OrganizationProps } from '@/entities/organization';
 import type {
   IssueStatus,
   PersonOption,
@@ -16,7 +15,6 @@ import type {
 
 interface SharedFiltersBarProps {
   filters: SharedFilters;
-  organizations: OrganizationProps[];
   persons: PersonOption[];
   epics: EpicOption[];
   onChange: (patch: Partial<SharedFilters>) => void;
@@ -41,7 +39,6 @@ const STATUS_OPTIONS = [
  */
 export function SharedFiltersBar({
   filters,
-  organizations,
   persons,
   epics,
   onChange,
@@ -55,6 +52,13 @@ export function SharedFiltersBar({
   ];
 
   const [searchValue, setSearchValue] = useState(filters.search);
+  const personIds = useMemo(() => {
+    return new Set(
+      persons.map((person) => {
+        return String(person.id);
+      }),
+    );
+  }, [persons]);
 
   // Debounce search: propagate 300ms after user stops typing
   useEffect(() => {
@@ -66,6 +70,26 @@ export function SharedFiltersBar({
       clearTimeout(timer);
     };
   }, [searchValue, onChange]);
+
+  useEffect(() => {
+    const patch: Partial<SharedFilters> = {};
+
+    if (
+      filters.assignee_id &&
+      filters.assignee_id !== 'unassigned' &&
+      !personIds.has(filters.assignee_id)
+    ) {
+      patch.assignee_id = '';
+    }
+
+    if (filters.author_id && !personIds.has(filters.author_id)) {
+      patch.author_id = '';
+    }
+
+    if (Object.keys(patch).length > 0) {
+      onChange(patch);
+    }
+  }, [filters.assignee_id, filters.author_id, personIds, onChange]);
 
   const mappedPersons = persons.map((person) => {
     return {
@@ -81,13 +105,6 @@ export function SharedFiltersBar({
   ];
 
   const authorOptions = [{ value: '', label: 'Any author' }, ...mappedPersons];
-
-  const organizationOptions = organizations.map((organization) => {
-    return {
-      value: String(organization.id),
-      label: organization.name,
-    };
-  });
 
   const epicOptions = [
     { value: '', label: 'Any epic' },
@@ -119,19 +136,6 @@ export function SharedFiltersBar({
           value={filters.assignee_id}
           onChange={(value) => {
             onChange({ assignee_id: value as string });
-          }}
-          searchable
-          disabled={disabled}
-        />
-      </div>
-
-      <div className='grid gap-2 sm:grid-cols-2 xl:grid-cols-4'>
-        <InputDropdown
-          label='Organization'
-          options={organizationOptions}
-          value={filters.organization_id}
-          onChange={(value) => {
-            onChange({ organization_id: value as string });
           }}
           searchable
           disabled={disabled}
