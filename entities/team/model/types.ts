@@ -8,6 +8,8 @@ export interface TeamMember {
 export interface TeamProps extends TeamCreateDTO {
   id: number;
   slug: string;
+  /** Auto-created "General" team that contains every org member (one per org). */
+  is_default: boolean;
   employee_count: number;
   members?: TeamMember[];
 }

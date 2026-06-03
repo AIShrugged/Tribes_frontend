@@ -38,6 +38,7 @@ const blankTeam = {
   id: 0,
   name: '',
   slug: '',
+  is_default: false,
   employee_count: 0,
   members: [],
 } as TeamProps;
@@ -45,6 +46,7 @@ const existingTeam: TeamProps = {
   id: 42,
   name: 'Engineering',
   slug: 'engineering',
+  is_default: false,
   employee_count: 3,
   members: [],
 };

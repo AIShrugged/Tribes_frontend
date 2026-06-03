@@ -40,7 +40,10 @@ export async function createTelegramWorkspaceChat(
         status: 200,
       });
     }
-    revalidatePath(ROUTES.DASHBOARD.TELEGRAM);
+    // A new (or newly bound) chat changes both the Chats list and the Notifications
+    // matrix's available-chats set.
+    revalidatePath(ROUTES.DASHBOARD.TELEGRAM_CHATS);
+    revalidatePath(ROUTES.DASHBOARD.TELEGRAM_NOTIFICATIONS);
     return { data, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
@@ -65,7 +68,8 @@ export async function deleteTelegramWorkspaceChat(
     await httpClient<null>(`${API_URL}/telegram/chats/${id}`, {
       method: 'DELETE',
     });
-    revalidatePath(ROUTES.DASHBOARD.TELEGRAM);
+    revalidatePath(ROUTES.DASHBOARD.TELEGRAM_CHATS);
+    revalidatePath(ROUTES.DASHBOARD.TELEGRAM_NOTIFICATIONS);
     return { data: undefined, error: null };
   } catch (error) {
     if (error instanceof ServerError) {
