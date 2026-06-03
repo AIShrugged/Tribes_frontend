@@ -45,6 +45,8 @@ export const ROUTES = {
     PROFILE_INTEGRATIONS: '/dashboard/profile/integrations',
     ONBOARDING: '/dashboard/onboarding',
     TELEGRAM: '/dashboard/telegram',
+    TELEGRAM_CHATS: '/dashboard/telegram/chats',
+    TELEGRAM_NOTIFICATIONS: '/dashboard/telegram/notifications',
     SUMMARY: '/dashboard/summary',
     KANBAN: '/dashboard/kanban',
     ISSUES_LIST: '/dashboard/issues/list',

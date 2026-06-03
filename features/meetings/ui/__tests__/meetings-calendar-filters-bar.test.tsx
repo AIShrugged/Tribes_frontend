@@ -48,12 +48,14 @@ const TEAMS: TeamProps[] = [
     id: 1,
     name: 'Alpha',
     slug: 'alpha',
+    is_default: false,
     employee_count: 0,
   },
   {
     id: 2,
     name: 'Beta',
     slug: 'beta',
+    is_default: false,
     employee_count: 0,
   },
 ];

@@ -58,7 +58,7 @@ const meetings: CalendarEventListItem[] = [
 ];
 
 const teams: TeamProps[] = [
-  { id: 7, slug: 'core', name: 'Core', employee_count: 3 },
+  { id: 7, slug: 'core', name: 'Core', is_default: false, employee_count: 3 },
 ];
 
 function makeFile(name = 't.txt', size = 100, type = 'text/plain'): File {

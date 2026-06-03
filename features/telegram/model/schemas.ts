@@ -24,7 +24,6 @@ export const addTelegramChatSchema = z.object({
     .transform((v) => {
       return v === '' || v === undefined ? null : v;
     }),
-  team_id: z.string().optional(),
 });
 
 export type AddTelegramChatFormValues = z.infer<typeof addTelegramChatSchema>;
