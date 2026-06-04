@@ -37,7 +37,7 @@ export default async function OrganizationList({
                   {organization.name}
                 </span>
                 <span className='text-sm text-muted-foreground'>
-                  Your role: {organization.pivot.role}
+                  Your role: {organization.pivot?.role ?? 'member'}
                 </span>
               </div>
 

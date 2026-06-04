@@ -9,6 +9,8 @@ export {
 export { default as OrganizationSelector } from './ui/organization-selector';
 export { default as OrganizationForm } from './ui/organization-form';
 export { OrganizationSettingsTabs } from './ui/organization-settings-tabs';
+export { OrganizationTabsNav } from './ui/organization-tabs-nav';
+export { OrganizationPeopleTab } from './ui/organization-people-tab';
 export { OrganizationIssueTypesSettings } from './ui/organization-issue-types-settings';
 export { default as OrganizationCreateLink } from './ui/organization-create-link';
 export { default as OrganizationList } from './ui/organization-list';

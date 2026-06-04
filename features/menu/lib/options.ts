@@ -59,6 +59,14 @@ export function getMenuItems(): MenuProps[] {
       position: 4,
     },
     {
+      id: 'organization',
+      label: 'Organization',
+      icon: 'teams',
+      href: ROUTES.DASHBOARD.ORGANIZATION,
+      activeHref: ROUTES.DASHBOARD.ORGANIZATION,
+      position: 5,
+    },
+    {
       id: 'telegram',
       label: 'Telegram',
       icon: 'send',

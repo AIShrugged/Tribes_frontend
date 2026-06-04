@@ -42,7 +42,7 @@ export interface OrganizationProps {
   created_at: string;
   updated_at: string;
   issue_types?: OrganizationIssueType[];
-  pivot: {
+  pivot?: {
     organization_id: number;
     role: string;
     user_id: number;

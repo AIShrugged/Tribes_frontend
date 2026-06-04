@@ -49,6 +49,15 @@ describe('getMenuItems', () => {
     expect(item?.label).toBe('Telegram');
   });
 
+  it('includes an Organization item', () => {
+    const item = getMenuItems().find((menuItem) => {
+      return menuItem.id === 'organization';
+    });
+
+    expect(item).toBeDefined();
+    expect(item?.label).toBe('Organization');
+  });
+
   it('items are sorted by position ascending', () => {
     const items = getMenuItems();
     const positions = items.map((item) => {

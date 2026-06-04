@@ -33,7 +33,7 @@ export async function getAgentAccessContext(): Promise<{
       return String(organization.id) === activeOrganizationId;
     }) ?? null;
   const managerOrganizations = organizations.filter((organization) => {
-    return canManageAgents(organization.pivot.role);
+    return canManageAgents(organization.pivot?.role);
   });
 
   return {
@@ -41,6 +41,6 @@ export async function getAgentAccessContext(): Promise<{
     managerOrganizations,
     activeOrganization,
     activeOrganizationId,
-    canManageAgents: canManageAgents(activeOrganization?.pivot.role),
+    canManageAgents: canManageAgents(activeOrganization?.pivot?.role),
   };
 }

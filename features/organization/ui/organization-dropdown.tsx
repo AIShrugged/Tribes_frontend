@@ -88,7 +88,7 @@ function OrgItem({
             {organization.name}
           </p>
           <p className='text-xs text-muted-foreground'>
-            {organization.pivot.role}
+            {organization.pivot?.role ?? 'member'}
           </p>
         </div>
       </div>
@@ -105,7 +105,9 @@ function OrgItem({
       className='px-4 rounded-none justify-between'
     >
       <p className='text-sm text-foreground'>{organization.name}</p>
-      <p className='text-xs text-muted-foreground'>{organization.pivot.role}</p>
+      <p className='text-xs text-muted-foreground'>
+        {organization.pivot?.role ?? 'member'}
+      </p>
     </Button>
   );
 }

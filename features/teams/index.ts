@@ -14,6 +14,7 @@ export type { TeamDashboardData } from './model/dashboard-types';
 export { TEAM_CREATE_VALUES, TEAM_CREATE_FIELDS } from './model/fields';
 export { default as TeamCreateForm } from './ui/team-create-form';
 export { default as TeamNotificationSettings } from './ui/team-notification-settings';
+export { default as TeamMemberAddModal } from './ui/team-member-add-modal';
 export { default as TeamsEmptyState } from './ui/teams-empty-state';
 export { default as TeamsPageClient } from './ui/teams-page-client';
 export {

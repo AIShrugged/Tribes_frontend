@@ -1,63 +1,16 @@
-import React from 'react';
+import { redirect } from 'next/navigation';
 
-import { getAgentProfiles } from '@/features/agents';
-import {
-  getOrganization,
-  OrganizationDangerZone,
-  OrganizationForm,
-  OrganizationIssueTypesSettings,
-  OrganizationSettingsTabs,
-} from '@/features/organization';
-import { ServerError } from '@/shared/lib/errors';
-import { Card, CardBody } from '@/shared/ui/card';
-import PageHeader from '@/widgets/layout/ui/page-header';
+import { ROUTES } from '@/shared/lib/routes';
 
-import type { AgentProfile } from '@/features/agents';
 import type { PageProps } from '@/shared/types/common';
 
 /**
- * Page component.
+ * Legacy organization detail route — open People as the primary Organization tab.
  * @param props - Component props.
  * @param props.params
  */
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
-  const { data: organization } = await getOrganization(id);
-  let agentProfiles: AgentProfile[] = [];
 
-  try {
-    const { data } = await getAgentProfiles();
-    agentProfiles = data;
-  } catch (error) {
-    if (error instanceof ServerError && error.status === 403) {
-      agentProfiles = [];
-    } else {
-      throw error;
-    }
-  }
-
-  if (!organization) return null;
-
-  return (
-    <Card className={'h-full flex flex-col'}>
-      <PageHeader hasButtonBack title={'Organization settings'} />
-      <CardBody>
-        <OrganizationSettingsTabs
-          generalContent={
-            <div className='flex flex-col gap-8'>
-              <OrganizationForm values={organization} />
-              <OrganizationDangerZone org={organization} />
-            </div>
-          }
-          taskTypesContent={
-            <OrganizationIssueTypesSettings
-              organizationId={organization.id}
-              issueTypes={organization.issue_types}
-              profiles={agentProfiles}
-            />
-          }
-        />
-      </CardBody>
-    </Card>
-  );
+  redirect(ROUTES.DASHBOARD.ORGANIZATION_PEOPLE(id));
 }

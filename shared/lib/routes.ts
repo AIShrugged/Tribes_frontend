@@ -38,6 +38,15 @@ export const ROUTES = {
     TEAMS_CREATE: '/dashboard/teams/create',
     STATISTICS: '/dashboard/statistics',
     ORGANIZATION: '/dashboard/organization',
+    ORGANIZATION_DETAIL: (id: string | number) => {
+      return `/dashboard/organization/${id}`;
+    },
+    ORGANIZATION_PEOPLE: (id: string | number) => {
+      return `/dashboard/organization/${id}/people`;
+    },
+    ORGANIZATION_SETTINGS: (id: string | number) => {
+      return `/dashboard/organization/${id}/settings`;
+    },
     PROFILE: '/dashboard/profile',
     PROFILE_ACCOUNT: '/dashboard/profile/account',
     PROFILE_CALENDAR: '/dashboard/profile/calendar',
