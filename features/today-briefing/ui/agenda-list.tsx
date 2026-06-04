@@ -16,22 +16,26 @@ interface AgendaListProps {
   totalCount: number;
   doneCount: number;
   meetingState: string;
+  label?: string;
+  emptyText?: string;
 }
 
 export function AgendaList({
   tasks,
   totalCount,
   meetingState,
+  label: labelOverride,
+  emptyText: emptyTextOverride,
 }: AgendaListProps) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const isReady = meetingState === 'ready';
-  const label = isReady
-    ? 'Action items from this meeting'
-    : 'Tasks from last sync';
-  const emptyText = isReady
-    ? 'No tasks from this meeting'
-    : 'No tasks from previous meeting';
+  const label =
+    labelOverride ??
+    (isReady ? 'Action items from this meeting' : 'Tasks from last sync');
+  const emptyText =
+    emptyTextOverride ??
+    (isReady ? 'No tasks from this meeting' : 'No tasks from previous meeting');
 
   if (totalCount === 0) {
     return <p className='text-xs text-muted-foreground italic'>{emptyText}</p>;
