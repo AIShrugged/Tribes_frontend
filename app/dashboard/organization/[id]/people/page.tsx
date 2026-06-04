@@ -1,9 +1,11 @@
 import {
   getOrganization,
+  getOrganizations,
   OrganizationPeopleTab,
   OrganizationTabsNav,
 } from '@/features/organization';
 import { getTeamDashboard, getTeamInvites, getTeams } from '@/features/teams';
+import { getUser } from '@/features/user';
 import { Card, CardBody } from '@/shared/ui/card';
 import PageHeader from '@/widgets/layout/ui/page-header';
 
@@ -75,7 +77,11 @@ async function getDefaultTeamPeopleData(
  */
 export default async function OrganizationPeoplePage({ params }: PageProps) {
   const { id } = await params;
-  const { data: organization } = await getOrganization(id);
+  const [
+    { data: organization },
+    { data: organizations = [] },
+    { data: currentUser },
+  ] = await Promise.all([getOrganization(id), getOrganizations(), getUser()]);
 
   if (!organization) return null;
 
@@ -85,7 +91,12 @@ export default async function OrganizationPeoplePage({ params }: PageProps) {
       return team.is_default;
     }) ?? null;
   const defaultTeamId = defaultTeam?.id ?? null;
-  const isManager = organization.pivot?.role === 'manager';
+  const organizationRole =
+    organization.pivot?.role ??
+    organizations.find((item) => {
+      return item.id === organization.id;
+    })?.pivot?.role;
+  const isManager = organizationRole === 'manager';
   const { analyticsData, pendingInvites } = await getDefaultTeamPeopleData(
     defaultTeamId,
     isManager,
@@ -104,6 +115,7 @@ export default async function OrganizationPeoplePage({ params }: PageProps) {
           pendingInvites={pendingInvites}
           defaultTeamId={defaultTeamId}
           isManager={isManager}
+          currentUserId={currentUser?.id ?? null}
         />
       </CardBody>
     </Card>

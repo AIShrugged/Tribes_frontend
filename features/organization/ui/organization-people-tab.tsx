@@ -38,6 +38,7 @@ interface OrganizationPeopleTabProps {
   pendingInvites: TeamInvite[];
   defaultTeamId: number | null;
   isManager: boolean;
+  currentUserId: number | null;
 }
 
 interface MemberRowProps {
@@ -45,6 +46,7 @@ interface MemberRowProps {
   analytics: PersonMember | null;
   defaultTeamId: number | null;
   isManager: boolean;
+  currentUserId: number | null;
 }
 
 function normalizeInsightCategory(
@@ -241,12 +243,14 @@ function MemberRow({
   analytics,
   defaultTeamId,
   isManager,
+  currentUserId,
 }: MemberRowProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { open, close } = useModal();
   const metrics = analytics?.metrics ?? null;
-  const canRemove = isManager && defaultTeamId !== null;
+  const canRemove =
+    isManager && defaultTeamId !== null && member.id !== currentUserId;
 
   const handleRemove = () => {
     if (defaultTeamId === null) return;
@@ -465,6 +469,7 @@ export function OrganizationPeopleTab({
   pendingInvites,
   defaultTeamId,
   isManager,
+  currentUserId,
 }: OrganizationPeopleTabProps) {
   const { open, close } = useModal();
   const analyticsMap = new Map<number, PersonMember>(
@@ -513,6 +518,7 @@ export function OrganizationPeopleTab({
                   analytics={analyticsMap.get(member.id) ?? null}
                   defaultTeamId={defaultTeamId}
                   isManager={isManager}
+                  currentUserId={currentUserId}
                 />
               );
             })}
@@ -520,22 +526,28 @@ export function OrganizationPeopleTab({
         )}
       </div>
 
-      {isManager && defaultTeamId !== null && pendingInvites.length > 0 && (
+      {isManager && defaultTeamId !== null && (
         <div className='flex flex-col gap-3'>
           <h3 className='text-sm font-semibold text-foreground'>
             Pending Invites
           </h3>
-          <div className='flex flex-col gap-2'>
-            {pendingInvites.map((invite) => {
-              return (
-                <PendingInviteRow
-                  key={invite.id}
-                  invite={invite}
-                  defaultTeamId={defaultTeamId}
-                />
-              );
-            })}
-          </div>
+          {pendingInvites.length === 0 ? (
+            <p className='text-sm text-muted-foreground rounded-[var(--radius-card)] border border-border bg-card/50 p-4'>
+              No pending invites.
+            </p>
+          ) : (
+            <div className='flex flex-col gap-2'>
+              {pendingInvites.map((invite) => {
+                return (
+                  <PendingInviteRow
+                    key={invite.id}
+                    invite={invite}
+                    defaultTeamId={defaultTeamId}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
