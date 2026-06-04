@@ -134,6 +134,7 @@ export interface TodayEvent {
   tasks: MeetingTask[];
   total_tasks_count: number;
   done_tasks_count: number;
+  updated_tasks: MeetingTask[];
   agenda_content: string | null;
 }
 

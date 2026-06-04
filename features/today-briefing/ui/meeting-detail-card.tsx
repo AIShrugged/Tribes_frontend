@@ -180,6 +180,18 @@ export function MeetingDetailCard({ event }: MeetingDetailCardProps) {
           meetingState={event.meeting_state}
         />
 
+        {/* Updated (augmented) tasks — pre-existing issues this meeting touched.
+            Separate informational list; does NOT count toward the readiness bar. */}
+        {(event.updated_tasks ?? []).length > 0 && (
+          <AgendaList
+            tasks={event.updated_tasks}
+            totalCount={event.updated_tasks.length}
+            doneCount={0}
+            meetingState={event.meeting_state}
+            label='Tasks updated in this meeting'
+          />
+        )}
+
         {/* Readiness bar */}
         {event.total_tasks_count > 0 && (
           <div className='flex items-center gap-3'>
