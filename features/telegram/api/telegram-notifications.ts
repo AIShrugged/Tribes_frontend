@@ -49,11 +49,14 @@ export async function setEventEnabled(
   eventType: string,
   enabled: boolean,
 ): Promise<ActionResult<TeamNotificationSetting[]>> {
-  return putList(`${API_URL}/teams/${teamId}/notification-settings/set-enabled`, {
-    event_type: eventType,
-    channel_type: CHANNEL,
-    enabled,
-  });
+  return putList(
+    `${API_URL}/teams/${teamId}/notification-settings/set-enabled`,
+    {
+      event_type: eventType,
+      channel_type: CHANNEL,
+      enabled,
+    },
+  );
 }
 
 /**
@@ -94,7 +97,11 @@ async function putList(
         error.responseBody ?? '',
         'Failed to update notifications',
       );
-      return { data: null, error: parsed.message, fieldErrors: parsed.fieldErrors };
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
     }
     throw error;
   }

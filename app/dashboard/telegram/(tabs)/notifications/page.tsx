@@ -1,6 +1,8 @@
 import { getTeams } from '@/entities/team/api/team';
-import { TelegramNotificationsMatrix } from '@/features/telegram';
-import { getTelegramChats } from '@/features/telegram';
+import {
+  TelegramNotificationsMatrix,
+  getTelegramChats,
+} from '@/features/telegram';
 import { getTeamNotificationSettings } from '@/features/telegram/api/telegram-notifications';
 import { getOrganizationId } from '@/shared/lib/getOrganizationId';
 
@@ -13,7 +15,9 @@ export default async function TelegramNotificationsPage() {
   ]);
 
   // In the no-teams model all notification settings live on the org's default ("General") team.
-  const defaultTeam = (teamsResult.data ?? []).find((team) => team.is_default);
+  const defaultTeam = (teamsResult.data ?? []).find((team) => {
+    return team.is_default;
+  });
 
   if (!defaultTeam) {
     return (
@@ -36,9 +40,9 @@ export default async function TelegramNotificationsPage() {
     );
   }
 
-  const availableChats = (chatsResult.data ?? []).filter(
-    (chat) => chat.team_id === defaultTeam.id && chat.bound_at !== null,
-  );
+  const availableChats = (chatsResult.data ?? []).filter((chat) => {
+    return chat.team_id === defaultTeam.id && chat.bound_at !== null;
+  });
 
   return (
     <TelegramNotificationsMatrix

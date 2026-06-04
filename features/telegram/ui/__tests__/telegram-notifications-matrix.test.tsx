@@ -160,7 +160,11 @@ describe('TelegramNotificationsMatrix', () => {
 
   it('shows the empty state when there are no bound chats', () => {
     render(
-      <TelegramNotificationsMatrix teamId={5} settings={[]} availableChats={[]} />,
+      <TelegramNotificationsMatrix
+        teamId={5}
+        settings={[]}
+        availableChats={[]}
+      />,
     );
 
     expect(screen.getByText(/No linked chats/i)).toBeInTheDocument();

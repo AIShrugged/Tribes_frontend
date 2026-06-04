@@ -10,7 +10,9 @@ const mockCreate = jest.fn().mockResolvedValue({ data: { is_bound: false } });
 
 jest.mock('@/features/telegram/api/telegram', () => {
   return {
-    createTelegramWorkspaceChat: (...args: unknown[]) => {return mockCreate(...args)},
+    createTelegramWorkspaceChat: (...args: unknown[]) => {
+      return mockCreate(...args);
+    },
   };
 });
 
