@@ -33,6 +33,7 @@ const TEMPLATE_OPTIONS: Array<{
 ];
 
 const MAX_LINKS = 5;
+const DESCRIPTION_MAX_LENGTH = 20_000;
 
 function getSubmitLabel(
   isSubmitting: boolean,
@@ -135,7 +136,7 @@ export function OnboardingInputStep({
         <span className='overflow-hidden rounded-[var(--r-lg)] border border-input bg-[var(--surface-2)] transition-shadow focus-within:border-ring focus-within:shadow-[var(--shadow-focus)]'>
           <textarea
             value={state.description}
-            maxLength={2000}
+            maxLength={DESCRIPTION_MAX_LENGTH}
             placeholder="e.g. We're a 40-person SaaS company building HR tools for enterprise clients. Our top priority this quarter is shipping the new onboarding flow and reducing churn in the SMB segment."
             className='min-h-[150px] w-full resize-y bg-transparent px-4 py-4 text-sm leading-6 text-foreground outline-none placeholder:text-[var(--neutral-500)] sm:min-h-[170px]'
             onChange={(e) => {
@@ -148,7 +149,7 @@ export function OnboardingInputStep({
               Tip: mention team size, goals and timelines
             </span>
             <span className='font-semibold tabular-nums text-foreground'>
-              {state.description.length} / 2000
+              {state.description.length} / {DESCRIPTION_MAX_LENGTH}
             </span>
           </span>
         </span>

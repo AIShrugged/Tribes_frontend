@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const ONBOARDING_DESCRIPTION_MAX_LENGTH = 20_000;
+
 export const onboardingDraftResultCompleteSchema = z.object({
   organization: z.object({
     name: z.string(),
@@ -50,7 +52,7 @@ export const onboardingDraftResponseSchema = z.object({
 });
 
 export const generateSchema = z.object({
-  description: z.string().max(10_000).optional(),
+  description: z.string().max(ONBOARDING_DESCRIPTION_MAX_LENGTH).optional(),
   links: z.array(z.url().max(2048)).max(5).optional(),
 });
 
@@ -78,7 +80,7 @@ const teamMemberSchema = z.object({
 export const acceptSchema = z.object({
   organization: z.object({
     name: z.string().min(1).max(255),
-    description: z.string().min(1).max(10_000),
+    description: z.string().min(1).max(ONBOARDING_DESCRIPTION_MAX_LENGTH),
   }),
   goals: z.array(goalSchema).min(1).max(20),
   team: z.array(teamMemberSchema).optional(),
