@@ -17,10 +17,17 @@ export interface TaskDataUploadStatusResponse {
   original_filename: string;
   issues_created: number;
   issues_updated: number;
+  /** Issues created by this upload (status 'new'). */
   issues?: Array<{
     id: number;
     name: string;
-    status: 'new' | 'updated';
+    status: 'new';
+  }>;
+  /** Pre-existing issues this upload updated (status 'updated'). */
+  updated_issues?: Array<{
+    id: number;
+    name: string;
+    status: 'updated';
   }>;
 }
 

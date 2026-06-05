@@ -63,6 +63,9 @@ export const ROUTES = {
     ISSUES_PROGRESS: '/dashboard/issues/progress',
     TODAY_GOALS: '/dashboard/today/goals',
     MEETINGS_LIST: '/dashboard/meetings/list',
+    MEETINGS_LIST_BY_DATE: (date: string) => {
+      return `/dashboard/meetings/list?date=${date}`;
+    },
     MEETINGS_CALENDAR: '/dashboard/meetings/calendar',
     MEETINGS_ORGANIZATION: '/dashboard/meetings/organization',
     MEETING_DETAIL: (id: string | number) => {

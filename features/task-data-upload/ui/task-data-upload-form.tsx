@@ -185,14 +185,30 @@ export function TaskDataUploadForm({
           </p>
         </div>
 
-        {statusResult.issues && statusResult.issues.length > 0 && (
+        {((statusResult.issues && statusResult.issues.length > 0) ||
+          (statusResult.updated_issues &&
+            statusResult.updated_issues.length > 0)) && (
           <div className='max-h-48 overflow-y-auto text-sm'>
             <p className='mb-1 font-medium text-muted-foreground'>Tasks:</p>
             <ul className='space-y-1'>
-              {statusResult.issues.map((issue) => {
+              {statusResult.issues?.map((issue) => {
                 return (
-                  <li key={issue.id} className='flex items-center gap-1.5'>
+                  <li
+                    key={`new-${issue.id}`}
+                    className='flex items-center gap-1.5'
+                  >
                     <span className='text-green-500'>+ new</span>
+                    <span className='truncate'>{issue.name}</span>
+                  </li>
+                );
+              })}
+              {statusResult.updated_issues?.map((issue) => {
+                return (
+                  <li
+                    key={`updated-${issue.id}`}
+                    className='flex items-center gap-1.5'
+                  >
+                    <span className='text-amber-500'>~ updated</span>
                     <span className='truncate'>{issue.name}</span>
                   </li>
                 );
