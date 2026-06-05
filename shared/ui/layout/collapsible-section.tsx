@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 type CollapsibleSectionProps = React.PropsWithChildren<{
   label: string;
@@ -21,7 +21,9 @@ export function CollapsibleSection({
   extraContent,
 }: CollapsibleSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
-  const contentId = useId();
+  const contentId = useMemo(() => {
+    return `collapsible-${label.toLowerCase().replaceAll(/\W+/g, '-')}`;
+  }, [label]);
 
   return (
     <div className={className}>

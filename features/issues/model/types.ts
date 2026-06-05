@@ -27,7 +27,6 @@ export const ISSUE_STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
   { value: 'in_progress', label: 'In progress' },
   { value: 'paused', label: 'Paused' },
   { value: 'review', label: 'Review' },
-  { value: 'reopen', label: 'Reopen' },
   { value: 'done', label: 'Done' },
 ];
 

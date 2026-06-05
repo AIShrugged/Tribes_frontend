@@ -288,6 +288,7 @@ const InputDropdown = forwardRef<
     >
       <div
         ref={triggerRef}
+        id={inputId}
         tabIndex={disabled ? undefined : 0}
         role='combobox'
         aria-expanded={isOpen}
@@ -332,20 +333,13 @@ const InputDropdown = forwardRef<
           <label
             htmlFor={inputId}
             className={cn(
-              'absolute left-4 transition-all pointer-events-none select-none text-sm',
+              'absolute left-4 max-w-[calc(100%-2rem)] truncate transition-all pointer-events-none select-none text-sm leading-none',
               floatingActive
-                ? '-translate-y-5 scale-90 px-1 bg-background text-xs text-muted-foreground'
-                : 'translate-y-0 scale-100 text-muted-foreground',
+                ? 'top-0 -translate-y-1/2 scale-90 px-1 bg-background text-xs text-muted-foreground'
+                : 'top-1/2 -translate-y-1/2 scale-100 text-muted-foreground',
               error ? 'text-destructive' : '',
             )}
-            style={
-              {
-                zIndex: 10,
-                top: floatingActive ? -9 : '50%',
-                transformOrigin: 'left center',
-                translate: floatingActive ? '0' : '0 -50%',
-              } as React.CSSProperties
-            }
+            style={{ zIndex: 10, transformOrigin: 'left center' }}
           >
             {label}
           </label>
