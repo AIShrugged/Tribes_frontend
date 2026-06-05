@@ -15,11 +15,6 @@ const TABS = [
     match: 'exact' as const,
   },
   {
-    href: ROUTES.DASHBOARD.TODAY_GOALS,
-    label: 'Goals',
-    match: 'exact' as const,
-  },
-  {
     href: ROUTES.DASHBOARD.TODAY_DECISIONS,
     label: 'Decisions',
     match: 'exact' as const,

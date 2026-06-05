@@ -6,6 +6,7 @@ export { CarriedTasks } from './ui/carried-tasks';
 export { DayNavigator } from './ui/day-navigator';
 export { DayTimeline } from './ui/day-timeline';
 export { EmptyState } from './ui/empty-state';
+export { InsightProfileSection } from './ui/insight-profile-section';
 export { MeetingDetailCard } from './ui/meeting-detail-card';
 export { StaleItems } from './ui/stale-items';
 export { TodayTabsNav } from './ui/today-tabs-nav';

@@ -19,6 +19,16 @@ export function OrganizationTabsNav({
       label: 'People',
       match: 'exact',
     },
+    {
+      href: ROUTES.DASHBOARD.ORGANIZATION_GOALS(organizationId),
+      label: 'Goals',
+      match: 'exact',
+    },
+    {
+      href: ROUTES.DASHBOARD.ORGANIZATION_DESCRIPTION(organizationId),
+      label: 'Description',
+      match: 'exact',
+    },
   ] as const;
 
   return <PageTabsNav tabs={tabs} variant='underline' />;
