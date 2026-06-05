@@ -133,10 +133,17 @@ function Signal({ ready, label }: { ready: boolean; label: string }) {
   );
 }
 
-function MeetingLink({ id, label }: { id: number; label: string }) {
+// Links to the meetings dashboard (list view) centered on the meeting's day,
+// so the meeting is visible in context — NOT the isolated meeting detail card.
+// Falls back to the plain list when the date is unknown (e.g. event hard-deleted).
+function MeetingLink({ date, label }: { date: string | null; label: string }) {
   return (
     <Link
-      href={ROUTES.DASHBOARD.MEETING_DETAIL_OVERVIEW(id)}
+      href={
+        date
+          ? ROUTES.DASHBOARD.MEETINGS_LIST_BY_DATE(date)
+          : ROUTES.DASHBOARD.MEETINGS_LIST
+      }
       className='inline-flex w-fit items-center gap-1 text-sm text-primary hover:underline'
     >
       {label} <ExternalLink className='h-3 w-3' />
@@ -161,7 +168,10 @@ function TranscriptBody({ detail }: { detail: UploadDetailTranscript }) {
         {detail.calendar_event_id && (
           <p className='text-sm text-muted-foreground'>
             An empty meeting was created.{' '}
-            <MeetingLink id={detail.calendar_event_id} label='View meeting' />
+            <MeetingLink
+              date={detail.calendar_event_date}
+              label='View meeting'
+            />
           </p>
         )}
       </div>
@@ -184,7 +194,7 @@ function TranscriptBody({ detail }: { detail: UploadDetailTranscript }) {
       )}
 
       {detail.calendar_event_id && (
-        <MeetingLink id={detail.calendar_event_id} label='View meeting' />
+        <MeetingLink date={detail.calendar_event_date} label='View meeting' />
       )}
     </div>
   );
@@ -251,7 +261,39 @@ function TaskDataProcessing({
   );
 }
 
+function IssueLinkList({
+  title,
+  issues,
+}: {
+  title: string;
+  issues: UploadDetailTaskData['issues'];
+}) {
+  return (
+    <div className='flex flex-col gap-1'>
+      <p className='text-sm font-medium text-foreground'>{title}</p>
+      <ul className='flex flex-col gap-1'>
+        {issues.map((issue) => {
+          return (
+            <li key={issue.id}>
+              <Link
+                href={ROUTES.DASHBOARD.ISSUES_DETAIL(issue.id)}
+                className='inline-flex items-center gap-1 text-sm text-primary hover:underline'
+              >
+                {issue.name} <ExternalLink className='h-3 w-3' />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 function TaskDataDone({ detail }: { detail: UploadDetailTaskData }) {
+  // The recorded count can exceed the listed ids when an updated issue was since
+  // deleted or is no longer visible to the viewer — surface the remainder honestly.
+  const unlistedUpdated = detail.issues_updated - detail.updated_issues.length;
+
   return (
     <div className='flex flex-col gap-4'>
       <div className='rounded-md border border-border bg-muted/30 p-3 text-sm text-muted-foreground'>
@@ -260,33 +302,21 @@ function TaskDataDone({ detail }: { detail: UploadDetailTaskData }) {
       </div>
 
       {detail.issues.length > 0 ? (
-        <div className='flex flex-col gap-1'>
-          <p className='text-sm font-medium text-foreground'>Created tasks</p>
-          <ul className='flex flex-col gap-1'>
-            {detail.issues.map((issue) => {
-              return (
-                <li key={issue.id}>
-                  <Link
-                    href={ROUTES.DASHBOARD.ISSUES_DETAIL(issue.id)}
-                    className='inline-flex items-center gap-1 text-sm text-primary hover:underline'
-                  >
-                    {issue.name} <ExternalLink className='h-3 w-3' />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <IssueLinkList title='Created tasks' issues={detail.issues} />
       ) : (
         <p className='text-sm text-muted-foreground'>
           No tasks were created from this document.
         </p>
       )}
 
-      {detail.issues_updated > 0 && (
+      {detail.updated_issues.length > 0 && (
+        <IssueLinkList title='Updated tasks' issues={detail.updated_issues} />
+      )}
+
+      {unlistedUpdated > 0 && (
         <p className='text-xs text-muted-foreground'>
-          {detail.issues_updated} existing task
-          {detail.issues_updated === 1 ? '' : 's'} were updated (not listed).
+          {unlistedUpdated} more updated task{unlistedUpdated === 1 ? '' : 's'}{' '}
+          not shown.
         </p>
       )}
     </div>

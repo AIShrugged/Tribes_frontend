@@ -33,6 +33,8 @@ export interface UploadDetailTranscript {
   status: NormalizedUploadStatus;
   error_message: string | null;
   calendar_event_id: number | null;
+  /** Meeting date (Y-m-d, app TZ) — used to deep-link the meetings list to that day. */
+  calendar_event_date: string | null;
   transcript_entries_count: number | null;
   participants_count: number | null;
   processing: UploadDetailProcessing | null;
@@ -56,7 +58,10 @@ export interface UploadDetailTaskData {
   error_message: string | null;
   issues_created: number;
   issues_updated: number;
+  /** Issues created by this upload (status 'new'). */
   issues: UploadDetailIssue[];
+  /** Pre-existing issues this upload updated (status 'updated'). */
+  updated_issues: UploadDetailIssue[];
   uploader_name: string | null;
   team_name: string | null;
   created_at: string;
