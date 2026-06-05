@@ -4,10 +4,7 @@ export const addTelegramChatSchema = z.object({
   // Handled with register + setValueAs so empty input sends undefined (not NaN)
   telegram_chat_id: z
     .number({ error: 'Required — enter a group Chat ID' })
-    .int()
-    .negative({
-      message: 'Group Chat IDs must be negative (e.g. -1003888134038)',
-    }),
+    .int(),
   message_thread_id: z
     .number()
     .int()
