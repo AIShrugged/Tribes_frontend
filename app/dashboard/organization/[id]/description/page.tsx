@@ -21,5 +21,10 @@ export default async function OrganizationDescriptionPage({
 
   if (!organization) return null;
 
-  return <OrganizationDescriptionTab context={organization.context} />;
+  return (
+    <OrganizationDescriptionTab
+      name={organization.name}
+      context={organization.context}
+    />
+  );
 }
