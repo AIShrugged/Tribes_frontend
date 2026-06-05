@@ -2,12 +2,9 @@ import {
   getOrganization,
   getOrganizations,
   OrganizationPeopleTab,
-  OrganizationTabsNav,
 } from '@/features/organization';
 import { getTeamDashboard, getTeamInvites, getTeams } from '@/features/teams';
 import { getUser } from '@/features/user';
-import { Card, CardBody } from '@/shared/ui/card';
-import PageHeader from '@/widgets/layout/ui/page-header';
 
 import type { TeamInvite, TeamMember, TeamProps } from '@/entities/team';
 import type { TabPeople } from '@/features/teams/model/dashboard-types';
@@ -103,21 +100,13 @@ export default async function OrganizationPeoplePage({ params }: PageProps) {
   );
 
   return (
-    <Card className='h-full flex flex-col'>
-      <PageHeader hasButtonBack title='Organization' />
-      <div className='px-6'>
-        <OrganizationTabsNav organizationId={organization.id} />
-      </div>
-      <CardBody>
-        <OrganizationPeopleTab
-          analyticsData={analyticsData}
-          members={getOrganizationMembers(teams)}
-          pendingInvites={pendingInvites}
-          defaultTeamId={defaultTeamId}
-          isManager={isManager}
-          currentUserId={currentUser?.id ?? null}
-        />
-      </CardBody>
-    </Card>
+    <OrganizationPeopleTab
+      analyticsData={analyticsData}
+      members={getOrganizationMembers(teams)}
+      pendingInvites={pendingInvites}
+      defaultTeamId={defaultTeamId}
+      isManager={isManager}
+      currentUserId={currentUser?.id ?? null}
+    />
   );
 }

@@ -4,11 +4,8 @@ import {
   OrganizationDangerZone,
   OrganizationForm,
   OrganizationIssueTypesSettings,
-  OrganizationTabsNav,
 } from '@/features/organization';
 import { ServerError } from '@/shared/lib/errors';
-import { Card, CardBody } from '@/shared/ui/card';
-import PageHeader from '@/widgets/layout/ui/page-header';
 
 import type { AgentProfile } from '@/features/agents';
 import type { PageProps } from '@/shared/types/common';
@@ -37,24 +34,16 @@ export default async function OrganizationSettingsPage({ params }: PageProps) {
   if (!organization) return null;
 
   return (
-    <Card className='h-full flex flex-col'>
-      <PageHeader hasButtonBack title='Organization' />
-      <div className='px-6'>
-        <OrganizationTabsNav organizationId={organization.id} />
+    <div className='grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)]'>
+      <div className='flex flex-col gap-8'>
+        <OrganizationForm values={organization} />
+        <OrganizationDangerZone org={organization} />
       </div>
-      <CardBody>
-        <div className='grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)]'>
-          <div className='flex flex-col gap-8'>
-            <OrganizationForm values={organization} />
-            <OrganizationDangerZone org={organization} />
-          </div>
-          <OrganizationIssueTypesSettings
-            organizationId={organization.id}
-            issueTypes={organization.issue_types}
-            profiles={agentProfiles}
-          />
-        </div>
-      </CardBody>
-    </Card>
+      <OrganizationIssueTypesSettings
+        organizationId={organization.id}
+        issueTypes={organization.issue_types}
+        profiles={agentProfiles}
+      />
+    </div>
   );
 }

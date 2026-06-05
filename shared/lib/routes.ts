@@ -47,6 +47,12 @@ export const ROUTES = {
     ORGANIZATION_SETTINGS: (id: string | number) => {
       return `/dashboard/organization/${id}/settings`;
     },
+    ORGANIZATION_GOALS: (id: string | number) => {
+      return `/dashboard/organization/${id}/goals`;
+    },
+    ORGANIZATION_DESCRIPTION: (id: string | number) => {
+      return `/dashboard/organization/${id}/description`;
+    },
     PROFILE: '/dashboard/profile',
     PROFILE_ACCOUNT: '/dashboard/profile/account',
     PROFILE_CALENDAR: '/dashboard/profile/calendar',

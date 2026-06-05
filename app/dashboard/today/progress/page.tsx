@@ -9,6 +9,7 @@ import {
   AiNudge,
   AiPrepPanel,
   getTodayBriefing,
+  InsightProfileSection,
   StaleItems,
   WaitingOnYou,
 } from '@/features/today-briefing';
@@ -19,6 +20,32 @@ import type { IssueHistoryPeriod } from '@/features/issues';
 export const metadata = { title: 'Tasks' };
 
 const VALID_PERIODS = new Set<IssueHistoryPeriod>(['day', 'week', 'month']);
+
+function InsightSkeleton() {
+  return (
+    <div className='space-y-2'>
+      <div className='flex items-center gap-2 mb-3'>
+        <Skeleton className='h-4 w-4 rounded-full' />
+        <Skeleton className='h-4 w-32' />
+      </div>
+      {[1, 2, 3].map((i) => {
+        return (
+          <div
+            key={i}
+            className='rounded-[var(--radius-card)] border border-border bg-card p-4'
+          >
+            <Skeleton className='h-3.5 w-36 mb-3' />
+            <div className='flex flex-wrap gap-2'>
+              <Skeleton className='h-5 w-24 rounded-full' />
+              <Skeleton className='h-5 w-32 rounded-full' />
+              <Skeleton className='h-5 w-20 rounded-full' />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 async function AiNudgeSection({ date }: { date?: string }) {
   const briefing = await getTodayBriefing(date);
@@ -86,6 +113,13 @@ export default async function TodayProgressPage({
         }
       >
         <AiPrepSection date={date} />
+      </Suspense>
+
+      <hr className='border-border' />
+
+      {/* Personal AI Insight — streams independently */}
+      <Suspense fallback={<InsightSkeleton />}>
+        <InsightProfileSection />
       </Suspense>
     </div>
   );
