@@ -173,6 +173,7 @@ export interface MeetingTask {
   assignee_id: number | null;
   due_date: string | null;
   is_overdue: boolean;
+  is_epic: boolean;
 }
 
 export interface CarriedTask {

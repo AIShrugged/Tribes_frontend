@@ -17,6 +17,8 @@ export interface TaskDataUploadStatusResponse {
   original_filename: string;
   issues_created: number;
   issues_updated: number;
+  /** Present when status is 'failed'. User-facing reason for the failure. */
+  error_message?: string;
   /** Issues created by this upload (status 'new'). */
   issues?: Array<{
     id: number;

@@ -27,6 +27,8 @@ export type TaskDataUploadFormData = z.infer<typeof taskDataUploadSchema>;
 export const ERROR_CODE_MESSAGES: Record<string, string> = {
   TEAM_ORG_MISMATCH: 'Selected team is not in your organization.',
   TASK_DATA_PARSE_FAILED: 'Could not process the file. Try a different format.',
+  CONTENT_NOT_RELEVANT:
+    'This file does not appear to be related to your organization’s work. Please upload meeting notes, task lists, or project documents.',
 };
 
 export const getUploadErrorMessage = (

@@ -97,7 +97,8 @@ export function TaskDataUploadForm({
           stopPolling();
         } else if (data.status === 'failed') {
           setRootError(
-            'Processing failed. Please try again with a different file.',
+            data.error_message ??
+              'Processing failed. Please try again with a different file.',
           );
           setPhase('error');
           stopPolling();

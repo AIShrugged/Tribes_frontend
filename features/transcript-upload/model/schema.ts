@@ -66,6 +66,8 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
     'Could not parse the file. Check the format: JSON Recall, TXT, VTT, or SRT.',
   TOO_MANY_ENTRIES: `The transcript has too many entries (limit: ${MAX_ENTRIES.toLocaleString('en-US')}).`,
   UNSUPPORTED_FORMAT: 'File format is not supported.',
+  CONTENT_NOT_RELEVANT:
+    'This transcript does not appear to be related to your organization’s work.',
 };
 
 export const getUploadErrorMessage = (
