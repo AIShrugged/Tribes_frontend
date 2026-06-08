@@ -76,6 +76,11 @@ export function AgendaList({
                       </span>
                     )}
                   </span>
+                  {task.is_epic && (
+                    <span className='shrink-0 rounded px-1 py-0.5 text-[10px] font-medium bg-violet-500/15 text-violet-400 leading-none'>
+                      Epic
+                    </span>
+                  )}
                   <TaskStatusBadge
                     status={task.status}
                     isOverdue={task.is_overdue}
