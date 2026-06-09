@@ -2,8 +2,8 @@
 
 ## Paths
 
-- Frontend: `/Users/slavapopov/Documents/WandaAsk_frontend`
-- Backend: `/Users/slavapopov/Documents/WandaAsk_backend` (Laravel 12 / PHP 8.2)
+- Frontend: `/home/anor/projects/WandaAsk_frontend`
+- Backend: `/home/anor/projects/spodial_hr_backend` (Laravel 12 / PHP 8.2)
 
 ## Backend File Navigation Map
 

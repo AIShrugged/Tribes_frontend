@@ -47,8 +47,8 @@ assume field names, route paths, HTTP methods, validation rules, or error codes.
 
 ## Backend Location
 
-The Laravel backend lives at: `/Users/slavapopov/Documents/WandaAsk_backend` The
-Next.js frontend lives at: `/Users/slavapopov/Documents/WandaAsk_frontend`
+The Laravel backend lives at: `/home/anor/projects/spodial_hr_backend` The
+Next.js frontend lives at: `/home/anor/projects/WandaAsk_frontend`
 
 ## Mandatory Backend Lookup Rules
 
@@ -67,17 +67,17 @@ Next.js frontend lives at: `/Users/slavapopov/Documents/WandaAsk_frontend`
 ## Backend Navigation Map
 
 ```
-Routes:           /Users/slavapopov/Documents/WandaAsk_backend/routes/api.php
-                  /Users/slavapopov/Documents/WandaAsk_backend/routes/ai.php  ← MCP / AI endpoints
-Validation rules: /Users/slavapopov/Documents/WandaAsk_backend/app/Http/Requests/API/v1/<Name>Request.php
-Response shapes:  /Users/slavapopov/Documents/WandaAsk_backend/app/Http/Resources/API/v1/<Name>Resource.php
-                  /Users/slavapopov/Documents/WandaAsk_backend/app/Domain/DTO/<Domain>/<Name>DTO.php  ← for DTO-based endpoints
-Business logic:   /Users/slavapopov/Documents/WandaAsk_backend/app/Services/<Domain>/<Name>Service.php
-Error codes:      /Users/slavapopov/Documents/WandaAsk_backend/app/Domain/Errors/
-Models:           /Users/slavapopov/Documents/WandaAsk_backend/app/Models/<Name>.php
-Enums:            /Users/slavapopov/Documents/WandaAsk_backend/app/Enums/<Name>.php
-Agent tools:      /Users/slavapopov/Documents/WandaAsk_backend/app/Services/Agent/Tools/
-Artifact schemas: /Users/slavapopov/Documents/WandaAsk_backend/app/Services/Agent/Tools/CreateArtifactTool.php
+Routes:           /home/anor/projects/spodial_hr_backend/routes/api.php
+                  /home/anor/projects/spodial_hr_backend/routes/ai.php  ← MCP / AI endpoints
+Validation rules: /home/anor/projects/spodial_hr_backend/app/Http/Requests/API/v1/<Name>Request.php
+Response shapes:  /home/anor/projects/spodial_hr_backend/app/Http/Resources/API/v1/<Name>Resource.php
+                  /home/anor/projects/spodial_hr_backend/app/Domain/DTO/<Domain>/<Name>DTO.php  ← for DTO-based endpoints
+Business logic:   /home/anor/projects/spodial_hr_backend/app/Services/<Domain>/<Name>Service.php
+Error codes:      /home/anor/projects/spodial_hr_backend/app/Domain/Errors/
+Models:           /home/anor/projects/spodial_hr_backend/app/Models/<Name>.php
+Enums:            /home/anor/projects/spodial_hr_backend/app/Enums/<Name>.php
+Agent tools:      /home/anor/projects/spodial_hr_backend/app/Services/Agent/Tools/
+Artifact schemas: /home/anor/projects/spodial_hr_backend/app/Services/Agent/Tools/CreateArtifactTool.php
 ```
 
 ## API Response Envelope
@@ -115,7 +115,7 @@ The backend throws `AppException` with machine-readable `errorCode` strings
 
 ## Frontend Architecture Rules (FSD)
 
-Project root is `/Users/slavapopov/Documents/WandaAsk_frontend` (no `src/`
+Project root is `/home/anor/projects/WandaAsk_frontend` (no `src/`
 subdirectory). Path alias `@/*` → `./*`.
 
 ```
@@ -208,7 +208,7 @@ Examples of what to record:
 # Persistent Agent Memory
 
 You have a persistent Persistent Agent Memory directory at
-`/Users/slavapopov/Documents/WandaAsk_frontend/.claude/agent-memory/wanda-backend-navigator/`.
+`/home/anor/projects/WandaAsk_frontend/.claude/agent-memory/wanda-backend-navigator/`.
 Its contents persist across conversations.
 
 As you work, consult your memory files to build on previous experience. When you
@@ -263,7 +263,7 @@ When looking for past context:
 1. Search topic files in your memory directory:
 
 ```
-Grep with pattern="<search term>" path="/Users/slavapopov/Documents/WandaAsk_frontend/.claude/agent-memory/wanda-backend-navigator/" glob="*.md"
+Grep with pattern="<search term>" path="/home/anor/projects/WandaAsk_frontend/.claude/agent-memory/wanda-backend-navigator/" glob="*.md"
 ```
 
 2. Session transcript logs (last resort — large files, slow):
