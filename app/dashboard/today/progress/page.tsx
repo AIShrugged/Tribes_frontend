@@ -5,47 +5,14 @@ import {
   getIssueStatsHistory,
   IssueProgressPage,
 } from '@/features/issues';
-import {
-  AiNudge,
-  AiPrepPanel,
-  getTodayBriefing,
-  InsightProfileSection,
-  StaleItems,
-  WaitingOnYou,
-} from '@/features/today-briefing';
-import { Skeleton } from '@/shared/ui/layout/skeleton';
+import { MeetingTaskReviewContainer } from '@/features/meeting-task-review';
+import { AiNudge, getTodayBriefing } from '@/features/today-briefing';
 
 import type { IssueHistoryPeriod } from '@/features/issues';
 
 export const metadata = { title: 'Tasks' };
 
 const VALID_PERIODS = new Set<IssueHistoryPeriod>(['day', 'week', 'month']);
-
-function InsightSkeleton() {
-  return (
-    <div className='space-y-2'>
-      <div className='flex items-center gap-2 mb-3'>
-        <Skeleton className='h-4 w-4 rounded-full' />
-        <Skeleton className='h-4 w-32' />
-      </div>
-      {[1, 2, 3].map((i) => {
-        return (
-          <div
-            key={i}
-            className='rounded-[var(--radius-card)] border border-border bg-card p-4'
-          >
-            <Skeleton className='h-3.5 w-36 mb-3' />
-            <div className='flex flex-wrap gap-2'>
-              <Skeleton className='h-5 w-24 rounded-full' />
-              <Skeleton className='h-5 w-32 rounded-full' />
-              <Skeleton className='h-5 w-20 rounded-full' />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 async function AiNudgeSection({ date }: { date?: string }) {
   const briefing = await getTodayBriefing(date);
@@ -55,27 +22,6 @@ async function AiNudgeSection({ date }: { date?: string }) {
   if (!briefing.nudge) return null;
   return (
     <AiNudge key={briefing.date} text={briefing.nudge} date={briefing.date} />
-  );
-}
-
-async function AiPrepSection({ date }: { date?: string }) {
-  const briefing = await getTodayBriefing(date);
-  if (briefing.events.length === 0) return null;
-  return (
-    <div className='flex flex-col gap-8'>
-      {briefing.events.map((event) => {
-        return (
-          <AiPrepPanel
-            key={event.id}
-            event={event}
-            tasks={event.tasks}
-            carriedTasks={briefing.carried_tasks}
-          />
-        );
-      })}
-      <WaitingOnYou tasks={briefing.waiting_on_you} />
-      <StaleItems tasks={briefing.stale} />
-    </div>
   );
 }
 
@@ -104,23 +50,8 @@ export default async function TodayProgressPage({
 
       <IssueProgressPage stats={stats} history={history} period={period} />
 
-      <Suspense
-        fallback={
-          <div className='rounded-[var(--radius-card)] border border-border bg-card p-5'>
-            <Skeleton className='mb-3 h-4 w-48' />
-            <Skeleton className='h-20 w-full' />
-          </div>
-        }
-      >
-        <AiPrepSection date={date} />
-      </Suspense>
-
-      <hr className='border-border' />
-
-      {/* Personal AI Insight — streams independently */}
-      <Suspense fallback={<InsightSkeleton />}>
-        <InsightProfileSection />
-      </Suspense>
+      {/* Meeting Task Review — shows latest AI task analysis for the org */}
+      <MeetingTaskReviewContainer />
     </div>
   );
 }

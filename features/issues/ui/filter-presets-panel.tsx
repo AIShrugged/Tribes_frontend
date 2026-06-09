@@ -1,7 +1,7 @@
 'use client';
 
 import { Bookmark, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Popup } from '@/shared/ui/popup/Popup';
 
@@ -53,10 +53,15 @@ export function FilterPresetsPanel({
   currentFilters,
   onApply,
 }: FilterPresetsPanelProps) {
-  const [presets, setPresets] = useState<FilterPreset[]>(() => {
-    return loadPresets();
-  });
+  const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [open, setOpen] = useState(false);
+
+  // Load from localStorage only after hydration so server/client render match.
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPresets(loadPresets());
+  }, []);
   const [saveName, setSaveName] = useState('');
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
