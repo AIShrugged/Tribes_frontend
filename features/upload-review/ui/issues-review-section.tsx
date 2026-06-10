@@ -164,6 +164,14 @@ export function IssuesReviewSection({
                   className={FIELD}
                   disabled={row.removed}
                   value={row.due_date ?? ''}
+                  onClick={(e) => {
+                    // Open the calendar on a click anywhere in the field, not just the icon.
+                    try {
+                      e.currentTarget.showPicker();
+                    } catch {
+                      // Picker already open or unsupported — the native icon still works.
+                    }
+                  }}
                   onChange={(e) => {
                     return onChange(row.uid, 'due_date', e.target.value);
                   }}
