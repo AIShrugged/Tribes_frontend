@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -22,6 +23,7 @@ import {
   type TaskDataUploadStatusResponse,
   type UploadStatus,
 } from '@/features/task-data-upload/model/types';
+import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
 import Error from '@/shared/ui/input/Error';
@@ -47,6 +49,9 @@ export function TaskDataUploadForm({
   const [uploadId, setUploadId] = useState<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  // Guards against the initial poll + interval both firing a redirect before the interval clears.
+  const redirectedRef = useRef(false);
 
   const autoTeamId = teams.length === 1 ? teams[0].id : undefined;
   const teamOptions = teams.map((t) => {
@@ -91,17 +96,37 @@ export function TaskDataUploadForm({
         const data = await getUploadStatus(uploadId);
         setCurrentStatus(data.status);
 
-        if (data.status === 'done') {
-          setStatusResult(data);
-          setPhase('done');
-          stopPolling();
-        } else if (data.status === 'failed') {
-          setRootError(
-            data.error_message ??
-              'Processing failed. Please try again with a different file.',
-          );
-          setPhase('error');
-          stopPolling();
+        switch (data.status) {
+          case 'done': {
+            setStatusResult(data);
+            setPhase('done');
+            stopPolling();
+            break;
+          }
+          case 'pending_review': {
+            // Pre-moderation on: extracted tasks await human review — hand off to the review screen.
+            if (!redirectedRef.current) {
+              redirectedRef.current = true;
+              stopPolling();
+              onClose();
+              router.push(
+                ROUTES.DASHBOARD.UPLOAD_DETAIL('task_data', uploadId),
+              );
+            }
+            break;
+          }
+          case 'failed': {
+            setRootError(
+              data.error_message ??
+                'Processing failed. Please try again with a different file.',
+            );
+            setPhase('error');
+            stopPolling();
+            break;
+          }
+          default: {
+            break;
+          }
         }
       } catch {
         // Network error during poll — keep trying
@@ -117,7 +142,7 @@ export function TaskDataUploadForm({
     }, 2000);
 
     return stopPolling;
-  }, [uploadId, phase, stopPolling]);
+  }, [uploadId, phase, stopPolling, router, onClose]);
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,

@@ -174,6 +174,9 @@ export interface MeetingTask {
   due_date: string | null;
   is_overdue: boolean;
   is_epic: boolean;
+  // Why the task was generated/updated on this meeting (shown in the dropdown).
+  author_name: string | null;
+  context: string | null;
 }
 
 export interface CarriedTask {

@@ -1,6 +1,10 @@
 export type UploadType = 'transcript' | 'task_data';
 
-export type NormalizedUploadStatus = 'processing' | 'done' | 'failed';
+export type NormalizedUploadStatus =
+  | 'processing'
+  | 'review'
+  | 'done'
+  | 'failed';
 
 /** One row of the unified Upload Log feed (GET /uploads). */
 export interface UploadLogItem {

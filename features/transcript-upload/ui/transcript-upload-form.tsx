@@ -164,6 +164,23 @@ export function TranscriptUploadForm({
       }
       const uploadResponse = result.data;
       if (!uploadResponse) return;
+
+      // Pre-moderation on: extracted data must be reviewed before it lands. Send the user to the
+      // review screen (the upload detail page renders it while the row is in 'review').
+      if (uploadResponse.moderation && uploadResponse.upload_id != null) {
+        toast.success(
+          'Transcript uploaded. Review the extracted data to approve.',
+        );
+        onClose();
+        router.push(
+          ROUTES.DASHBOARD.UPLOAD_DETAIL(
+            'transcript',
+            uploadResponse.upload_id,
+          ),
+        );
+        return;
+      }
+
       toast.success('Transcript uploaded. Summary will appear in 1–2 minutes.');
       if (onSuccess) {
         onSuccess(uploadResponse.calendar_event_id);

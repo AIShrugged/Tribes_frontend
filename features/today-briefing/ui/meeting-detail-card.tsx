@@ -75,6 +75,43 @@ export function MeetingDetailCard({ event }: MeetingDetailCardProps) {
       </div>
 
       <div className='flex flex-col gap-4 px-5 py-4'>
+        {/* Agenda (tasks) — moved to the top so tasks are the first thing shown */}
+        <AgendaList
+          tasks={event.tasks}
+          totalCount={event.total_tasks_count}
+          doneCount={event.done_tasks_count}
+          meetingState={event.meeting_state}
+        />
+
+        {/* Updated (augmented) tasks — pre-existing issues this meeting touched.
+            Separate informational list; does NOT count toward the readiness bar. */}
+        {(event.updated_tasks ?? []).length > 0 && (
+          <AgendaList
+            tasks={event.updated_tasks}
+            totalCount={event.updated_tasks.length}
+            doneCount={0}
+            meetingState={event.meeting_state}
+            label='Tasks updated in this meeting'
+          />
+        )}
+
+        {/* Readiness bar */}
+        {event.total_tasks_count > 0 && (
+          <div className='flex items-center gap-3'>
+            <div className='h-2 flex-1 rounded-full bg-muted-foreground/20'>
+              <div
+                className='h-full rounded-full bg-emerald-500 transition-all'
+                style={{
+                  width: `${(event.done_tasks_count / event.total_tasks_count) * 100}%`,
+                }}
+              />
+            </div>
+            <span className='text-xs text-muted-foreground shrink-0'>
+              {event.done_tasks_count} of {event.total_tasks_count} ready
+            </span>
+          </div>
+        )}
+
         {/* Briefing (from past meeting summary) */}
         {event.summary && (
           <CollapsibleSection label='Briefing' extraContent={null}>
@@ -100,26 +137,13 @@ export function MeetingDetailCard({ event }: MeetingDetailCardProps) {
                 </div>
               )}
 
-              {event.summary.decisions.length > 0 && (
-                <div>
-                  <p className='text-xs font-semibold text-foreground mb-1.5'>
-                    Decisions
-                  </p>
-                  <ul className='flex flex-col gap-1'>
-                    {event.summary.decisions.map((decision, i) => {
-                      return (
-                        <li
-                          key={i}
-                          className='flex items-start gap-2 text-sm text-foreground'
-                        >
-                          <span className='w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0' />
-                          <span>{decision}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
+              {/*
+                Decisions section intentionally hidden on the today/meetings page.
+                Source data (event.summary.decisions) is still available and the
+                section is still rendered on /dashboard/meetings/[id]/overview via
+                MeetingDecisionsSection. To restore it here, re-add a block that maps
+                event.summary.decisions, mirroring the Key Points block above.
+              */}
 
               {event.summary.repeated_discussions.length > 0 && (
                 <div className='rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-3 py-2.5 flex flex-col gap-2'>
@@ -170,43 +194,6 @@ export function MeetingDetailCard({ event }: MeetingDetailCardProps) {
               {event.agenda_content}
             </p>
           </CollapsibleSection>
-        )}
-
-        {/* Agenda (tasks) */}
-        <AgendaList
-          tasks={event.tasks}
-          totalCount={event.total_tasks_count}
-          doneCount={event.done_tasks_count}
-          meetingState={event.meeting_state}
-        />
-
-        {/* Updated (augmented) tasks — pre-existing issues this meeting touched.
-            Separate informational list; does NOT count toward the readiness bar. */}
-        {(event.updated_tasks ?? []).length > 0 && (
-          <AgendaList
-            tasks={event.updated_tasks}
-            totalCount={event.updated_tasks.length}
-            doneCount={0}
-            meetingState={event.meeting_state}
-            label='Tasks updated in this meeting'
-          />
-        )}
-
-        {/* Readiness bar */}
-        {event.total_tasks_count > 0 && (
-          <div className='flex items-center gap-3'>
-            <div className='h-2 flex-1 rounded-full bg-muted-foreground/20'>
-              <div
-                className='h-full rounded-full bg-emerald-500 transition-all'
-                style={{
-                  width: `${(event.done_tasks_count / event.total_tasks_count) * 100}%`,
-                }}
-              />
-            </div>
-            <span className='text-xs text-muted-foreground shrink-0'>
-              {event.done_tasks_count} of {event.total_tasks_count} ready
-            </span>
-          </div>
         )}
       </div>
     </Card>

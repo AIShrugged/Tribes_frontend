@@ -87,13 +87,18 @@ export function AgendaList({
                     className='shrink-0 text-[10px]'
                   />
                 </div>
-                {isExpanded && task.description && (
-                  <div className='mt-1.5'>
-                    <MarkdownContent>{task.description}</MarkdownContent>
+                {isExpanded && task.context && (
+                  <div className='mt-1.5 flex flex-col gap-1'>
+                    <MarkdownContent>{task.context}</MarkdownContent>
+                    {task.author_name && (
+                      <p className='text-xs text-muted-foreground'>
+                        Author: {task.author_name}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
-              {task.description && (
+              {task.context && (
                 <span className='mt-0.5 shrink-0 text-muted-foreground'>
                   {isExpanded ? (
                     <ChevronDown className='h-3.5 w-3.5' />
