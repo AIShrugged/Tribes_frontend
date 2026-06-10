@@ -28,8 +28,9 @@ const PRIORITY_OPTIONS = [
   { value: 'minimal', label: 'Minimal' },
 ];
 
-const single = (v: string | string[]): string =>
-  Array.isArray(v) ? (v[0] ?? '') : v;
+const single = (v: string | string[]): string => {
+  return Array.isArray(v) ? (v[0] ?? '') : v;
+};
 
 export function IssuesReviewSection({
   rows,

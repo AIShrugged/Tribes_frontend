@@ -10,15 +10,25 @@ const mockApprove = jest.fn();
 const mockReject = jest.fn();
 jest.mock('@/features/upload-review/api/upload-review', () => {
   return {
-    updatePlan: (...args: unknown[]) => mockUpdate(...args),
-    approveUpload: (...args: unknown[]) => mockApprove(...args),
-    rejectUpload: (...args: unknown[]) => mockReject(...args),
+    updatePlan: (...args: unknown[]) => {
+      return mockUpdate(...args);
+    },
+    approveUpload: (...args: unknown[]) => {
+      return mockApprove(...args);
+    },
+    rejectUpload: (...args: unknown[]) => {
+      return mockReject(...args);
+    },
   };
 });
 
 const mockRefresh = jest.fn();
 jest.mock('next/navigation', () => {
-  return { useRouter: () => ({ push: jest.fn(), refresh: mockRefresh }) };
+  return {
+    useRouter: () => {
+      return { push: jest.fn(), refresh: mockRefresh };
+    },
+  };
 });
 
 jest.mock('sonner', () => {
@@ -64,7 +74,9 @@ const PLAN: ExtractionPlanPayload = {
 };
 
 describe('UploadReviewScreen', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    return jest.clearAllMocks();
+  });
 
   it('renders editable fields, locks name/description, and approves', async () => {
     mockUpdate.mockResolvedValue({ data: {}, error: null });
@@ -98,9 +110,9 @@ describe('UploadReviewScreen', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Approve' }));
 
-    await waitFor(() =>
-      expect(mockApprove).toHaveBeenCalledWith('task_data', 1),
-    );
+    await waitFor(() => {
+      return expect(mockApprove).toHaveBeenCalledWith('task_data', 1);
+    });
     expect(mockUpdate).toHaveBeenCalledTimes(1);
     expect(mockRefresh).toHaveBeenCalled();
   });
@@ -119,9 +131,9 @@ describe('UploadReviewScreen', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
 
-    await waitFor(() =>
-      expect(mockReject).toHaveBeenCalledWith('transcript', 2),
-    );
+    await waitFor(() => {
+      return expect(mockReject).toHaveBeenCalledWith('transcript', 2);
+    });
     expect(mockApprove).not.toHaveBeenCalled();
   });
 });

@@ -2,10 +2,10 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { UploadDetailView } from '@/features/uploads';
-import { getUploadDetail } from '@/features/uploads/api/uploads';
 import { UploadReviewScreen } from '@/features/upload-review';
 import { getPlan } from '@/features/upload-review/api/upload-review';
+import { UploadDetailView } from '@/features/uploads';
+import { getUploadDetail } from '@/features/uploads/api/uploads';
 import { ROUTES } from '@/shared/lib/routes';
 import { Card } from '@/shared/ui/card';
 

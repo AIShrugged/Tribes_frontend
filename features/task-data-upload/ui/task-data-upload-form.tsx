@@ -73,7 +73,10 @@ export function TaskDataUploadForm({
 
   // The team picker is hidden — uploads always go to the org's default ("General") team
   // (every org member belongs to it). The teams list always includes it (Team::visibleFor).
-  const defaultTeamId = teams.find((t) => t.is_default)?.id ?? teams[0]?.id;
+  const defaultTeamId =
+    teams.find((t) => {
+      return t.is_default;
+    })?.id ?? teams[0]?.id;
 
   const {
     handleSubmit,
