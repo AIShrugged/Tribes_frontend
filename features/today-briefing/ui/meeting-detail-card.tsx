@@ -75,6 +75,18 @@ export function MeetingDetailCard({ event }: MeetingDetailCardProps) {
       </div>
 
       <div className='flex flex-col gap-4 px-5 py-4'>
+        {/* "What was done" — pre-existing tasks the meeting flagged as completed.
+            Pinned to the very top; hidden entirely when the review found nothing. */}
+        {(event.done_tasks ?? []).length > 0 && (
+          <AgendaList
+            tasks={event.done_tasks}
+            totalCount={event.done_tasks.length}
+            doneCount={0}
+            meetingState={event.meeting_state}
+            label='Completed in this meeting'
+          />
+        )}
+
         {/* Agenda (tasks) — moved to the top so tasks are the first thing shown */}
         <AgendaList
           tasks={event.tasks}
