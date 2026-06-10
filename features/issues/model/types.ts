@@ -303,3 +303,57 @@ export interface CriticalPathGraph {
 }
 
 export { type SortOrder } from '@/shared/ui/table/types';
+
+// ---------------------------------------------------------------------------
+// Issue Health — snapshot from GET /api/v1/teams/{team}/issue-health
+// ---------------------------------------------------------------------------
+
+export interface IssueHealthOverdueItem {
+  issue_id: number;
+  name: string;
+  due_date: string;
+  assignee_name: string | null;
+  days_overdue: number;
+}
+
+export interface IssueHealthSprintRiskItem {
+  issue_id: number;
+  name: string;
+  due_date: string;
+  status: 'open';
+  days_until_due: number;
+  assignee_name: string | null;
+}
+
+export interface IssueHealthPriorityIgnoredItem {
+  issue_id: number;
+  name: string;
+  priority: number;
+  priority_label: 'critical' | 'high';
+  days_inactive: number;
+  has_assignee: boolean;
+}
+
+export interface IssueHealthCounts {
+  total_analyzed: number;
+  overdue: number;
+  sprint_risk: number;
+  priority_ignored: number;
+}
+
+export interface IssueHealthFindings {
+  schema_version: number;
+  counts: IssueHealthCounts;
+  overdue: IssueHealthOverdueItem[];
+  sprint_risk: IssueHealthSprintRiskItem[];
+  priority_ignored: IssueHealthPriorityIgnoredItem[];
+}
+
+export interface IssueHealthReport {
+  id: number;
+  team_id: number;
+  period_start: string;
+  generated_at: string;
+  findings: IssueHealthFindings;
+  ai_summary: string | null;
+}

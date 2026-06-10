@@ -75,3 +75,14 @@ export { IssueAuditLogSection } from './ui/issue-audit-log-section';
 export { EpicGoalCard, EpicGoalCardSkeleton } from './ui/epic-goal-card';
 export { UnlinkedTasksSection } from './ui/unlinked-tasks-section';
 export { GoalsContent } from './ui/goals-content';
+export { IssueHealthBanner } from './ui/issue-health-banner';
+export { IssueHealthSection } from './ui/issue-health-section';
+export { getIssueHealth } from './api/issue-health';
+export type {
+  IssueHealthReport,
+  IssueHealthFindings,
+  IssueHealthCounts,
+  IssueHealthOverdueItem,
+  IssueHealthSprintRiskItem,
+  IssueHealthPriorityIgnoredItem,
+} from './model/types';
