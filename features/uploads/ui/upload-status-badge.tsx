@@ -4,9 +4,10 @@ import type { NormalizedUploadStatus } from '@/features/uploads/model/types';
 
 const STATUS_BADGE: Record<
   NormalizedUploadStatus,
-  { variant: 'primary' | 'success' | 'destructive'; label: string }
+  { variant: 'primary' | 'success' | 'destructive' | 'warning'; label: string }
 > = {
   processing: { variant: 'primary', label: 'Processing' },
+  review: { variant: 'warning', label: 'Needs review' },
   done: { variant: 'success', label: 'Done' },
   failed: { variant: 'destructive', label: 'Failed' },
 };
