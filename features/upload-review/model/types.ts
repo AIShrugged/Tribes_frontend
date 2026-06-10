@@ -56,6 +56,8 @@ export interface ExtractionPlanPayload {
 export interface ExtractionPlanResponse {
   status: string;
   plan: ExtractionPlanPayload | null;
+  /** Names of the upload team's members — options for the assignee dropdown. */
+  assignees: string[];
 }
 
 /** PATCH body — only the editable fields, keyed by uid. Rows absent from the arrays are dropped. */
@@ -65,7 +67,6 @@ export interface ExtractionPlanEditInput {
     assignee_name?: string | null;
     due_date?: string | null;
     priority?: string | null;
-    type?: string | null;
   }>;
   decisions?: Array<{
     uid: string;

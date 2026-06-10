@@ -55,6 +55,7 @@ export default async function UploadDetailPage({
             type={uploadType}
             id={numericId}
             initialPlan={planResponse.plan}
+            assignees={planResponse.assignees ?? []}
           />
         ) : (
           <UploadDetailView initialDetail={detail} />

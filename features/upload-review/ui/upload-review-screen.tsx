@@ -27,21 +27,41 @@ import type {
   UploadReviewType,
 } from '@/features/upload-review/model/types';
 
+/** Default due date when the AI extracted none: one week out, in local YYYY-MM-DD. */
+function defaultDueDate(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 7);
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${month}-${day}`;
+}
+
+function hasValue(v: string | null | undefined): boolean {
+  return typeof v === 'string' && v.trim() !== '';
+}
+
 export function UploadReviewScreen({
   type,
   id,
   initialPlan,
+  assignees,
 }: {
   type: UploadReviewType;
   id: number;
   initialPlan: ExtractionPlanPayload | null;
+  assignees: string[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const [issueRows, setIssueRows] = useState<IssueRow[]>(() => {
     return (initialPlan?.issues?.items ?? []).map((i) => {
-      return { ...i, removed: false };
+      return {
+        ...i,
+        due_date: hasValue(i.due_date) ? i.due_date : defaultDueDate(),
+        priority: hasValue(i.priority) ? i.priority : 'normal',
+        removed: false,
+      };
     });
   });
   const [decisionRows, setDecisionRows] = useState<DecisionRow[]>(() => {
@@ -52,7 +72,7 @@ export function UploadReviewScreen({
 
   const onIssueChange = (
     uid: string,
-    field: 'assignee_name' | 'due_date' | 'priority' | 'type',
+    field: 'assignee_name' | 'due_date' | 'priority',
     value: string,
   ) => {
     setIssueRows((rows) => {
@@ -108,7 +128,6 @@ export function UploadReviewScreen({
             assignee_name: r.assignee_name,
             due_date: r.due_date,
             priority: r.priority,
-            type: r.type,
           };
         }),
       decisions: decisionRows
@@ -175,6 +194,7 @@ export function UploadReviewScreen({
         rows={issueRows}
         decisions={initialPlan?.issues?.decisions ?? null}
         snapshots={initialPlan?.issues?.existing_snapshots ?? []}
+        assignees={assignees}
         onChange={onIssueChange}
         onToggleRemove={onIssueToggleRemove}
       />
