@@ -135,6 +135,9 @@ export interface TodayEvent {
   total_tasks_count: number;
   done_tasks_count: number;
   updated_tasks: MeetingTask[];
+  // Pre-existing tasks the meeting task review flagged as completed in this
+  // meeting's transcript (progress='done'). Empty when no review exists yet.
+  done_tasks: MeetingTask[];
   agenda_content: string | null;
 }
 
