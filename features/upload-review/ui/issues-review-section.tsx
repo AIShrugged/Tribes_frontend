@@ -2,6 +2,8 @@
 
 import { Trash2, Undo2 } from 'lucide-react';
 
+import InputDropdown from '@/shared/ui/input/InputDropdown';
+
 import type {
   ExtractionPlanExistingSnapshot,
   ExtractionPlanIssueDecision,
@@ -12,21 +14,35 @@ export interface IssueRow extends ExtractionPlanIssueItem {
   removed: boolean;
 }
 
-type EditableField = 'assignee_name' | 'due_date' | 'priority' | 'type';
+type EditableField = 'assignee_name' | 'due_date' | 'priority';
 
 const FIELD =
   'w-full rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground disabled:opacity-50';
+
+// Matches IssueMergeService::mapPriority (anything else → normal).
+const PRIORITY_OPTIONS = [
+  { value: 'critical', label: 'Critical' },
+  { value: 'high', label: 'High' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'low', label: 'Low' },
+  { value: 'minimal', label: 'Minimal' },
+];
+
+const single = (v: string | string[]): string =>
+  Array.isArray(v) ? (v[0] ?? '') : v;
 
 export function IssuesReviewSection({
   rows,
   decisions,
   snapshots,
+  assignees,
   onChange,
   onToggleRemove,
 }: {
   rows: IssueRow[];
   decisions: ExtractionPlanIssueDecision[] | null;
   snapshots: ExtractionPlanExistingSnapshot[];
+  assignees: string[];
   onChange: (uid: string, field: EditableField, value: string) => void;
   onToggleRemove: (uid: string) => void;
 }) {
@@ -43,6 +59,24 @@ export function IssuesReviewSection({
   const kept = rows.filter((r) => {
     return !r.removed;
   }).length;
+
+  const baseAssigneeOptions = [
+    { value: '', label: '— Unassigned —' },
+    ...assignees.map((name) => {
+      return { value: name, label: name };
+    }),
+  ];
+
+  // Preserve an AI-suggested assignee that isn't a current team member, so it isn't silently lost.
+  const assigneeOptionsFor = (current: string | null) => {
+    if (current && current.trim() !== '' && !assignees.includes(current)) {
+      return [
+        ...baseAssigneeOptions,
+        { value: current, label: `${current} (not in team)` },
+      ];
+    }
+    return baseAssigneeOptions;
+  };
 
   return (
     <section className='flex flex-col gap-3'>
@@ -109,52 +143,45 @@ export function IssuesReviewSection({
             )}
 
             <div className='mt-2 grid grid-cols-2 gap-2'>
-              <label className='flex flex-col gap-1 text-xs text-muted-foreground'>
-                Assignee
-                <input
-                  className={FIELD}
-                  disabled={row.removed}
+              <div className='flex flex-col gap-1'>
+                <span className='text-xs text-muted-foreground'>Assignee</span>
+                <InputDropdown
+                  options={assigneeOptionsFor(row.assignee_name)}
                   value={row.assignee_name ?? ''}
-                  onChange={(e) => {
-                    return onChange(row.uid, 'assignee_name', e.target.value);
+                  onChange={(v) => {
+                    return onChange(row.uid, 'assignee_name', single(v));
                   }}
+                  placeholder='Unassigned'
+                  searchable
+                  disabled={row.removed}
                 />
-              </label>
+              </div>
+
               <label className='flex flex-col gap-1 text-xs text-muted-foreground'>
                 Due date
                 <input
+                  type='date'
                   className={FIELD}
                   disabled={row.removed}
-                  placeholder='YYYY-MM-DD'
                   value={row.due_date ?? ''}
                   onChange={(e) => {
                     return onChange(row.uid, 'due_date', e.target.value);
                   }}
                 />
               </label>
-              <label className='flex flex-col gap-1 text-xs text-muted-foreground'>
-                Priority
-                <input
-                  className={FIELD}
-                  disabled={row.removed}
-                  placeholder='normal'
-                  value={row.priority ?? ''}
-                  onChange={(e) => {
-                    return onChange(row.uid, 'priority', e.target.value);
+
+              <div className='flex flex-col gap-1'>
+                <span className='text-xs text-muted-foreground'>Priority</span>
+                <InputDropdown
+                  options={PRIORITY_OPTIONS}
+                  value={row.priority ?? 'normal'}
+                  onChange={(v) => {
+                    return onChange(row.uid, 'priority', single(v));
                   }}
-                />
-              </label>
-              <label className='flex flex-col gap-1 text-xs text-muted-foreground'>
-                Type
-                <input
-                  className={FIELD}
+                  searchable={false}
                   disabled={row.removed}
-                  value={row.type ?? ''}
-                  onChange={(e) => {
-                    return onChange(row.uid, 'type', e.target.value);
-                  }}
                 />
-              </label>
+              </div>
             </div>
           </div>
         );

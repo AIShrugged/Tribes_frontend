@@ -71,18 +71,24 @@ describe('UploadReviewScreen', () => {
     mockApprove.mockResolvedValue({ data: {}, error: null });
 
     render(
-      <UploadReviewScreen type='task_data' id={1} initialPlan={PLAN} />,
+      <UploadReviewScreen
+        type='task_data'
+        id={1}
+        initialPlan={PLAN}
+        assignees={['Alice', 'Bob']}
+      />,
     );
 
     // Task name is shown read-only (text, not an editable field).
     expect(screen.getByText('Ship feature')).toBeInTheDocument();
-    expect(
-      screen.queryByDisplayValue('Ship feature'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Ship feature')).not.toBeInTheDocument();
 
-    // Editable fields are inputs seeded from the plan.
-    expect(screen.getByDisplayValue('Alice')).toBeInTheDocument();
+    // Due date is a native date input seeded from the plan.
     expect(screen.getByDisplayValue('2026-06-15')).toBeInTheDocument();
+    // Assignee + Priority are dropdowns (Type field is hidden).
+    expect(screen.getByText('Assignee')).toBeInTheDocument();
+    expect(screen.getByText('Priority')).toBeInTheDocument();
+    expect(screen.queryByText('Type')).not.toBeInTheDocument();
     // Decision text is editable.
     expect(
       screen.getByDisplayValue('We will ship on Friday'),
@@ -92,7 +98,9 @@ describe('UploadReviewScreen', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Approve' }));
 
-    await waitFor(() => expect(mockApprove).toHaveBeenCalledWith('task_data', 1));
+    await waitFor(() =>
+      expect(mockApprove).toHaveBeenCalledWith('task_data', 1),
+    );
     expect(mockUpdate).toHaveBeenCalledTimes(1);
     expect(mockRefresh).toHaveBeenCalled();
   });
@@ -100,11 +108,20 @@ describe('UploadReviewScreen', () => {
   it('rejects via the discard button', async () => {
     mockReject.mockResolvedValue({ data: null, error: null });
 
-    render(<UploadReviewScreen type='transcript' id={2} initialPlan={PLAN} />);
+    render(
+      <UploadReviewScreen
+        type='transcript'
+        id={2}
+        initialPlan={PLAN}
+        assignees={['Alice', 'Bob']}
+      />,
+    );
 
     await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
 
-    await waitFor(() => expect(mockReject).toHaveBeenCalledWith('transcript', 2));
+    await waitFor(() =>
+      expect(mockReject).toHaveBeenCalledWith('transcript', 2),
+    );
     expect(mockApprove).not.toHaveBeenCalled();
   });
 });
