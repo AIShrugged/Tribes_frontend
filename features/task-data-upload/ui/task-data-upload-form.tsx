@@ -1,7 +1,8 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, UploadCloud, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -22,14 +23,31 @@ import {
   type TaskDataUploadStatusResponse,
   type UploadStatus,
 } from '@/features/task-data-upload/model/types';
+import { ROUTES } from '@/shared/lib/routes';
 import { BUTTON_VARIANT } from '@/shared/types/button';
 import { Button } from '@/shared/ui/button/Button';
 import Error from '@/shared/ui/input/Error';
-import InputDropdown from '@/shared/ui/input/InputDropdown';
 
 import type { TeamProps } from '@/entities/team';
 
 type FormPhase = 'form' | 'processing' | 'done' | 'error';
+
+/** Validate (size) and hand the file to the form, or clear it. Used by both browse and drop. */
+function acceptFile(
+  file: File | undefined,
+  onChange: (file?: File) => void,
+): void {
+  if (!file) {
+    onChange();
+    return;
+  }
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    toast.error('File exceeds 10 MB');
+    onChange();
+    return;
+  }
+  onChange(file);
+}
 
 export function TaskDataUploadForm({
   teams,
@@ -47,14 +65,15 @@ export function TaskDataUploadForm({
   const [uploadId, setUploadId] = useState<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  // Guards against the initial poll + interval both firing a redirect before the interval clears.
+  const redirectedRef = useRef(false);
 
-  const autoTeamId = teams.length === 1 ? teams[0].id : undefined;
-  const teamOptions = teams.map((t) => {
-    return {
-      value: String(t.id),
-      label: t.name,
-    };
-  });
+  const [isDragging, setIsDragging] = useState(false);
+
+  // The team picker is hidden — uploads always go to the org's default ("General") team
+  // (every org member belongs to it). The teams list always includes it (Team::visibleFor).
+  const defaultTeamId = teams.find((t) => t.is_default)?.id ?? teams[0]?.id;
 
   const {
     handleSubmit,
@@ -62,7 +81,6 @@ export function TaskDataUploadForm({
     formState: { errors },
   } = useForm<TaskDataUploadFormData>({
     resolver: zodResolver(taskDataUploadSchema),
-    defaultValues: { team_id: autoTeamId },
   });
 
   const fieldErrorMessage = (key: string): string | undefined => {
@@ -91,17 +109,37 @@ export function TaskDataUploadForm({
         const data = await getUploadStatus(uploadId);
         setCurrentStatus(data.status);
 
-        if (data.status === 'done') {
-          setStatusResult(data);
-          setPhase('done');
-          stopPolling();
-        } else if (data.status === 'failed') {
-          setRootError(
-            data.error_message ??
-              'Processing failed. Please try again with a different file.',
-          );
-          setPhase('error');
-          stopPolling();
+        switch (data.status) {
+          case 'done': {
+            setStatusResult(data);
+            setPhase('done');
+            stopPolling();
+            break;
+          }
+          case 'pending_review': {
+            // Pre-moderation on: extracted tasks await human review — hand off to the review screen.
+            if (!redirectedRef.current) {
+              redirectedRef.current = true;
+              stopPolling();
+              onClose();
+              router.push(
+                ROUTES.DASHBOARD.UPLOAD_DETAIL('task_data', uploadId),
+              );
+            }
+            break;
+          }
+          case 'failed': {
+            setRootError(
+              data.error_message ??
+                'Processing failed. Please try again with a different file.',
+            );
+            setPhase('error');
+            stopPolling();
+            break;
+          }
+          default: {
+            break;
+          }
         }
       } catch {
         // Network error during poll — keep trying
@@ -117,25 +155,7 @@ export function TaskDataUploadForm({
     }, 2000);
 
     return stopPolling;
-  }, [uploadId, phase, stopPolling]);
-
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    onChange: (file?: File) => void,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      onChange();
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      toast.error('File exceeds 10 MB');
-      event.target.value = '';
-      onChange();
-      return;
-    }
-    onChange(file);
-  };
+  }, [uploadId, phase, stopPolling, router, onClose]);
 
   const onSubmit = (data: TaskDataUploadFormData) => {
     setRootError('');
@@ -143,7 +163,7 @@ export function TaskDataUploadForm({
     setCurrentStatus('queued');
 
     startTransition(async () => {
-      const result = await uploadTaskData(data.file, data.team_id);
+      const result = await uploadTaskData(data.file, defaultTeamId);
 
       if (result.error) {
         const msg = getUploadErrorMessage(result.errorCode, result.error);
@@ -282,38 +302,82 @@ export function TaskDataUploadForm({
         </div>
       )}
 
-      {/* File input */}
+      {/* Drag-and-drop zone (click to browse fallback). Team is fixed to the org default. */}
       <Controller
         control={control}
         name='file'
         render={({ field }) => {
+          const disabled = phase === 'processing';
           return (
             <div className='flex flex-col gap-1.5'>
-              <label
-                htmlFor='task-data-upload-file'
-                className='text-sm font-medium text-foreground'
-              >
+              <span className='text-sm font-medium text-foreground'>
                 File with task data
                 <span className='ml-2 text-xs font-normal text-muted-foreground'>
                   Any text format or archive · up to 10 MB
                 </span>
-              </label>
-              <input
-                id='task-data-upload-file'
-                ref={fileInputRef}
-                type='file'
-                aria-label='Task data file'
-                disabled={phase === 'processing'}
-                className='text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50'
-                onChange={(e) => {
-                  return handleFileChange(e, field.onChange);
+              </span>
+              <div
+                role='button'
+                tabIndex={0}
+                aria-label='Drag a file here or click to browse'
+                onClick={() => {
+                  if (!disabled) fileInputRef.current?.click();
                 }}
-              />
-              {field.value && (
-                <p className='text-xs text-muted-foreground'>
-                  {field.value.name} · {(field.value.size / 1024).toFixed(1)} KB
-                </p>
-              )}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (!disabled) fileInputRef.current?.click();
+                  }
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (!disabled) setIsDragging(true);
+                }}
+                onDragLeave={() => {
+                  return setIsDragging(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  if (!disabled) {
+                    acceptFile(e.dataTransfer.files?.[0], field.onChange);
+                  }
+                }}
+                className={`flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-8 text-center text-sm transition-colors ${
+                  disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                } ${
+                  isDragging
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border bg-muted/20 hover:border-primary/50'
+                }`}
+              >
+                <UploadCloud className='h-6 w-6 text-muted-foreground' />
+                {field.value ? (
+                  <p className='text-foreground'>
+                    {field.value.name} · {(field.value.size / 1024).toFixed(1)}{' '}
+                    KB
+                  </p>
+                ) : (
+                  <p className='text-muted-foreground'>
+                    <span className='font-medium text-foreground'>
+                      Drag a file here
+                    </span>{' '}
+                    or click to browse
+                  </p>
+                )}
+                <input
+                  id='task-data-upload-file'
+                  ref={fileInputRef}
+                  type='file'
+                  aria-label='Task data file'
+                  className='hidden'
+                  disabled={disabled}
+                  onChange={(e) => {
+                    acceptFile(e.target.files?.[0], field.onChange);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
               {fieldErrorMessage('file') && (
                 <Error id='file-error'>{fieldErrorMessage('file')}</Error>
               )}
@@ -322,37 +386,9 @@ export function TaskDataUploadForm({
         }}
       />
 
-      {/* Team picker */}
-      {teams.length > 1 && (
-        <Controller
-          control={control}
-          name='team_id'
-          render={({ field }) => {
-            return (
-              <div className='flex flex-col gap-1.5'>
-                <label className='text-sm font-medium text-foreground'>
-                  Team
-                </label>
-                <InputDropdown
-                  options={teamOptions}
-                  value={field.value === undefined ? '' : String(field.value)}
-                  onChange={(v) => {
-                    return field.onChange(Number(v));
-                  }}
-                  placeholder='Select a team'
-                  searchable
-                  disabled={phase === 'processing'}
-                  error={fieldErrorMessage('team_id')}
-                />
-              </div>
-            );
-          }}
-        />
-      )}
-
-      {teams.length === 0 && (
+      {!defaultTeamId && (
         <p className='text-sm text-destructive'>
-          You need to be a member of at least one team to upload task data.
+          You need to belong to an organization to upload task data.
         </p>
       )}
 
@@ -371,7 +407,7 @@ export function TaskDataUploadForm({
         </Button>
         <Button
           type='submit'
-          disabled={phase === 'processing' || isPending || teams.length === 0}
+          disabled={phase === 'processing' || isPending || !defaultTeamId}
         >
           {phase === 'processing' ? 'Processing…' : 'Upload & extract tasks'}
         </Button>

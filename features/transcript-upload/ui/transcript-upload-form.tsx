@@ -33,22 +33,29 @@ import type { TeamProps } from '@/entities/team';
 
 type Mode = 'existing' | 'new';
 
-function handleFileChange(
-  event: React.ChangeEvent<HTMLInputElement>,
+/** Validate (size) and hand the file to the form, or clear it. Shared by browse and drop. */
+function acceptFile(
+  file: File | undefined,
   onChange: (file?: File) => void,
-) {
-  const file = event.target.files?.[0];
+): void {
   if (!file) {
     onChange();
     return;
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
     toast.error('File exceeds 10 MB');
-    event.target.value = '';
     onChange();
     return;
   }
   onChange(file);
+}
+
+function handleFileChange(
+  event: React.ChangeEvent<HTMLInputElement>,
+  onChange: (file?: File) => void,
+) {
+  acceptFile(event.target.files?.[0], onChange);
+  event.target.value = '';
 }
 
 function pad(n: number) {
@@ -164,6 +171,23 @@ export function TranscriptUploadForm({
       }
       const uploadResponse = result.data;
       if (!uploadResponse) return;
+
+      // Pre-moderation on: extracted data must be reviewed before it lands. Send the user to the
+      // review screen (the upload detail page renders it while the row is in 'review').
+      if (uploadResponse.moderation && uploadResponse.upload_id != null) {
+        toast.success(
+          'Transcript uploaded. Review the extracted data to approve.',
+        );
+        onClose();
+        router.push(
+          ROUTES.DASHBOARD.UPLOAD_DETAIL(
+            'transcript',
+            uploadResponse.upload_id,
+          ),
+        );
+        return;
+      }
+
       toast.success('Transcript uploaded. Summary will appear in 1–2 minutes.');
       if (onSuccess) {
         onSuccess(uploadResponse.calendar_event_id);
@@ -387,6 +411,7 @@ function FilePickerField({
   fieldErrorMessage: (key: string) => string | undefined;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   return (
     <Controller
@@ -401,39 +426,60 @@ function FilePickerField({
                 Any text format or archive · up to 10 MB
               </span>
             </span>
-            <input
-              ref={fileInputRef}
-              type='file'
-              accept={ACCEPT_EXTENSIONS}
-              aria-label='Transcript file'
-              className='sr-only'
-              onChange={(e) => {
-                return handleFileChange(e, field.onChange);
+            <div
+              role='button'
+              tabIndex={0}
+              aria-label='Drag a file here or click to browse'
+              onClick={() => {
+                return fileInputRef.current?.click();
               }}
-            />
-            <div className='flex items-center gap-2'>
-              <button
-                type='button'
-                onClick={() => {
-                  return fileInputRef.current?.click();
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => {
+                return setIsDragging(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                acceptFile(e.dataTransfer.files?.[0], field.onChange);
+              }}
+              className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-8 text-center text-sm transition-colors ${
+                isDragging
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border bg-muted/20 hover:border-primary/50'
+              }`}
+            >
+              <Upload className='h-6 w-6 text-muted-foreground' />
+              {field.value ? (
+                <p className='text-foreground'>
+                  {field.value.name} · {(field.value.size / 1024).toFixed(1)} KB
+                </p>
+              ) : (
+                <p className='text-muted-foreground'>
+                  <span className='font-medium text-foreground'>
+                    Drag a file here
+                  </span>{' '}
+                  or click to browse
+                </p>
+              )}
+              <input
+                ref={fileInputRef}
+                type='file'
+                accept={ACCEPT_EXTENSIONS}
+                aria-label='Transcript file'
+                className='hidden'
+                onChange={(e) => {
+                  return handleFileChange(e, field.onChange);
                 }}
-                className='inline-flex items-center gap-1.5 rounded-md border border-border bg-muted px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/70'
-              >
-                <Upload className='size-3.5' />
-                Choose file
-              </button>
-              <span className='text-sm text-muted-foreground'>
-                {field.value ? (
-                  <>
-                    {field.value.name}
-                    <span className='ml-1 text-xs'>
-                      · {(field.value.size / 1024).toFixed(1)} KB
-                    </span>
-                  </>
-                ) : (
-                  'No file chosen'
-                )}
-              </span>
+              />
             </div>
             {fieldErrorMessage('file') && (
               <Error id='file-error'>{fieldErrorMessage('file')}</Error>

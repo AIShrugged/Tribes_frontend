@@ -135,6 +135,9 @@ export interface TodayEvent {
   total_tasks_count: number;
   done_tasks_count: number;
   updated_tasks: MeetingTask[];
+  // Pre-existing tasks the meeting task review flagged as completed in this
+  // meeting's transcript (progress='done'). Empty when no review exists yet.
+  done_tasks: MeetingTask[];
   agenda_content: string | null;
 }
 
@@ -174,6 +177,9 @@ export interface MeetingTask {
   due_date: string | null;
   is_overdue: boolean;
   is_epic: boolean;
+  // Why the task was generated/updated on this meeting (shown in the dropdown).
+  author_name: string | null;
+  context: string | null;
 }
 
 export interface CarriedTask {

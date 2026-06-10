@@ -8,6 +8,7 @@ export type UploadStatus =
   | 'extracting'
   | 'analyzing'
   | 'deduplicating'
+  | 'pending_review'
   | 'done'
   | 'failed';
 
@@ -38,6 +39,7 @@ export const STATUS_LABELS: Record<UploadStatus, string> = {
   extracting: 'Reading and extracting file content…',
   analyzing: 'Analyzing document with AI…',
   deduplicating: 'Checking for duplicates with existing tasks…',
+  pending_review: 'Ready for review',
   done: 'Processing complete',
   failed: 'Processing failed',
 };
@@ -47,6 +49,7 @@ export const STATUS_PROGRESS: Record<UploadStatus, number> = {
   extracting: 20,
   analyzing: 45,
   deduplicating: 75,
+  pending_review: 90,
   done: 100,
   failed: 0,
 };

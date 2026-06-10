@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 
 import { UploadDetailView } from '@/features/uploads';
 import { getUploadDetail } from '@/features/uploads/api/uploads';
+import { UploadReviewScreen } from '@/features/upload-review';
+import { getPlan } from '@/features/upload-review/api/upload-review';
 import { ROUTES } from '@/shared/lib/routes';
 import { Card } from '@/shared/ui/card';
 
@@ -27,7 +29,14 @@ export default async function UploadDetailPage({
     notFound();
   }
 
-  const detail = await getUploadDetail(type as UploadType, numericId);
+  const uploadType = type as UploadType;
+  const detail = await getUploadDetail(uploadType, numericId);
+
+  // Moderation gate (app→features branch, FSD-clean): a 'review' row renders the editable review
+  // screen instead of the read-only detail/poll. After approve/reject the screen calls
+  // router.refresh(), the row leaves 'review', and this page re-renders the normal detail view.
+  const reviewing = detail.status === 'review';
+  const planResponse = reviewing ? await getPlan(uploadType, numericId) : null;
 
   return (
     <Card className='h-full flex flex-col overflow-hidden'>
@@ -41,7 +50,16 @@ export default async function UploadDetailPage({
         </Link>
       </div>
       <div className='flex-1 min-h-0 overflow-y-auto'>
-        <UploadDetailView initialDetail={detail} />
+        {reviewing && planResponse ? (
+          <UploadReviewScreen
+            type={uploadType}
+            id={numericId}
+            initialPlan={planResponse.plan}
+            assignees={planResponse.assignees ?? []}
+          />
+        ) : (
+          <UploadDetailView initialDetail={detail} />
+        )}
       </div>
     </Card>
   );
