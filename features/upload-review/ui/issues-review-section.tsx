@@ -1,7 +1,9 @@
 'use client';
 
-import { Trash2, Undo2 } from 'lucide-react';
+import { ExternalLink, Trash2, Undo2 } from 'lucide-react';
+import Link from 'next/link';
 
+import { ROUTES } from '@/shared/lib/routes';
 import InputDropdown from '@/shared/ui/input/InputDropdown';
 
 import type {
@@ -28,8 +30,41 @@ const PRIORITY_OPTIONS = [
   { value: 'minimal', label: 'Minimal' },
 ];
 
-const single = (v: string | string[]): string =>
-  Array.isArray(v) ? (v[0] ?? '') : v;
+// Existing issues carry priority as an int (Issue::PRIORITY_*); map back to a label for the
+// "now → new" diff. Mirrors the value scheme in IssueMergeService::mapPriority.
+function priorityLabel(p: string | number | null): string {
+  const n = typeof p === 'string' ? Number(p) : p;
+  switch (n) {
+    case 500: {
+      return 'Critical';
+    }
+    case 100: {
+      return 'High';
+    }
+    case -100: {
+      return 'Low';
+    }
+    case -500: {
+      return 'Minimal';
+    }
+    default: {
+      return 'Normal';
+    }
+  }
+}
+
+const single = (v: string | string[]): string => {
+  return Array.isArray(v) ? (v[0] ?? '') : v;
+};
+
+/** Muted "now: X" hint next to an editable field's label — the current value on an UPDATE row. */
+function CurrentValue({ value }: { value: string | null }) {
+  return (
+    <span className='ml-1 font-normal text-muted-foreground/70'>
+      · now: {value && value.trim() !== '' ? value : '—'}
+    </span>
+  );
+}
 
 export function IssuesReviewSection({
   rows,
@@ -51,9 +86,10 @@ export function IssuesReviewSection({
       return [d.uid, d] as const;
     }),
   );
+  // Key by Number so a string-typed id from the LLM JSON still resolves.
   const snapById = new Map(
     snapshots.map((s) => {
-      return [s.id, s] as const;
+      return [Number(s.id), s] as const;
     }),
   );
   const kept = rows.filter((r) => {
@@ -92,11 +128,15 @@ export function IssuesReviewSection({
 
       {rows.map((row) => {
         const dec = decByUid.get(row.uid);
-        const isUpdate =
-          dec?.action === 'update' && dec.existing_issue_id != null;
-        const snap = isUpdate
-          ? snapById.get(dec.existing_issue_id as number)
-          : undefined;
+        // A row is a real UPDATE only when its target is an issue we actually hold a snapshot for.
+        // If the merge-LLM returned an existing_issue_id outside the team's open-issue set
+        // (hallucinated or since-closed), the approve path CREATES a new task instead of updating —
+        // so render it as "New" and never link a misleading #id to an unrelated task. snapById is
+        // keyed by the same ids the LLM was given, so any legitimate match resolves here.
+        const snap =
+          dec?.action === 'update' && dec.existing_issue_id != null
+            ? snapById.get(Number(dec.existing_issue_id))
+            : undefined;
 
         return (
           <div
@@ -105,12 +145,31 @@ export function IssuesReviewSection({
           >
             <div className='flex items-start justify-between gap-2'>
               <div className='min-w-0'>
-                <span
-                  className={`mr-2 rounded px-1.5 py-0.5 text-xs ${isUpdate ? 'bg-[var(--warning-bg)] text-[var(--warning)]' : 'bg-[var(--success-bg)] text-[var(--success)]'}`}
-                >
-                  {isUpdate ? `Updates #${dec.existing_issue_id}` : 'New'}
-                </span>
-                <span className='font-medium text-foreground'>{row.name}</span>
+                {snap ? (
+                  <div className='flex flex-wrap items-center gap-x-2 gap-y-1'>
+                    <Link
+                      href={ROUTES.DASHBOARD.ISSUES_DETAIL(snap.id)}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='inline-flex items-center gap-1 rounded bg-[var(--warning-bg)] px-1.5 py-0.5 text-xs text-[var(--warning)] hover:underline'
+                    >
+                      Updates #{snap.id}
+                      <ExternalLink className='h-3 w-3' />
+                    </Link>
+                    <span className='font-medium text-foreground'>
+                      {snap.name}
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <span className='mr-2 rounded bg-[var(--success-bg)] px-1.5 py-0.5 text-xs text-[var(--success)]'>
+                      New
+                    </span>
+                    <span className='font-medium text-foreground'>
+                      {row.name}
+                    </span>
+                  </>
+                )}
               </div>
               <button
                 type='button'
@@ -128,23 +187,32 @@ export function IssuesReviewSection({
               </button>
             </div>
 
-            {row.description && (
+            {/* UPDATE: the extracted wording that matched this existing task + the LLM's summary
+                of what new information it adds. */}
+            {snap && (
+              <p className='mt-1 text-xs text-muted-foreground'>
+                Matched from extracted text: “{row.name}”
+              </p>
+            )}
+            {snap && dec?.update_description && (
+              <p className='mt-1 whitespace-pre-wrap text-xs text-foreground'>
+                {dec.update_description}
+              </p>
+            )}
+
+            {/* NEW: the extracted task description. */}
+            {!snap && row.description && (
               <p className='mt-1 whitespace-pre-wrap text-xs text-muted-foreground'>
                 {row.description}
               </p>
             )}
 
-            {snap && (
-              <p className='mt-1 text-xs text-muted-foreground'>
-                Existing: {snap.assignee_name ?? 'no assignee'} ·{' '}
-                {snap.due_date ?? 'no due date'}
-                {dec?.update_description ? ` — ${dec.update_description}` : ''}
-              </p>
-            )}
-
             <div className='mt-2 grid grid-cols-2 gap-2'>
               <div className='flex flex-col gap-1'>
-                <span className='text-xs text-muted-foreground'>Assignee</span>
+                <span className='text-xs text-muted-foreground'>
+                  Assignee
+                  {snap && <CurrentValue value={snap.assignee_name} />}
+                </span>
                 <InputDropdown
                   options={assigneeOptionsFor(row.assignee_name)}
                   value={row.assignee_name ?? ''}
@@ -158,7 +226,10 @@ export function IssuesReviewSection({
               </div>
 
               <label className='flex flex-col gap-1 text-xs text-muted-foreground'>
-                Due date
+                <span>
+                  Due date
+                  {snap && <CurrentValue value={snap.due_date} />}
+                </span>
                 <input
                   type='date'
                   className={FIELD}
@@ -179,7 +250,12 @@ export function IssuesReviewSection({
               </label>
 
               <div className='flex flex-col gap-1'>
-                <span className='text-xs text-muted-foreground'>Priority</span>
+                <span className='text-xs text-muted-foreground'>
+                  Priority
+                  {snap && (
+                    <CurrentValue value={priorityLabel(snap.priority)} />
+                  )}
+                </span>
                 <InputDropdown
                   options={PRIORITY_OPTIONS}
                   value={row.priority ?? 'normal'}
