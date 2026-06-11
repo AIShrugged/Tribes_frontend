@@ -13,3 +13,13 @@ export async function getRecentMeetings(
   );
   return result.data;
 }
+
+export async function getCalendarEventsByDate(
+  date: string,
+): Promise<MeetingListItem[]> {
+  const params = new URLSearchParams({ date, scope: 'past' });
+  const result = await httpClientList<MeetingListItem>(
+    `${API_URL}/calendar-events?${params}`,
+  );
+  return result.data;
+}

@@ -1,6 +1,10 @@
 export { MeetingTaskReviewCard } from './ui/meeting-task-review-card';
 export { MeetingTaskReviewContainer } from './ui/meeting-task-review-container';
-export { getLatestMeetingTaskReview } from './api/meeting-task-review';
+export {
+  getLatestMeetingTaskReview,
+  getEventTaskReview,
+} from './api/meeting-task-review';
+export { getCalendarEventsByDate } from './api/meetings';
 export type {
   MeetingTaskReview,
   MeetingTaskReviewBlock,
@@ -9,4 +13,5 @@ export type {
   MeetingTaskReviewBlockType,
   MeetingTaskReviewSuggestion,
   MeetingTaskIssueStatus,
+  MeetingListItem,
 } from './model/types';

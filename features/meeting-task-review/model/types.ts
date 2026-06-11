@@ -58,5 +58,6 @@ export interface MeetingTaskReview {
   analyzed_count: number;
   generated_at: string;
   error: string | null;
-  blocks: MeetingTaskReviewBlock[];
+  llm_blocks: MeetingTaskReviewBlock[];
+  health_blocks: MeetingTaskReviewBlock[];
 }

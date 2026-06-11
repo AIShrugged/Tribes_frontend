@@ -17,10 +17,6 @@ import type {
   MeetingTaskReviewSuggestion,
 } from '../model/types';
 
-interface MeetingTaskReviewBlockItemProps {
-  issue: MeetingTaskReviewIssue;
-}
-
 const ACTION_LABELS: Record<MeetingTaskReviewSuggestion, string> = {
   update_status: 'Обновить статус',
   resolve_blocker: 'Открыть задачу',
@@ -31,9 +27,47 @@ const ACTION_LABELS: Record<MeetingTaskReviewSuggestion, string> = {
   close: 'Закрыть',
 };
 
+function IssueMetaRow({
+  issue,
+  formattedDueDate,
+}: {
+  issue: MeetingTaskReviewIssue;
+  formattedDueDate: string | null;
+}) {
+  return (
+    <div className='mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1'>
+      {issue.assignee_name && (
+        <span className='flex items-center gap-1 text-xs text-muted-foreground'>
+          <User className='h-3 w-3' />
+          {issue.assignee_name}
+        </span>
+      )}
+      {formattedDueDate && (
+        <span className='flex items-center gap-1 text-xs text-muted-foreground'>
+          <Calendar className='h-3 w-3' />
+          {formattedDueDate}
+        </span>
+      )}
+      {issue.days_inactive > 0 && (
+        <span className='flex items-center gap-1 text-xs text-(--warning-500)'>
+          <Clock className='h-3 w-3' />
+          {issue.days_inactive} {issue.days_inactive === 1 ? 'день' : 'дней'}{' '}
+          без изменений
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function MeetingTaskReviewBlockItem({
   issue,
-}: MeetingTaskReviewBlockItemProps) {
+  selected,
+  onSelect,
+}: {
+  issue: MeetingTaskReviewIssue;
+  selected: boolean;
+  onSelect: (id: number, checked: boolean) => void;
+}) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -45,88 +79,83 @@ export function MeetingTaskReviewBlockItem({
   const isDestructive =
     issue.suggestion === 'update_status' || issue.suggestion === 'close';
 
+  const executeClose = async () => {
+    const successText =
+      issue.suggestion === 'close'
+        ? 'Задача закрыта'
+        : 'Статус задачи обновлён';
+    setIsPending(true);
+    const result = await closeReviewIssue(issue.id);
+    setIsPending(false);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(successText);
+      router.refresh();
+    }
+  };
+
   const handleAction = async () => {
-    if (isDestructive) {
-      if (!confirming) {
-        setConfirming(true);
-        setTimeout(() => {
-          return setConfirming(false);
-        }, 3000);
-        return;
-      }
-      setConfirming(false);
-      const successText =
-        issue.suggestion === 'close'
-          ? 'Задача закрыта'
-          : 'Статус задачи обновлён';
-      setIsPending(true);
-      const result = await closeReviewIssue(issue.id);
-      setIsPending(false);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(successText);
-        router.refresh();
-      }
+    if (!isDestructive) {
+      router.push(ROUTES.DASHBOARD.ISSUES_DETAIL(issue.id));
       return;
     }
-
-    router.push(ROUTES.DASHBOARD.ISSUES_DETAIL(issue.id));
+    if (!confirming) {
+      setConfirming(true);
+      setTimeout(() => {
+        return setConfirming(false);
+      }, 3000);
+      return;
+    }
+    setConfirming(false);
+    await executeClose();
   };
 
   const label = confirming ? 'Подтвердить?' : ACTION_LABELS[issue.suggestion];
 
   return (
     <div className='rounded-button border border-border bg-card px-3 py-2.5'>
-      <div className='flex items-start justify-between gap-3'>
-        <Link
-          href={ROUTES.DASHBOARD.ISSUES_DETAIL(issue.id)}
-          className='flex-1 min-w-0 text-sm font-medium text-foreground transition-colors hover:text-primary hover:underline leading-snug'
-        >
-          {issue.name}
-        </Link>
-        <Button
-          size='xs'
-          variant='secondary'
-          fullWidth={false}
-          className='shrink-0 whitespace-nowrap'
-          loading={isPending}
-          onClick={handleAction}
-        >
-          {label}
-        </Button>
-      </div>
+      <div className='flex items-start gap-2.5'>
+        <input
+          type='checkbox'
+          checked={selected}
+          onChange={(e) => {
+            onSelect(issue.id, e.target.checked);
+          }}
+          className='mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer rounded border-border accent-primary'
+        />
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-start justify-between gap-3'>
+            <Link
+              href={ROUTES.DASHBOARD.ISSUES_DETAIL(issue.id)}
+              className='flex-1 min-w-0 text-sm font-medium text-foreground transition-colors hover:text-primary hover:underline leading-snug'
+            >
+              {issue.name}
+            </Link>
+            <Button
+              size='xs'
+              variant='secondary'
+              fullWidth={false}
+              className='shrink-0 whitespace-nowrap'
+              loading={isPending}
+              onClick={handleAction}
+            >
+              {label}
+            </Button>
+          </div>
 
-      <div className='mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1'>
-        {issue.assignee_name && (
-          <span className='flex items-center gap-1 text-xs text-muted-foreground'>
-            <User className='h-3 w-3' />
-            {issue.assignee_name}
-          </span>
-        )}
-        {formattedDueDate && (
-          <span className='flex items-center gap-1 text-xs text-muted-foreground'>
-            <Calendar className='h-3 w-3' />
-            {formattedDueDate}
-          </span>
-        )}
-        {issue.days_inactive > 0 && (
-          <span className='flex items-center gap-1 text-xs text-(--warning-500)'>
-            <Clock className='h-3 w-3' />
-            {issue.days_inactive} {issue.days_inactive === 1 ? 'день' : 'дней'}{' '}
-            без изменений
-          </span>
-        )}
-      </div>
+          <IssueMetaRow issue={issue} formattedDueDate={formattedDueDate} />
 
-      {issue.transcript_evidence && (
-        <div className='mt-2 flex gap-1.5 rounded border-l-2 border-primary/50 bg-primary/5 px-2.5 py-1.5'>
-          <MessageSquare className='mt-0.5 h-3 w-3 shrink-0 text-primary' />
-          <p className='text-xs italic text-muted-foreground'>
-            "{issue.transcript_evidence}"
-          </p>
+          {issue.transcript_evidence && (
+            <div className='mt-2 flex gap-1.5 rounded border-l-2 border-primary/50 bg-primary/5 px-2.5 py-1.5'>
+              <MessageSquare className='mt-0.5 h-3 w-3 shrink-0 text-primary' />
+              <p className='text-xs italic text-muted-foreground'>
+                "{issue.transcript_evidence}"
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
