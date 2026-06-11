@@ -83,7 +83,7 @@ export function MeetingDetailCard({ event }: MeetingDetailCardProps) {
             totalCount={event.done_tasks.length}
             doneCount={0}
             meetingState={event.meeting_state}
-            label='Completed in this meeting'
+            label='Tasks completed'
           />
         )}
 
@@ -103,7 +103,7 @@ export function MeetingDetailCard({ event }: MeetingDetailCardProps) {
             totalCount={event.updated_tasks.length}
             doneCount={0}
             meetingState={event.meeting_state}
-            label='Tasks updated in this meeting'
+            label='Tasks updated'
           />
         )}
 

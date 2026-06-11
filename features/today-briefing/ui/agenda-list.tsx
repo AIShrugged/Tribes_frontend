@@ -32,7 +32,7 @@ export function AgendaList({
   const isReady = meetingState === 'ready';
   const label =
     labelOverride ??
-    (isReady ? 'Action items from this meeting' : 'Tasks from last sync');
+    (isReady ? 'Tasks created' : 'Tasks from last sync');
   const emptyText =
     emptyTextOverride ??
     (isReady ? 'No tasks from this meeting' : 'No tasks from previous meeting');
