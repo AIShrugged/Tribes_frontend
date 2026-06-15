@@ -11,6 +11,7 @@ import {
 import { ROUTES } from '@/shared/lib/routes';
 import Avatar from '@/shared/ui/common/avatar';
 
+import type { GoalsTone } from '@/features/issues/model/goals-deadline';
 import type { Issue, IssueStatus } from '@/features/issues/model/types';
 import type { ReactNode } from 'react';
 
@@ -60,9 +61,9 @@ function taskMeta(task: Issue): string {
  * unlinked sections. Interactivity is injected via the `trailing` slot, so this
  * component stays server- and client-safe.
  *
- * Columns are fixed-width (priority / due / avatar) so they line up across rows
- * even though each row is its own grid. Priority renders for EVERY task (all 5
- * levels, including Normal and done) so the column is never blank.
+ * Columns are fixed-width (priority / due / avatar) so they line up across rows.
+ * Priority renders for EVERY task (all 5 levels, including Normal and done) with
+ * a color-coded dot and a muted label.
  * @param props - Component props.
  * @param props.task - the task issue.
  * @param props.trailing - trailing action (Unlink / Link to goal).
@@ -77,28 +78,30 @@ export function GoalTaskRow({
 }) {
   const href = `${ROUTES.DASHBOARD.ISSUES}/${task.id.toString()}`;
   const isDone = task.status === 'done';
-  const due = formatTaskDue(task.due_date);
+  const due: { label: string; tone: GoalsTone } = isDone
+    ? { label: 'Closed', tone: 'none' }
+    : formatTaskDue(task.due_date);
   const priority = getPriorityLevel(task.priority);
 
   return (
-    <div className='group/taskrow grid grid-cols-[16px_minmax(0,1fr)_84px_60px_24px_auto] items-center gap-2 rounded px-3 py-2 transition-colors hover:bg-[var(--surface-2)]'>
+    <div className='group/taskrow grid grid-cols-[18px_minmax(0,1fr)_80px_72px_24px_auto] items-center gap-2.5 rounded-[6px] px-2.5 py-[7px] transition-colors hover:bg-[var(--surface-2)]'>
       <span
         aria-hidden='true'
         className={clsx(
-          'flex h-4 w-4 items-center justify-center rounded border',
+          'flex h-[15px] w-[15px] items-center justify-center rounded-[4px] border-[1.5px]',
           isDone
             ? 'border-emerald-500 bg-emerald-500 text-[var(--background)]'
             : 'border-[var(--muted-foreground)]/50',
         )}
       >
-        {isDone && <Check className='h-3 w-3' />}
+        {isDone && <Check className='h-[11px] w-[11px]' />}
       </span>
 
       <div className='min-w-0'>
         <Link
           href={href}
           className={clsx(
-            'block truncate text-xs hover:underline',
+            'block truncate text-[13.5px] hover:underline',
             isDone
               ? 'text-[var(--muted-foreground)] line-through'
               : 'text-[var(--foreground)]',
@@ -106,29 +109,30 @@ export function GoalTaskRow({
         >
           {task.name}
         </Link>
-        <div className='truncate text-[10px] text-[var(--muted-foreground)]'>
+        <div className='mt-px truncate text-[11.5px] text-[var(--muted-foreground)]'>
           {taskMeta(task)}
         </div>
       </div>
 
       <span
-        className={clsx(
-          'flex min-w-0 items-center gap-1 text-[11px]',
-          priority.color,
-        )}
+        className='flex min-w-0 items-center gap-1.5 text-xs text-[var(--muted-foreground)]'
         title={`Priority: ${priority.label}`}
       >
         <span
           aria-hidden='true'
-          className='h-1.5 w-1.5 shrink-0 rounded-full bg-current'
+          className={clsx(
+            'h-[7px] w-[7px] shrink-0 rounded-full bg-current',
+            priority.color,
+          )}
         />
         <span className='truncate'>{priority.label}</span>
       </span>
 
       <span
         className={clsx(
-          'whitespace-nowrap text-right text-[11px]',
+          'whitespace-nowrap text-xs',
           TONE_TEXT_CLASS[due.tone],
+          (due.tone === 'danger' || due.tone === 'warn') && 'font-medium',
         )}
       >
         {due.label}

@@ -315,7 +315,7 @@ describe('formatTaskBreakdown', () => {
           open: 2,
         }),
       ),
-    ).toBe('18 · 12 done, 4 active, 2 open');
+    ).toBe('12 done, 4 active, 2 open');
   });
 
   it('omits zero buckets', () => {
@@ -323,6 +323,6 @@ describe('formatTaskBreakdown', () => {
       formatTaskBreakdown(
         makeProgress({ isEmpty: false, total: 3, done: 3, active: 0, open: 0 }),
       ),
-    ).toBe('3 · 3 done');
+    ).toBe('3 done');
   });
 });
