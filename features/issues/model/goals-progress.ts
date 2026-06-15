@@ -90,3 +90,22 @@ export function getProgressColor(progress: GoalProgress): string {
 
   return 'bg-gradient-to-r from-emerald-400 to-emerald-600';
 }
+
+/**
+ * formatTaskBreakdown returns a one-line task breakdown for the epic card,
+ * bucketed as done / active / open (e.g. "18 · 12 done, 4 active, 2 open").
+ * The middle bucket is "active" (not "in progress") because GoalProgress.active
+ * lumps in_progress + paused + review + reopen.
+ * @param progress - computed goal progress.
+ * @returns breakdown string.
+ */
+export function formatTaskBreakdown(progress: GoalProgress): string {
+  if (progress.isEmpty) return 'No tasks yet';
+
+  const parts: string[] = [`${progress.done.toString()} done`];
+
+  if (progress.active > 0) parts.push(`${progress.active.toString()} active`);
+  if (progress.open > 0) parts.push(`${progress.open.toString()} open`);
+
+  return `${progress.total.toString()} · ${parts.join(', ')}`;
+}

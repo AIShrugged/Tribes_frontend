@@ -1,19 +1,26 @@
 import { notFound } from 'next/navigation';
 
-import { GoalsContent } from '@/features/issues';
-
-import type { PageProps } from '@/shared/types/common';
+import { GoalsContent, isGoalsFilter } from '@/features/issues';
+import { getCurrentUserId } from '@/shared/lib/getCurrentUserId';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Goals' };
 
 /**
  * Organization Goals tab — open epics and unlinked tasks scoped to this
- * organization.
+ * organization, with a summary strip and filter chips.
  * @param props - Component props.
  * @param props.params - Route params holding the organization id.
+ * @param props.searchParams - Filter params (filter chip; q is client-side).
+ * @returns JSX element.
  */
-export default async function OrganizationGoalsPage({ params }: PageProps) {
+export default async function OrganizationGoalsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ filter?: string; q?: string }>;
+}) {
   const { id } = await params;
   const orgId = Number(id);
 
@@ -24,9 +31,17 @@ export default async function OrganizationGoalsPage({ params }: PageProps) {
     notFound();
   }
 
+  const sp = await searchParams;
+  const filter = isGoalsFilter(sp.filter) ? sp.filter : 'all';
+  const currentUserId = await getCurrentUserId();
+
   return (
     <div className='space-y-6'>
-      <GoalsContent orgId={orgId} />
+      <GoalsContent
+        orgId={orgId}
+        filter={filter}
+        currentUserId={currentUserId}
+      />
     </div>
   );
 }

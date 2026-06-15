@@ -75,6 +75,13 @@ export { IssueAuditLogSection } from './ui/issue-audit-log-section';
 export { EpicGoalCard, EpicGoalCardSkeleton } from './ui/epic-goal-card';
 export { UnlinkedTasksSection } from './ui/unlinked-tasks-section';
 export { GoalsContent } from './ui/goals-content';
+export {
+  isGoalsFilter,
+  summarizeEpics,
+  filterEpics,
+  epicFilterCounts,
+} from './model/goals-summary';
+export type { GoalsFilter, GoalsSummary } from './model/goals-summary';
 export { IssueHealthBanner } from './ui/issue-health-banner';
 export { IssueHealthSection } from './ui/issue-health-section';
 export { getIssueHealth } from './api/issue-health';
