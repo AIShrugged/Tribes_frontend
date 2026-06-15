@@ -110,7 +110,7 @@ const AVATAR_COLORS = [
 function getAvatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
-    hash = (hash * 31 + (name.codePointAt(i) ?? 0)) & 0x7f_ff_ff_ff;
+    hash = (hash * 31 + (name.codePointAt(i) ?? 0)) & 2_147_483_647;
   }
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 }
