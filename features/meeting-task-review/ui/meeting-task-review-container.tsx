@@ -201,7 +201,10 @@ export function MeetingTaskReviewContainer() {
         </p>
       )}
 
-      <HealthBlocksSection blocks={healthBlocks} onReload={reloadHealthBlocks} />
+      <HealthBlocksSection
+        blocks={healthBlocks}
+        onReload={reloadHealthBlocks}
+      />
     </div>
   );
 }
