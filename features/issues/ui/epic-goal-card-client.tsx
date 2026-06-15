@@ -1,14 +1,14 @@
 'use client';
 
 import { Minus, TrendingDown, TrendingUp, Unlink } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { IssueStatusBadge } from '@/entities/issue';
 import { detachTaskFromEpic } from '@/features/issues/api/issues';
-import { ROUTES } from '@/shared/lib/routes';
+import { formatTaskBreakdown } from '@/features/issues/model/goals-progress';
+
+import { GoalTaskRow } from './goal-task-row';
 
 import type { GoalProgress } from '@/features/issues/model/goals-progress';
 import type { Issue } from '@/features/issues/model/types';
@@ -38,6 +38,15 @@ function TrendIcon({ trend }: { trend: GoalProgress['trend'] }) {
   );
 }
 
+/**
+ * EpicGoalCardClient — streamed body of an epic card: progress stat + bar and
+ * the linked task list with an inline Unlink action per row.
+ * @param props - Component props.
+ * @param props.tasks - linked (non-epic) tasks.
+ * @param props.progress - computed goal progress.
+ * @param props.barColor - Tailwind bg class for the progress bar.
+ * @returns JSX element.
+ */
 export function EpicGoalCardClient({
   tasks,
   progress,
@@ -69,20 +78,30 @@ export function EpicGoalCardClient({
 
   return (
     <>
-      <div className='px-4 pb-2'>
-        <div className='flex items-center justify-between mb-1'>
+      <div className='px-4 pb-3'>
+        <div className='mb-1 flex items-center justify-between gap-2'>
           <span className='text-xs text-[var(--muted-foreground)]'>
-            {progress.isEmpty
-              ? 'No tasks yet'
-              : `${progress.done.toString()}/${progress.total.toString()} done`}
+            {formatTaskBreakdown(progress)}
           </span>
-          <span className='flex items-center gap-1 text-xs font-medium text-[var(--foreground)]'>
-            {progress.isEmpty ? '—' : `${progress.percent.toString()}%`}
+          <span className='flex items-center gap-1.5 text-sm font-semibold text-[var(--foreground)]'>
+            {progress.isEmpty ? (
+              '—'
+            ) : (
+              <>
+                {progress.done.toString()}
+                <span className='font-normal text-[var(--muted-foreground)]'>
+                  /{progress.total.toString()}
+                </span>
+                <span className='ml-1 text-xs font-medium'>
+                  · {progress.percent.toString()}%
+                </span>
+              </>
+            )}
             {!progress.isEmpty && <TrendIcon trend={progress.trend} />}
           </span>
         </div>
         <div
-          className='h-1.5 w-full rounded-full bg-[var(--surface-3)] overflow-hidden'
+          className='h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-3)]'
           role='progressbar'
           aria-valuenow={progress.percent}
           aria-valuemin={0}
@@ -93,33 +112,16 @@ export function EpicGoalCardClient({
             style={{ width: `${progress.percent.toString()}%` }}
           />
         </div>
-        {!progress.isEmpty && (
-          <div className='mt-1 flex gap-3 text-[10px] text-[var(--muted-foreground)]'>
-            {progress.active > 0 && (
-              <span>{progress.active.toString()} active</span>
-            )}
-            {progress.open > 0 && <span>{progress.open.toString()} open</span>}
-          </div>
-        )}
       </div>
 
       {tasks.length > 0 && (
-        <ul className='border-t border-[var(--border)] divide-y divide-[var(--border)]/50'>
+        <div className='border-t border-[var(--border)] px-2 pb-2 pt-1'>
           {tasks.map((task) => {
-            const href = `${ROUTES.DASHBOARD.ISSUES}/${task.id.toString()}`;
             return (
-              <li
+              <GoalTaskRow
                 key={task.id}
-                className='group/taskrow flex items-center justify-between gap-2 rounded px-3 py-2 hover:bg-[var(--surface-2)] transition-colors'
-              >
-                <Link
-                  href={href}
-                  className='flex-1 truncate text-xs text-[var(--foreground)] hover:underline'
-                >
-                  #{task.id} {task.name}
-                </Link>
-                <div className='flex shrink-0 items-center gap-2'>
-                  <IssueStatusBadge status={task.status} />
+                task={task}
+                trailing={
                   <button
                     type='button'
                     aria-label='Remove from goal'
@@ -130,17 +132,17 @@ export function EpicGoalCardClient({
                     className={[
                       'rounded p-1.5 transition-all',
                       'opacity-0 group-hover/taskrow:opacity-100',
-                      'text-[var(--muted-foreground)] hover:text-amber-500 hover:bg-amber-500/10',
-                      'disabled:opacity-30 disabled:pointer-events-none',
+                      'text-[var(--muted-foreground)] hover:bg-amber-500/10 hover:text-amber-500',
+                      'disabled:pointer-events-none disabled:opacity-30',
                     ].join(' ')}
                   >
                     <Unlink className='h-3 w-3' />
                   </button>
-                </div>
-              </li>
+                }
+              />
             );
           })}
-        </ul>
+        </div>
       )}
     </>
   );
