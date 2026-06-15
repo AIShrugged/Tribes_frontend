@@ -1,8 +1,9 @@
 import { getIssueHealth } from '@/features/issues/api/issue-health';
-import { IssueHealthBanner } from '@/features/issues/ui/issue-health-banner';
+import { IssueHealthAttentionCard } from '@/features/issues/ui/issue-health-attention-card';
 
 import type { TeamProps } from '@/entities/team';
 import type { IssueHealthReport } from '@/features/issues/model/types';
+import type { ReactNode } from 'react';
 
 function hasHealthProblems(report: IssueHealthReport): boolean {
   const { counts } = report.findings;
@@ -11,19 +12,64 @@ function hasHealthProblems(report: IssueHealthReport): boolean {
   );
 }
 
-function formatUpdatedLabel(periodStart: string): string {
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86_400_000)
-    .toISOString()
-    .slice(0, 10);
+function formatUpdatedLabel(generatedAt: string): string {
+  const dt = new Date(generatedAt);
+  const today = new Date();
+  const time = dt.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
-  if (periodStart === today) return 'Обновлено: сегодня';
-  if (periodStart === yesterday) return 'Обновлено: вчера';
-  return `Обновлено: ${periodStart}`;
+  if (dt.toDateString() === today.toDateString()) {
+    return `Анализ обновлён сегодня в ${time}`;
+  }
+
+  const yesterday = new Date(Date.now() - 86_400_000);
+  if (dt.toDateString() === yesterday.toDateString()) {
+    return `Анализ обновлён вчера в ${time}`;
+  }
+
+  const dateLabel = dt.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+  });
+  return `Анализ обновлён ${dateLabel} в ${time}`;
 }
 
-export async function IssueHealthSection({ teams }: { teams: TeamProps[] }) {
-  if (teams.length === 0) return null;
+type HealthBanner = {
+  team: TeamProps;
+  report: IssueHealthReport;
+  updatedLabel: string;
+};
+
+function buildBanners(
+  teams: TeamProps[],
+  results: PromiseSettledResult<IssueHealthReport | null>[],
+): HealthBanner[] {
+  const banners: HealthBanner[] = [];
+  for (const [i, team] of teams.entries()) {
+    const result = results[i];
+    if (result.status !== 'fulfilled' || result.value === null) continue;
+    const report = result.value;
+    if (hasHealthProblems(report)) {
+      banners.push({
+        team,
+        report,
+        updatedLabel: formatUpdatedLabel(report.generated_at),
+      });
+    }
+  }
+  return banners;
+}
+
+export async function IssueHealthSection({
+  teams,
+  emptyState,
+}: {
+  teams: TeamProps[];
+  emptyState?: ReactNode;
+}) {
+  if (teams.length === 0) return emptyState ?? null;
 
   const results = await Promise.allSettled(
     teams.map((team) => {
@@ -31,33 +77,14 @@ export async function IssueHealthSection({ teams }: { teams: TeamProps[] }) {
     }),
   );
 
-  const banners: Array<{
-    team: TeamProps;
-    report: IssueHealthReport;
-    updatedLabel: string;
-  }> = [];
-
-  for (const [i, team] of teams.entries()) {
-    const result = results[i];
-    if (result.status !== 'fulfilled' || result.value === null) continue;
-
-    const report = result.value;
-    if (hasHealthProblems(report)) {
-      banners.push({
-        team: team,
-        report,
-        updatedLabel: formatUpdatedLabel(report.period_start),
-      });
-    }
-  }
-
-  if (banners.length === 0) return null;
+  const banners = buildBanners(teams, results);
+  if (banners.length === 0) return emptyState ?? null;
 
   return (
-    <div className='flex flex-col gap-2 px-2 pt-2'>
+    <div className='flex flex-col gap-3'>
       {banners.map(({ team, report, updatedLabel }) => {
         return (
-          <IssueHealthBanner
+          <IssueHealthAttentionCard
             key={team.id}
             teamName={team.name}
             report={report}

@@ -104,6 +104,7 @@ export async function loadIssuesChunk(filters: IssueFilters = {}) {
 
   return {
     data: result.data,
+    totalCount: result.totalCount,
     hasMore: offset + limit < result.totalCount,
   };
 }

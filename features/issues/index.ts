@@ -77,6 +77,8 @@ export { UnlinkedTasksSection } from './ui/unlinked-tasks-section';
 export { GoalsContent } from './ui/goals-content';
 export { IssueHealthBanner } from './ui/issue-health-banner';
 export { IssueHealthSection } from './ui/issue-health-section';
+export { IssueHealthAttentionCard } from './ui/issue-health-attention-card';
+export { AttentionTableClient } from './ui/issues-attention-table';
 export { getIssueHealth } from './api/issue-health';
 export type {
   IssueHealthReport,

@@ -67,6 +67,7 @@ export const ROUTES = {
     ISSUES_LIST: '/dashboard/issues/list',
     ISSUES_KANBAN: '/dashboard/issues/kanban',
     ISSUES_PROGRESS: '/dashboard/issues/progress',
+    ISSUES_ATTENTION: '/dashboard/issues/attention',
     TODAY_GOALS: '/dashboard/today/goals',
     MEETINGS_LIST: '/dashboard/meetings/list',
     MEETINGS_LIST_BY_DATE: (date: string) => {
