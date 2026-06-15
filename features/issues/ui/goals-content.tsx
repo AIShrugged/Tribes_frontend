@@ -17,22 +17,9 @@ import {
 } from '@/features/issues/ui/goals-filterable-list';
 import { GoalsHeaderSkeleton } from '@/features/issues/ui/goals-header-skeleton';
 import { GoalsSummaryStrip } from '@/features/issues/ui/goals-summary-strip';
-import { UnlinkedTasksSection } from '@/features/issues/ui/unlinked-tasks-section';
 import { EmptyState } from '@/shared/ui/feedback/empty-state';
-import { Skeleton } from '@/shared/ui/layout/skeleton';
 
 import type { GoalsFilter } from '@/features/issues/model/goals-summary';
-
-function UnlinkedTasksSkeleton() {
-  return (
-    <div className='space-y-2 rounded-[var(--r-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)]/50 p-4'>
-      <Skeleton className='h-4 w-40' />
-      {[1, 2, 3].map((i) => {
-        return <Skeleton key={i} className='h-8 w-full' />;
-      })}
-    </div>
-  );
-}
 
 async function EpicsList({
   orgId,
@@ -71,30 +58,19 @@ async function EpicsList({
     };
   });
 
-  // Unlinked tasks are not part of a "my/overdue goals" view; only show them in
-  // the unfiltered list. Pass the UNFILTERED epics so link targets stay complete.
-  const unlinked =
-    filter === 'all' ? (
-      <Suspense fallback={<UnlinkedTasksSkeleton />}>
-        <UnlinkedTasksSection orgId={orgId} epics={epics} />
-      </Suspense>
-    ) : null;
-
   return (
     <GoalsFilterableList
       summary={<GoalsSummaryStrip summary={summary} />}
       counts={counts}
       items={items}
-      unlinked={unlinked}
     />
   );
 }
 
 /**
  * GoalsContent — organization-scoped goals view: a summary strip, filter chips +
- * search, open epics with their linked tasks, and a section for unlinked tasks.
- * Rendered by the Organization Goals tab (the legacy /today/goals route
- * redirects here).
+ * search, and open epics with their linked tasks. Rendered by the Organization
+ * Goals tab (the legacy /today/goals route redirects here).
  * @param props - Component props.
  * @param props.orgId - organization to scope epics/tasks to.
  * @param props.filter - active chip filter from the URL.

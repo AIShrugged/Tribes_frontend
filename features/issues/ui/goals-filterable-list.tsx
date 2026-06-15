@@ -23,13 +23,6 @@ const CHIPS: { key: GoalsFilter; label: string }[] = [
   { key: 'overdue', label: 'Overdue' },
 ];
 
-interface GoalsFilterableListProps {
-  summary: ReactNode;
-  counts: Record<GoalsFilter, number>;
-  items: GoalsListItem[];
-  unlinked: ReactNode;
-}
-
 interface FilterChipsProps {
   active: GoalsFilter;
   counts: Record<GoalsFilter, number>;
@@ -104,15 +97,17 @@ function FilterChips({ active, counts, disabled, onSelect }: FilterChipsProps) {
  * @param props.summary - server-rendered summary strip node.
  * @param props.counts - chip counts over ALL epics.
  * @param props.items - chip-filtered epic cards.
- * @param props.unlinked - unlinked-tasks node (null when hidden by chip filter).
  * @returns JSX element.
  */
 export function GoalsFilterableList({
   summary,
   counts,
   items,
-  unlinked,
-}: GoalsFilterableListProps) {
+}: {
+  summary: ReactNode;
+  counts: Record<GoalsFilter, number>;
+  items: GoalsListItem[];
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -182,8 +177,6 @@ export function GoalsFilterableList({
           description={emptyDescription}
         />
       )}
-
-      {trimmed === '' && unlinked}
     </div>
   );
 }
