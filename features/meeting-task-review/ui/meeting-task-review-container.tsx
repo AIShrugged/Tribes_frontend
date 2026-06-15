@@ -22,7 +22,7 @@ type EventWithReview = { event: MeetingListItem; review: MeetingTaskReview };
 
 function getRecentDateStrings(): string[] {
   const now = new Date();
-  return [0, 1, 2].map((offset) => {
+  return [0, 1, 2, 3, 4, 5, 6].map((offset) => {
     const d = new Date(now);
     d.setDate(d.getDate() - offset);
     return d.toISOString().slice(0, 10);
