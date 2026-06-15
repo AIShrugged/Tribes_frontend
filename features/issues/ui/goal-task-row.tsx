@@ -3,7 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
-import { IssuePriorityBadge } from '@/entities/issue';
+import { getPriorityLevel } from '@/entities/issue';
 import {
   formatTaskDue,
   TONE_TEXT_CLASS,
@@ -59,6 +59,10 @@ function taskMeta(task: Issue): string {
  * GoalTaskRow — presentational task row shared by linked (epic card) and
  * unlinked sections. Interactivity is injected via the `trailing` slot, so this
  * component stays server- and client-safe.
+ *
+ * Columns are fixed-width (priority / due / avatar) so they line up across rows
+ * even though each row is its own grid. Priority renders for EVERY task (all 5
+ * levels, including Normal and done) so the column is never blank.
  * @param props - Component props.
  * @param props.task - the task issue.
  * @param props.trailing - trailing action (Unlink / Link to goal).
@@ -74,9 +78,10 @@ export function GoalTaskRow({
   const href = `${ROUTES.DASHBOARD.ISSUES}/${task.id.toString()}`;
   const isDone = task.status === 'done';
   const due = formatTaskDue(task.due_date);
+  const priority = getPriorityLevel(task.priority);
 
   return (
-    <div className='group/taskrow grid grid-cols-[16px_minmax(0,1fr)_auto_auto_auto_auto] items-center gap-2 rounded px-3 py-2 hover:bg-[var(--surface-2)] transition-colors'>
+    <div className='group/taskrow grid grid-cols-[16px_minmax(0,1fr)_84px_60px_24px_auto] items-center gap-2 rounded px-3 py-2 transition-colors hover:bg-[var(--surface-2)]'>
       <span
         aria-hidden='true'
         className={clsx(
@@ -106,31 +111,41 @@ export function GoalTaskRow({
         </div>
       </div>
 
-      <IssuePriorityBadge
-        priority={task.priority}
-        status={task.status}
-        className='whitespace-nowrap text-[11px]'
-      />
+      <span
+        className={clsx(
+          'flex min-w-0 items-center gap-1 text-[11px]',
+          priority.color,
+        )}
+        title={`Priority: ${priority.label}`}
+      >
+        <span
+          aria-hidden='true'
+          className='h-1.5 w-1.5 shrink-0 rounded-full bg-current'
+        />
+        <span className='truncate'>{priority.label}</span>
+      </span>
 
       <span
         className={clsx(
-          'whitespace-nowrap text-[11px]',
+          'whitespace-nowrap text-right text-[11px]',
           TONE_TEXT_CLASS[due.tone],
         )}
       >
         {due.label}
       </span>
 
-      {task.assignee ? (
-        <Avatar size='xs'>{initials(task.assignee.name)}</Avatar>
-      ) : (
-        <span
-          aria-hidden='true'
-          className='flex h-5 w-5 items-center justify-center rounded-full bg-[var(--surface-3)] text-[10px] text-[var(--muted-foreground)]'
-        >
-          ?
-        </span>
-      )}
+      <div className='flex justify-center'>
+        {task.assignee ? (
+          <Avatar size='xs'>{initials(task.assignee.name)}</Avatar>
+        ) : (
+          <span
+            aria-hidden='true'
+            className='flex h-5 w-5 items-center justify-center rounded-full bg-[var(--surface-3)] text-[10px] text-[var(--muted-foreground)]'
+          >
+            ?
+          </span>
+        )}
+      </div>
 
       <div className='flex items-center justify-end'>{trailing}</div>
     </div>
