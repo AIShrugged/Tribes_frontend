@@ -330,6 +330,8 @@ interface AttentionTableClientProps {
 }
 
 const PAGE_SIZE = 20;
+// Backend enforces limit ≤ 100.
+const MAX_PAGE_SIZE = 100;
 
 export function AttentionTableClient({
   initialIssues,
@@ -363,22 +365,54 @@ export function AttentionTableClient({
       return;
     }
     let cancelled = false;
-    loadIssuesChunk({
+
+    const baseParams = {
       organization_id: cookieOrgId || null,
       assignee: resolvedAssignee(activeFilter),
-      sort: 'updated_at',
-      order: 'desc',
-      offset: 0,
-      limit: PAGE_SIZE,
-    })
-      .then(({ data, hasMore, totalCount: count }) => {
+      sort: 'updated_at' as const,
+      order: 'desc' as const,
+    };
+
+    const run = async () => {
+      if (activeFilter === 'overdue' || activeFilter === 'this_week') {
+        // Load two batches in parallel to cover orgs with up to 200 tasks.
+        // Backend caps limit at 100, so two requests cover all tasks and
+        // ensure the client-side date filter sees every item.
+        const [first, second] = await Promise.all([
+          loadIssuesChunk({ ...baseParams, offset: 0, limit: MAX_PAGE_SIZE }),
+          loadIssuesChunk({
+            ...baseParams,
+            offset: MAX_PAGE_SIZE,
+            limit: MAX_PAGE_SIZE,
+          }),
+        ]);
+        if (cancelled) return;
+        const merged = [...first.data, ...second.data];
+        setFirstPage({
+          data: merged,
+          hasMore: first.totalCount > MAX_PAGE_SIZE * 2,
+        });
+        setTotalCount(first.totalCount);
+      } else {
+        const {
+          data,
+          hasMore,
+          totalCount: count,
+        } = await loadIssuesChunk({
+          ...baseParams,
+          offset: 0,
+          limit: PAGE_SIZE,
+        });
         if (cancelled) return;
         setFirstPage({ data, hasMore });
         setTotalCount(count);
-      })
-      .catch(() => {
-        if (!cancelled) toast.error('Не удалось загрузить задачи');
-      });
+      }
+    };
+
+    run().catch(() => {
+      if (!cancelled) toast.error('Не удалось загрузить задачи');
+    });
+
     return () => {
       cancelled = true;
     };

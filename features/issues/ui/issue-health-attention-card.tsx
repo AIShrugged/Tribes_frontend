@@ -196,9 +196,17 @@ function OverdueRow({ item }: { item: IssueHealthOverdueItem }) {
   );
 }
 
+function sprintRiskLabel(diffDays: number): string {
+  if (diffDays < 0) return `просрочено ${Math.abs(diffDays)} дн.`;
+  if (diffDays === 0) return 'Сегодня';
+  return `через ${diffDays} дн.`;
+}
+
 function SprintRiskRow({ item }: { item: IssueHealthSprintRiskItem }) {
-  const label =
-    item.days_until_due === 0 ? 'Сегодня' : `через ${item.days_until_due} дн.`;
+  const todayMs = new Date().setHours(0, 0, 0, 0);
+  const dueMs = new Date(item.due_date).setHours(0, 0, 0, 0);
+  const diffDays = Math.round((dueMs - todayMs) / 86_400_000);
+  const label = sprintRiskLabel(diffDays);
   return (
     <Link
       href={`${ROUTES.DASHBOARD.ISSUES}/${item.issue_id}`}
@@ -265,10 +273,7 @@ function overdueSubText(items: IssueHealthOverdueItem[]): string {
 }
 
 function todaySubText(items: IssueHealthSprintRiskItem[]): string {
-  const today = items.filter((i) => {
-    return i.days_until_due === 0;
-  });
-  const noAssignee = today.filter((i) => {
+  const noAssignee = items.filter((i) => {
     return !i.assignee_name;
   }).length;
   if (noAssignee === 0) return '';
@@ -306,6 +311,51 @@ const GRID_CLASS_MAP: Record<number, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Expanded insights panel (extracted to keep main component complexity low)
+// ---------------------------------------------------------------------------
+
+function ExpandedInsights({
+  findings,
+  gridClass,
+}: {
+  findings: IssueHealthReport['findings'];
+  gridClass: string;
+}) {
+  if (
+    findings.overdue.length === 0 &&
+    findings.sprint_risk.length === 0 &&
+    findings.priority_ignored.length === 0
+  ) {
+    return null;
+  }
+  return (
+    <div className={`grid gap-3 ${gridClass}`}>
+      {findings.overdue.length > 0 && (
+        <InsightGroup title='Просроченные задачи'>
+          {findings.overdue.map((item) => {
+            return <OverdueRow key={item.issue_id} item={item} />;
+          })}
+        </InsightGroup>
+      )}
+      {findings.sprint_risk.length > 0 && (
+        <InsightGroup title='Риски дедлайна'>
+          {findings.sprint_risk.map((item) => {
+            return <SprintRiskRow key={item.issue_id} item={item} />;
+          })}
+        </InsightGroup>
+      )}
+      {findings.priority_ignored.length > 0 && (
+        <InsightGroup title='Игнорируемые приоритеты'>
+          {findings.priority_ignored.map((item) => {
+            return <PriorityIgnoredRow key={item.issue_id} item={item} />;
+          })}
+        </InsightGroup>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -322,12 +372,33 @@ export function IssueHealthAttentionCard({
   const { findings } = report;
   const { counts } = findings;
 
-  const todayRiskCount = findings.sprint_risk.filter((i) => {
-    return i.days_until_due === 0;
-  }).length;
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  // Sprint-risk items whose due_date has now passed since the report was generated
+  const newlyOverdueFromRisk = findings.sprint_risk.filter((i) => {
+    const due = new Date(i.due_date);
+    due.setHours(0, 0, 0, 0);
+    return due < todayStart;
+  });
+
+  // Sprint-risk items still due today (recomputed from due_date, not stale days_until_due)
+  const todayRiskItems = findings.sprint_risk.filter((i) => {
+    const due = new Date(i.due_date);
+    due.setHours(0, 0, 0, 0);
+    return due.getTime() === todayStart.getTime();
+  });
+
+  const todayRiskCount = todayRiskItems.length;
   const criticalCount = findings.priority_ignored.filter((i) => {
     return i.priority_label === 'critical';
   }).length;
+
+  const activeSprintRiskItems = findings.sprint_risk.filter((i) => {
+    const due = new Date(i.due_date);
+    due.setHours(0, 0, 0, 0);
+    return due >= todayStart;
+  });
 
   const nonEmptyGroupCount = [
     findings.overdue.length > 0,
@@ -376,20 +447,20 @@ export function IssueHealthAttentionCard({
       >
         <StatCard
           label='Просрочено'
-          value={counts.overdue}
+          value={findings.overdue.length + newlyOverdueFromRisk.length}
           sub={overdueSubText(findings.overdue)}
           variant='danger'
         />
         <StatCard
           label='Дедлайн сегодня'
           value={todayRiskCount}
-          sub={todaySubText(findings.sprint_risk)}
+          sub={todaySubText(todayRiskItems)}
           variant='warn'
         />
         <StatCard
           label='На этой неделе'
-          value={counts.sprint_risk}
-          sub={weekSubText(findings.sprint_risk)}
+          value={counts.sprint_risk - newlyOverdueFromRisk.length}
+          sub={weekSubText(activeSprintRiskItems)}
           variant='info'
         />
         <StatCard
@@ -401,30 +472,8 @@ export function IssueHealthAttentionCard({
       </div>
 
       {/* Expandable insights */}
-      {expanded && nonEmptyGroupCount > 0 && (
-        <div className={`grid gap-3 ${gridClass}`}>
-          {findings.overdue.length > 0 && (
-            <InsightGroup title='Просроченные задачи'>
-              {findings.overdue.map((item) => {
-                return <OverdueRow key={item.issue_id} item={item} />;
-              })}
-            </InsightGroup>
-          )}
-          {findings.sprint_risk.length > 0 && (
-            <InsightGroup title='Риски дедлайна'>
-              {findings.sprint_risk.map((item) => {
-                return <SprintRiskRow key={item.issue_id} item={item} />;
-              })}
-            </InsightGroup>
-          )}
-          {findings.priority_ignored.length > 0 && (
-            <InsightGroup title='Игнорируемые приоритеты'>
-              {findings.priority_ignored.map((item) => {
-                return <PriorityIgnoredRow key={item.issue_id} item={item} />;
-              })}
-            </InsightGroup>
-          )}
-        </div>
+      {expanded && (
+        <ExpandedInsights findings={findings} gridClass={gridClass} />
       )}
     </div>
   );
