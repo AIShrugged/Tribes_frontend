@@ -73,9 +73,9 @@ function FilterChips({ active, counts, disabled, onSelect }: FilterChipsProps) {
             disabled={disabled}
             aria-pressed={isActive}
             className={clsx(
-              'rounded-full border px-3 py-1 text-xs transition-colors',
+              'rounded-full border px-2.5 py-[5px] text-[12.5px] transition-colors',
               isActive
-                ? 'border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary-soft-text)]'
+                ? 'border-[var(--muted-foreground)]/40 bg-[var(--surface-2)] text-[var(--foreground)]'
                 : 'border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
               disabled && 'opacity-60',
             )}
@@ -160,12 +160,12 @@ export function GoalsFilterableList({
           }}
           placeholder='Search goals…'
           aria-label='Search goals'
-          className='ml-auto w-48 rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--primary)]'
+          className='ml-auto w-[220px] rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[12.5px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] focus:border-[var(--primary)]'
         />
       </div>
 
       {visible.length > 0 ? (
-        <div className='space-y-4'>
+        <div className='space-y-3.5'>
           {visible.map((item) => {
             return <div key={item.id}>{item.node}</div>;
           })}
