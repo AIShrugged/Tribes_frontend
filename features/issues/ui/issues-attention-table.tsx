@@ -62,10 +62,12 @@ function getStatusBadge(status: string): { label: string; cls: string } {
 // Due date (Russian)
 // ---------------------------------------------------------------------------
 
-function formatDueDateRu(dueDate: string | null): {
-  label: string;
-  cls: string;
-} {
+const TERMINAL_STATUSES = new Set(['done', 'closed', 'cancelled']);
+
+function formatDueDateRu(
+  dueDate: string | null,
+  status: string,
+): { label: string; cls: string } {
   if (!dueDate) return { label: '—', cls: 'text-muted-foreground/40' };
 
   const today = new Date();
@@ -76,7 +78,15 @@ function formatDueDateRu(dueDate: string | null): {
     (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
+  const dateLabel = due.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+  });
+
   if (diffDays < 0) {
+    if (TERMINAL_STATUSES.has(status)) {
+      return { label: dateLabel, cls: 'text-muted-foreground/50' };
+    }
     return {
       label: `Просрочено · ${Math.abs(diffDays)} дн.`,
       cls: 'text-red-400',
@@ -85,10 +95,6 @@ function formatDueDateRu(dueDate: string | null): {
   if (diffDays === 0) return { label: 'Сегодня', cls: 'text-amber-400' };
   if (diffDays === 1) return { label: 'Завтра', cls: 'text-amber-400' };
 
-  const dateLabel = due.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-  });
   return { label: dateLabel, cls: 'text-muted-foreground' };
 }
 
@@ -127,7 +133,7 @@ function getInitials(name: string): string {
 
 function IssueAttentionRow({ issue, href }: { issue: Issue; href: string }) {
   const priority = getPriorityBadge(issue.priority);
-  const due = formatDueDateRu(issue.due_date);
+  const due = formatDueDateRu(issue.due_date, issue.status);
   const status = getStatusBadge(issue.status);
   const assigneeName = issue.assignee?.name ?? null;
 
@@ -414,7 +420,11 @@ export function AttentionTableClient({
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return deduped.filter((i) => {
-        return i.due_date !== null && new Date(i.due_date) < today;
+        return (
+          i.due_date !== null &&
+          new Date(i.due_date) < today &&
+          !TERMINAL_STATUSES.has(i.status)
+        );
       });
     }
     if (activeFilter === 'this_week') {

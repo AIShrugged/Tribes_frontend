@@ -199,6 +199,8 @@ export function KanbanBoard({
 
   const filteredColumns = useMemo(() => {
     const lowerSearch = filters.search.toLowerCase();
+    // 'task' is stored as 'organization' in the backend; translate for card comparison
+    const filterType = filters.type === 'task' ? 'organization' : filters.type;
     const result: Record<IssueStatus, KanbanCard[]> = {
       open: [],
       in_progress: [],
@@ -222,7 +224,7 @@ export function KanbanBoard({
         ) {
           continue;
         }
-        if (filters.type && card.type !== filters.type) continue;
+        if (filterType && card.type !== filterType) continue;
         if (
           lowerSearch.length > 0 &&
           !card.name.toLowerCase().includes(lowerSearch) &&
