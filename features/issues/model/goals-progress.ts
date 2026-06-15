@@ -92,10 +92,27 @@ export function getProgressColor(progress: GoalProgress): string {
 }
 
 /**
- * formatTaskBreakdown returns a one-line task breakdown for the epic card,
- * bucketed as done / active / open (e.g. "18 · 12 done, 4 active, 2 open").
- * The middle bucket is "active" (not "in progress") because GoalProgress.active
- * lumps in_progress + paused + review + reopen.
+ * getProgressTextColor returns a Tailwind text-color class matching
+ * getProgressColor, for tinting the stat number in the card header.
+ * @param progress - computed goal progress.
+ * @returns text-color class.
+ */
+export function getProgressTextColor(progress: GoalProgress): string {
+  if (progress.isEmpty || progress.percent === 0) {
+    return 'text-[var(--muted-foreground)]';
+  }
+  if (progress.percent <= 33) return 'text-amber-500';
+  if (progress.percent <= 66) return 'text-[var(--primary)]';
+
+  return 'text-emerald-500';
+}
+
+/**
+ * formatTaskBreakdown returns the by-bucket task breakdown (done / active /
+ * open) for the linked-tasks header, e.g. "12 done, 4 active, 2 open". The
+ * middle bucket is "active" (not "in progress") because GoalProgress.active
+ * lumps in_progress + paused + review + reopen. The caller prefixes the total,
+ * e.g. `Tasks · ${total} (${formatTaskBreakdown(progress)})`.
  * @param progress - computed goal progress.
  * @returns breakdown string.
  */
@@ -107,5 +124,5 @@ export function formatTaskBreakdown(progress: GoalProgress): string {
   if (progress.active > 0) parts.push(`${progress.active.toString()} active`);
   if (progress.open > 0) parts.push(`${progress.open.toString()} open`);
 
-  return `${progress.total.toString()} · ${parts.join(', ')}`;
+  return parts.join(', ');
 }

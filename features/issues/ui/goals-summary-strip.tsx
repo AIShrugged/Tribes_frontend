@@ -24,14 +24,16 @@ export function GoalsSummaryStrip({ summary }: { summary: GoalsSummary }) {
   ];
 
   return (
-    <div className='grid grid-cols-2 gap-3 rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface)] p-4 sm:grid-cols-4'>
+    <div className='grid grid-cols-2 gap-2.5 rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3.5 sm:grid-cols-4'>
       {cells.map((cell) => {
         return (
           <div key={cell.label}>
             <div className='text-xs text-[var(--muted-foreground)]'>
               {cell.label}
             </div>
-            <div className={`mt-0.5 text-xl font-semibold ${cell.className}`}>
+            <div
+              className={`mt-1 text-[22px] font-semibold tracking-[-0.02em] ${cell.className}`}
+            >
               {cell.value}
             </div>
           </div>

@@ -1,6 +1,4 @@
-import { UserCircle } from 'lucide-react';
 import Link from 'next/link';
-import { Suspense } from 'react';
 
 import { IssueStatusBadge } from '@/entities/issue';
 import { getIssues } from '@/features/issues/api/issues';
@@ -12,6 +10,7 @@ import {
 import {
   computeProgress,
   getProgressColor,
+  getProgressTextColor,
 } from '@/features/issues/model/goals-progress';
 import { ROUTES } from '@/shared/lib/routes';
 import { Skeleton } from '@/shared/ui/layout/skeleton';
@@ -43,45 +42,24 @@ function resolveDeadline(epic: Issue): {
   };
 }
 
-async function EpicTasksList({ epicId }: { epicId: number }) {
-  const result = await getIssues({ epic_id: epicId, limit: 100, offset: 0 });
-  const tasks = result.data.filter((t) => {
-    return t.type !== 'epic';
-  });
-  const progress = computeProgress(tasks);
-  const barColor = getProgressColor(progress);
-
-  return (
-    <EpicGoalCardClient tasks={tasks} progress={progress} barColor={barColor} />
-  );
-}
-
-function EpicTasksListSkeleton() {
-  return (
-    <div className='px-4 pb-4 space-y-2'>
-      <div className='flex items-center justify-between mb-2'>
-        <Skeleton className='h-3 w-32' />
-        <Skeleton className='h-4 w-16' />
-      </div>
-      <Skeleton className='h-1.5 w-full' />
-      <div className='mt-3 space-y-2'>
-        {[1, 2, 3].map((i) => {
-          return <Skeleton key={i} className='h-8 w-full' />;
-        })}
-      </div>
-    </div>
-  );
-}
-
 /**
- * EpicGoalCard — async Server Component. Renders one epic as a goal card: a
- * static header (title, code, status, owner, deadline) and a streamed body
- * (progress + task list) wrapped in a client collapse toggle.
+ * EpicGoalCard — async Server Component. Awaits the epic's tasks once, then
+ * renders a 2-column header (content + always-visible stat rail with a fixed
+ * 220px progress bar) and a collapsible task list. The whole card streams in via
+ * the parent Suspense boundary.
  * @param props - Component props.
  * @param props.epic - the epic issue.
  * @returns JSX element.
  */
 export async function EpicGoalCard({ epic }: { epic: Issue }) {
+  const result = await getIssues({ epic_id: epic.id, limit: 100, offset: 0 });
+  const tasks = result.data.filter((t) => {
+    return t.type !== 'epic';
+  });
+  const progress = computeProgress(tasks);
+  const barColor = getProgressColor(progress);
+  const numColor = getProgressTextColor(progress);
+
   const epicDetailHref = `${ROUTES.DASHBOARD.ISSUES}/${epic.id.toString()}`;
   const kanbanHref = `${ROUTES.DASHBOARD.ISSUES_KANBAN}?epic_id=${epic.id.toString()}`;
   const {
@@ -92,40 +70,42 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
 
   const header = (
     <>
-      <div className='flex flex-wrap items-center gap-2'>
+      <div className='flex flex-wrap items-center gap-2.5'>
         <span
           aria-hidden='true'
-          className='flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--r-md)] bg-[var(--primary-soft)] text-xs font-semibold text-[var(--primary-soft-text)]'
+          className='flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] bg-[var(--primary-soft)] text-sm font-semibold text-[var(--primary-soft-text)]'
         >
           G
         </span>
         <Link
           href={epicDetailHref}
-          className='text-sm font-semibold text-[var(--foreground)] hover:text-[var(--primary)] hover:underline transition-colors line-clamp-2'
+          className='text-[15.5px] font-semibold tracking-[-0.005em] text-[var(--foreground)] transition-colors line-clamp-2 hover:text-[var(--primary)] hover:underline'
         >
           {epic.name}
         </Link>
-        <span className='font-mono text-[11px] text-[var(--muted-foreground)]'>
+        <span className='font-mono text-xs text-[var(--muted-foreground)]'>
           EPIC-{epic.id.toString()}
         </span>
         <IssueStatusBadge status={epic.status} isOverdue={isOverdue} />
       </div>
 
       {epic.description && (
-        <p className='mt-1 text-xs text-[var(--muted-foreground)] line-clamp-2'>
+        <p className='mt-1.5 max-w-[720px] text-[13px] text-[var(--muted-foreground)] line-clamp-2'>
           {epic.description}
         </p>
       )}
 
-      <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]'>
+      <div className='mt-3 flex flex-wrap items-center gap-x-[18px] gap-y-1 text-[12.5px]'>
         {epic.assignee?.name != null && epic.assignee.name !== '' && (
-          <span className='inline-flex items-center gap-1 text-[var(--muted-foreground)]'>
-            <UserCircle className='h-3.5 w-3.5 shrink-0' aria-hidden='true' />
-            {epic.assignee.name}
+          <span className='inline-flex items-center gap-1.5'>
+            <span className='text-[var(--muted-foreground)]'>Owner</span>
+            <span className='text-[var(--foreground)]'>
+              {epic.assignee.name}
+            </span>
           </span>
         )}
         {deadlineLabel !== '' && (
-          <span className='inline-flex items-center gap-1'>
+          <span className='inline-flex items-center gap-1.5'>
             <span className='text-[var(--muted-foreground)]'>Deadline</span>
             <span className={TONE_TEXT_CLASS[deadlineTone]}>
               {deadlineLabel}
@@ -134,7 +114,7 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
         )}
         <Link
           href={kanbanHref}
-          className='ml-auto rounded px-2 py-0.5 text-[var(--muted-foreground)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] transition-colors'
+          className='ml-auto rounded px-2 py-0.5 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]'
         >
           Kanban
         </Link>
@@ -142,12 +122,55 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
     </>
   );
 
+  const right = (
+    <>
+      <div className='text-right'>
+        <div
+          className={`text-2xl font-semibold tracking-[-0.02em] ${numColor}`}
+        >
+          {progress.isEmpty ? (
+            '—'
+          ) : (
+            <>
+              {progress.done.toString()}
+              <span className='text-sm font-normal text-[var(--muted-foreground)]'>
+                {' '}
+                / {progress.total.toString()}
+              </span>
+            </>
+          )}
+        </div>
+        <div className='mt-0.5 text-[11.5px] text-[var(--muted-foreground)]'>
+          {progress.isEmpty
+            ? 'No tasks yet'
+            : `tasks closed · ${progress.percent.toString()}%`}
+        </div>
+      </div>
+      {!progress.isEmpty && (
+        <div
+          className='h-1.5 w-[220px] overflow-hidden rounded-full bg-[var(--surface-3)]'
+          role='progressbar'
+          aria-valuenow={progress.percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={`h-full rounded-full transition-[width] duration-500 ${barColor}`}
+            style={{ width: `${progress.percent.toString()}%` }}
+          />
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className='group/epic overflow-hidden rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface)]'>
-      <EpicCardCollapse header={header}>
-        <Suspense fallback={<EpicTasksListSkeleton />}>
-          <EpicTasksList epicId={epic.id} />
-        </Suspense>
+      <EpicCardCollapse
+        header={header}
+        right={right}
+        hasBody={tasks.length > 0}
+      >
+        <EpicGoalCardClient tasks={tasks} progress={progress} />
       </EpicCardCollapse>
     </div>
   );
@@ -156,14 +179,19 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
 export function EpicGoalCardSkeleton() {
   return (
     <div className='overflow-hidden rounded-[var(--r-lg)] border border-[var(--border)] bg-[var(--surface)]'>
-      <div className='flex items-start gap-2 px-4 py-3'>
-        <Skeleton className='h-5 w-5 shrink-0 rounded' />
-        <div className='flex-1 space-y-2'>
-          <Skeleton className='h-4 w-3/4' />
-          <Skeleton className='h-3 w-1/2' />
+      <div className='grid grid-cols-[minmax(0,1fr)_auto] gap-4 px-5 py-[18px]'>
+        <div className='flex items-start gap-2.5'>
+          <Skeleton className='mt-0.5 h-[18px] w-[18px] shrink-0 rounded' />
+          <div className='min-w-0 flex-1 space-y-2'>
+            <Skeleton className='h-4 w-3/4' />
+            <Skeleton className='h-3 w-1/2' />
+          </div>
+        </div>
+        <div className='flex flex-col items-end gap-2.5'>
+          <Skeleton className='h-7 w-20' />
+          <Skeleton className='h-1.5 w-[220px]' />
         </div>
       </div>
-      <EpicTasksListSkeleton />
     </div>
   );
 }
