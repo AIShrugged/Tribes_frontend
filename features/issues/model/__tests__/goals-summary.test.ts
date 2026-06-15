@@ -68,6 +68,14 @@ describe('summarizeEpics', () => {
     const s = summarizeEpics([epic({ due_date: 'not-a-date' })], NOW);
     expect(s.overdue).toBe(0);
   });
+
+  it('does not count completed epics as overdue', () => {
+    const s = summarizeEpics(
+      [epic({ status: 'done', due_date: '2026-06-01' })],
+      NOW,
+    );
+    expect(s.overdue).toBe(0);
+  });
 });
 
 describe('filterEpics', () => {
@@ -109,6 +117,23 @@ describe('filterEpics', () => {
         return e.id;
       }),
     ).toEqual([2]);
+  });
+
+  it('excludes completed epics from overdue', () => {
+    const list: Issue[] = [
+      epic({ id: 10, status: 'open', due_date: '2026-06-01' }),
+      epic({ id: 11, status: 'done', due_date: '2026-06-01' }),
+    ];
+    const overdue = filterEpics(
+      list,
+      { filter: 'overdue', currentUserId: null },
+      NOW,
+    );
+    expect(
+      overdue.map((e) => {
+        return e.id;
+      }),
+    ).toEqual([10]);
   });
 });
 

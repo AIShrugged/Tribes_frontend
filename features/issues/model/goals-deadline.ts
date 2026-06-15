@@ -28,6 +28,18 @@ function parseDate(dateStr: string | null): Date | null {
 }
 
 /**
+ * formatShortDate — plain "MMM d" for a date, with no countdown/overdue framing.
+ * Used for completed epics where the deadline is just historical context.
+ * @param dueDate - ISO date string or null.
+ * @returns "MMM d" or empty string.
+ */
+export function formatShortDate(dueDate: string | null): string {
+  const due = parseDate(dueDate);
+
+  return due ? format(due, 'MMM d') : '';
+}
+
+/**
  * formatDeadline — epic deadline label with countdown and tone.
  * future → "Jun 28" (ok); ≤3 days → "Jun 18 · 3 days left" (warn);
  * today → "Jun 18 · today" (warn); past → "Jun 5 · 10 days overdue" (danger);

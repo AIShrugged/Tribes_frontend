@@ -6,6 +6,7 @@ import { IssueStatusBadge } from '@/entities/issue';
 import { getIssues } from '@/features/issues/api/issues';
 import {
   formatDeadline,
+  formatShortDate,
   TONE_TEXT_CLASS,
 } from '@/features/issues/model/goals-deadline';
 import {
@@ -18,7 +19,29 @@ import { Skeleton } from '@/shared/ui/layout/skeleton';
 import { EpicCardCollapse } from './epic-card-collapse';
 import { EpicGoalCardClient } from './epic-goal-card-client';
 
+import type { GoalsTone } from '@/features/issues/model/goals-deadline';
 import type { Issue } from '@/features/issues/model/types';
+
+/**
+ * resolveDeadline — deadline display for an epic. A completed epic is never
+ * "overdue"; its deadline is shown as a plain date.
+ * @param epic - the epic issue.
+ * @returns overdue flag plus label/tone for the deadline meta.
+ */
+function resolveDeadline(epic: Issue): {
+  isOverdue: boolean;
+  label: string;
+  tone: GoalsTone;
+} {
+  const deadline = formatDeadline(epic.due_date);
+  const isDone = epic.status === 'done';
+
+  return {
+    isOverdue: !isDone && deadline.tone === 'danger',
+    label: isDone ? formatShortDate(epic.due_date) : deadline.label,
+    tone: isDone ? 'none' : deadline.tone,
+  };
+}
 
 async function EpicTasksList({ epicId }: { epicId: number }) {
   const result = await getIssues({ epic_id: epicId, limit: 100, offset: 0 });
@@ -61,8 +84,11 @@ function EpicTasksListSkeleton() {
 export async function EpicGoalCard({ epic }: { epic: Issue }) {
   const epicDetailHref = `${ROUTES.DASHBOARD.ISSUES}/${epic.id.toString()}`;
   const kanbanHref = `${ROUTES.DASHBOARD.ISSUES_KANBAN}?epic_id=${epic.id.toString()}`;
-  const deadline = formatDeadline(epic.due_date);
-  const isOverdue = deadline.tone === 'danger';
+  const {
+    isOverdue,
+    label: deadlineLabel,
+    tone: deadlineTone,
+  } = resolveDeadline(epic);
 
   const header = (
     <>
@@ -98,11 +124,11 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
             {epic.assignee.name}
           </span>
         )}
-        {deadline.label !== '' && (
+        {deadlineLabel !== '' && (
           <span className='inline-flex items-center gap-1'>
             <span className='text-[var(--muted-foreground)]'>Deadline</span>
-            <span className={TONE_TEXT_CLASS[deadline.tone]}>
-              {deadline.label}
+            <span className={TONE_TEXT_CLASS[deadlineTone]}>
+              {deadlineLabel}
             </span>
           </span>
         )}

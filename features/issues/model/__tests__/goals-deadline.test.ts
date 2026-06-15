@@ -1,4 +1,8 @@
-import { formatDeadline, formatTaskDue } from '../goals-deadline';
+import {
+  formatDeadline,
+  formatShortDate,
+  formatTaskDue,
+} from '../goals-deadline';
 
 const NOW = new Date('2026-06-15T12:00:00Z');
 
@@ -78,5 +82,16 @@ describe('formatTaskDue', () => {
       label: 'Jun 30',
       tone: 'none',
     });
+  });
+});
+
+describe('formatShortDate', () => {
+  it('returns "MMM d" for a valid date with no countdown framing', () => {
+    expect(formatShortDate('2026-06-05')).toBe('Jun 5');
+  });
+
+  it('returns empty string for null or malformed input', () => {
+    expect(formatShortDate(null)).toBe('');
+    expect(formatShortDate('not-a-date')).toBe('');
   });
 });

@@ -32,6 +32,8 @@ export function isGoalsFilter(
  * @returns whether the epic is overdue.
  */
 function isEpicOverdue(epic: Issue, now: Date): boolean {
+  // A completed epic is never "overdue", even if finished past its deadline.
+  if (epic.status === 'done') return false;
   if (!epic.due_date) return false;
   const due = parseISO(epic.due_date);
   if (Number.isNaN(due.getTime())) return false;
