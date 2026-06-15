@@ -1,5 +1,7 @@
 'use client';
 
+import { format, isToday, isYesterday } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -8,6 +10,7 @@ import {
   getLatestMeetingTaskReview,
 } from '../api/meeting-task-review';
 import { getCalendarEventsByDate } from '../api/meetings';
+import { pluralMeetings } from '../model/plural';
 
 import { MeetingTaskReviewBlocks } from './meeting-task-review-blocks';
 import { MeetingTaskReviewCard } from './meeting-task-review-card';
@@ -19,6 +22,34 @@ import type {
 } from '../model/types';
 
 type EventWithReview = { event: MeetingListItem; review: MeetingTaskReview };
+
+type DayGroup = { key: string; label: string; items: EventWithReview[] };
+
+function formatDayLabel(date: Date): string {
+  if (isToday(date)) return 'Сегодня';
+  if (isYesterday(date)) return 'Вчера';
+  const label = format(date, 'EEEE, d MMMM', { locale: ru });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function groupByDay(items: EventWithReview[]): DayGroup[] {
+  const groups: DayGroup[] = [];
+  const byKey = new Map<string, DayGroup>();
+
+  for (const item of items) {
+    const date = new Date(item.event.starts_at);
+    const key = format(date, 'yyyy-MM-dd');
+    let group = byKey.get(key);
+    if (!group) {
+      group = { key, label: formatDayLabel(date), items: [] };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    group.items.push(item);
+  }
+
+  return groups;
+}
 
 function getRecentDateStrings(): string[] {
   const now = new Date();
@@ -131,21 +162,46 @@ export function MeetingTaskReviewContainer() {
     );
   }
 
+  const dayGroups = groupByDay(eventsWithReviews);
+
   return (
-    <div className='space-y-3'>
-      {eventsWithReviews.map(({ event, review }) => {
-        return (
-          <MeetingTaskReviewCard
-            key={event.id}
-            event={event}
-            initialReview={review}
-          />
-        );
-      })}
-      <HealthBlocksSection
-        blocks={healthBlocks}
-        onReload={reloadHealthBlocks}
-      />
+    <div className='space-y-6'>
+      {dayGroups.length > 0 ? (
+        <div className='space-y-5'>
+          {dayGroups.map((group) => {
+            return (
+              <section key={group.key} className='space-y-2.5'>
+                <div className='flex items-center gap-3 px-0.5'>
+                  <span className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>
+                    {group.label}
+                  </span>
+                  <span className='h-px flex-1 bg-border' />
+                  <span className='text-xs text-muted-foreground'>
+                    {group.items.length} {pluralMeetings(group.items.length)}
+                  </span>
+                </div>
+                <div className='space-y-3'>
+                  {group.items.map(({ event, review }) => {
+                    return (
+                      <MeetingTaskReviewCard
+                        key={event.id}
+                        event={event}
+                        initialReview={review}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      ) : (
+        <p className='px-1 text-sm text-muted-foreground'>
+          За последнюю неделю нет проанализированных встреч
+        </p>
+      )}
+
+      <HealthBlocksSection blocks={healthBlocks} onReload={reloadHealthBlocks} />
     </div>
   );
 }
