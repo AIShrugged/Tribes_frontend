@@ -79,7 +79,7 @@ export function LinkToEpicButton({
           <ul
             role='listbox'
             aria-label='Select goal'
-            className='absolute left-0 top-full z-20 mt-1 min-w-[220px] max-w-[320px] overflow-hidden rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--surface-1)] shadow-lg'
+            className='absolute left-0 top-full z-20 mt-1 min-w-[220px] max-w-[320px] overflow-hidden rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--surface)] shadow-lg'
           >
             {epics.map((epic) => {
               return (

@@ -1,11 +1,5 @@
-import { EpicGoalCardSkeleton } from '@/features/issues';
+import { GoalsHeaderSkeleton } from '@/features/issues/ui/goals-header-skeleton';
 
 export default function OrganizationGoalsLoading() {
-  return (
-    <div className='space-y-4'>
-      {[1, 2, 3].map((i) => {
-        return <EpicGoalCardSkeleton key={i} />;
-      })}
-    </div>
-  );
+  return <GoalsHeaderSkeleton />;
 }

@@ -3,25 +3,33 @@ import { Suspense } from 'react';
 
 import { getEpics } from '@/features/issues/api/issues';
 import {
+  epicFilterCounts,
+  filterEpics,
+  summarizeEpics,
+} from '@/features/issues/model/goals-summary';
+import {
   EpicGoalCard,
   EpicGoalCardSkeleton,
 } from '@/features/issues/ui/epic-goal-card';
-import { UnlinkedTasksSection } from '@/features/issues/ui/unlinked-tasks-section';
+import {
+  GoalsFilterableList,
+  type GoalsListItem,
+} from '@/features/issues/ui/goals-filterable-list';
+import { GoalsHeaderSkeleton } from '@/features/issues/ui/goals-header-skeleton';
+import { GoalsSummaryStrip } from '@/features/issues/ui/goals-summary-strip';
 import { EmptyState } from '@/shared/ui/feedback/empty-state';
-import { Skeleton } from '@/shared/ui/layout/skeleton';
 
-function UnlinkedTasksSkeleton() {
-  return (
-    <div className='rounded-[var(--r-lg)] border border-dashed border-[var(--border)] bg-[var(--surface-1)]/50 p-4 space-y-2'>
-      <Skeleton className='h-4 w-40' />
-      {[1, 2, 3].map((i) => {
-        return <Skeleton key={i} className='h-8 w-full' />;
-      })}
-    </div>
-  );
-}
+import type { GoalsFilter } from '@/features/issues/model/goals-summary';
 
-async function EpicsList({ orgId }: { orgId: number }) {
+async function EpicsList({
+  orgId,
+  filter,
+  currentUserId,
+}: {
+  orgId: number;
+  filter: GoalsFilter;
+  currentUserId: number | null;
+}) {
   const epics = await getEpics(orgId);
 
   if (epics.length === 0) {
@@ -34,34 +42,53 @@ async function EpicsList({ orgId }: { orgId: number }) {
     );
   }
 
-  return (
-    <div className='space-y-4'>
-      {epics.map((epic) => {
-        return (
-          <Suspense key={epic.id} fallback={<EpicGoalCardSkeleton />}>
-            <EpicGoalCard epic={epic} />
-          </Suspense>
-        );
-      })}
+  const summary = summarizeEpics(epics);
+  const counts = epicFilterCounts(epics, currentUserId);
+  const filtered = filterEpics(epics, { filter, currentUserId });
 
-      <Suspense fallback={<UnlinkedTasksSkeleton />}>
-        <UnlinkedTasksSection orgId={orgId} epics={epics} />
-      </Suspense>
-    </div>
+  const items: GoalsListItem[] = filtered.map((epic) => {
+    return {
+      id: epic.id,
+      name: epic.name,
+      node: (
+        <Suspense fallback={<EpicGoalCardSkeleton />}>
+          <EpicGoalCard epic={epic} />
+        </Suspense>
+      ),
+    };
+  });
+
+  return (
+    <GoalsFilterableList
+      summary={<GoalsSummaryStrip summary={summary} />}
+      counts={counts}
+      items={items}
+    />
   );
 }
 
 /**
- * GoalsContent — organization-scoped goals view: open epics with their linked
- * tasks plus a section for unlinked tasks. Streams the epics list via Suspense.
- * Shared by the Today goals redirect target and the Organization Goals tab.
+ * GoalsContent — organization-scoped goals view: a summary strip, filter chips +
+ * search, and open epics with their linked tasks. Rendered by the Organization
+ * Goals tab (the legacy /today/goals route redirects here).
  * @param props - Component props.
- * @param props.orgId - Organization to scope epics/tasks to.
+ * @param props.orgId - organization to scope epics/tasks to.
+ * @param props.filter - active chip filter from the URL.
+ * @param props.currentUserId - current user id, for the "Mine" filter.
+ * @returns JSX element.
  */
-export function GoalsContent({ orgId }: { orgId: number }) {
+export function GoalsContent({
+  orgId,
+  filter,
+  currentUserId,
+}: {
+  orgId: number;
+  filter: GoalsFilter;
+  currentUserId: number | null;
+}) {
   return (
-    <Suspense fallback={<EpicGoalCardSkeleton />}>
-      <EpicsList orgId={orgId} />
+    <Suspense fallback={<GoalsHeaderSkeleton />}>
+      <EpicsList orgId={orgId} filter={filter} currentUserId={currentUserId} />
     </Suspense>
   );
 }

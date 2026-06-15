@@ -1,5 +1,6 @@
 import {
   computeProgress,
+  formatTaskBreakdown,
   getProgressColor,
 } from '@/features/issues/model/goals-progress';
 
@@ -293,5 +294,35 @@ describe('getProgressColor', () => {
         makeProgress({ isEmpty: false, percent: 100, total: 2, done: 2 }),
       ),
     ).toBe('bg-gradient-to-r from-emerald-400 to-emerald-600');
+  });
+});
+
+describe('formatTaskBreakdown', () => {
+  it('reports "No tasks yet" when empty', () => {
+    expect(formatTaskBreakdown(makeProgress({ isEmpty: true }))).toBe(
+      'No tasks yet',
+    );
+  });
+
+  it('includes done, active and open buckets', () => {
+    expect(
+      formatTaskBreakdown(
+        makeProgress({
+          isEmpty: false,
+          total: 18,
+          done: 12,
+          active: 4,
+          open: 2,
+        }),
+      ),
+    ).toBe('18 · 12 done, 4 active, 2 open');
+  });
+
+  it('omits zero buckets', () => {
+    expect(
+      formatTaskBreakdown(
+        makeProgress({ isEmpty: false, total: 3, done: 3, active: 0, open: 0 }),
+      ),
+    ).toBe('3 · 3 done');
   });
 });
