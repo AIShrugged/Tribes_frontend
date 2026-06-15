@@ -55,7 +55,13 @@ function pairWithReviews(
   return pairs;
 }
 
-function HealthBlocksSection({ blocks }: { blocks: MeetingTaskReviewBlock[] }) {
+function HealthBlocksSection({
+  blocks,
+  onReload,
+}: {
+  blocks: MeetingTaskReviewBlock[];
+  onReload: () => void;
+}) {
   return (
     <div className='space-y-2'>
       <div className='flex items-center gap-1.5 px-1'>
@@ -65,7 +71,7 @@ function HealthBlocksSection({ blocks }: { blocks: MeetingTaskReviewBlock[] }) {
         </span>
       </div>
       {blocks.length > 0 ? (
-        <MeetingTaskReviewBlocks blocks={blocks} />
+        <MeetingTaskReviewBlocks blocks={blocks} onReload={onReload} />
       ) : (
         <div className='flex items-center gap-2 rounded-card border border-border bg-card px-4 py-3'>
           <CheckCircle2 className='h-4 w-4 shrink-0 text-(--success-500)' />
@@ -86,6 +92,11 @@ export function MeetingTaskReviewContainer() {
     [],
   );
   const [isLoading, setIsLoading] = useState(true);
+
+  const reloadHealthBlocks = useCallback(async () => {
+    const latestReview = await getLatestMeetingTaskReview();
+    setHealthBlocks(latestReview?.health_blocks ?? []);
+  }, []);
 
   const load = useCallback(async () => {
     const dates = getRecentDateStrings();
@@ -137,7 +148,10 @@ export function MeetingTaskReviewContainer() {
           />
         );
       })}
-      <HealthBlocksSection blocks={healthBlocks} />
+      <HealthBlocksSection
+        blocks={healthBlocks}
+        onReload={reloadHealthBlocks}
+      />
     </div>
   );
 }

@@ -20,20 +20,30 @@ import type {
   MeetingTaskReviewBlockType,
 } from '../model/types';
 
+const BLOCK_ORDER: Record<MeetingTaskReviewBlockType, number> = {
+  status_not_updated: 0,
+  blocked: 1,
+  overdue: 2,
+  stuck_in_progress: 3,
+  no_assignee: 4,
+  incomplete_info: 5,
+  abandoned: 6,
+};
+
 function sortBlocks(
   blocks: MeetingTaskReviewBlock[],
 ): MeetingTaskReviewBlock[] {
   return blocks.toSorted((a, b) => {
-    if (a.type === 'status_not_updated') return -1;
-    if (b.type === 'status_not_updated') return 1;
-    return 0;
+    return BLOCK_ORDER[a.type] - BLOCK_ORDER[b.type];
   });
 }
 
 export function MeetingTaskReviewBlocks({
   blocks,
+  onReload,
 }: {
   blocks: MeetingTaskReviewBlock[];
+  onReload?: () => void;
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState<MeetingTaskReviewBlockType | null>(
@@ -69,6 +79,7 @@ export function MeetingTaskReviewBlocks({
     } else {
       toast.success(`Поставлено на паузу: ${result.data?.pausedCount}`);
       setSelectedIds(new Set());
+      onReload?.();
       router.refresh();
     }
   };
@@ -82,6 +93,7 @@ export function MeetingTaskReviewBlocks({
     } else {
       toast.success(`Удалено: ${result.data?.deletedCount}`);
       setSelectedIds(new Set());
+      onReload?.();
       router.refresh();
     }
   };
