@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -64,12 +64,6 @@ function HealthBlocksSection({
 }) {
   return (
     <div className='space-y-2'>
-      <div className='flex items-center gap-1.5 px-1'>
-        <Activity className='h-3.5 w-3.5 text-muted-foreground' />
-        <span className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
-          Здоровье задач
-        </span>
-      </div>
       {blocks.length > 0 ? (
         <MeetingTaskReviewBlocks blocks={blocks} onReload={onReload} />
       ) : (
