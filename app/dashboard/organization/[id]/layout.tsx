@@ -27,7 +27,7 @@ export default async function OrganizationLayout({
   if (!organization) return null;
 
   return (
-    <Card className='h-full flex flex-col'>
+    <Card className='min-h-full flex flex-col'>
       <PageHeader hasButtonBack title='Organization' />
       <div className='px-6'>
         <OrganizationTabsNav organizationId={organization.id} />
