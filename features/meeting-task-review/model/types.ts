@@ -56,6 +56,7 @@ export interface MeetingTaskReview {
   calendar_event_id: number;
   status: MeetingTaskReviewStatus;
   analyzed_count: number;
+  discussed_count: number;
   generated_at: string;
   error: string | null;
   llm_blocks: MeetingTaskReviewBlock[];

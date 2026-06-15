@@ -1,47 +1,72 @@
 'use client';
 
-import { format, isToday, isYesterday } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { AlertCircle, CalendarDays, CheckCircle2, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { getEventTaskReview } from '../api/meeting-task-review';
+import { pluralTasks } from '../model/plural';
 
 import { MeetingTaskReviewBlocks } from './meeting-task-review-blocks';
 
 import type { MeetingListItem, MeetingTaskReview } from '../model/types';
 
-function formatEventDateTime(startsAt: string): string {
-  const date = new Date(startsAt);
-  const time = format(date, 'HH:mm');
-
-  if (isToday(date)) return `сегодня, ${time}`;
-  if (isYesterday(date)) return `вчера, ${time}`;
-  return format(date, 'd MMMM, HH:mm', { locale: ru });
+function countFlagged(review: MeetingTaskReview): number {
+  return review.llm_blocks.reduce((sum, block) => {
+    return sum + block.count;
+  }, 0);
 }
 
-function ReviewBody({ review }: { review: MeetingTaskReview }) {
-  if (review.status === 'pending') return null;
+function StatusPill({ review }: { review: MeetingTaskReview }) {
+  const base =
+    'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium';
 
-  if (review.status === 'failed') {
+  if (review.status === 'pending') {
     return (
-      <div className='flex items-start gap-2.5 rounded-card border border-destructive/30 bg-destructive/10 px-4 py-3'>
-        <AlertCircle className='mt-0.5 h-4 w-4 shrink-0 text-destructive' />
-        <p className='text-xs text-muted-foreground'>
-          {review.error ?? 'Ошибка анализа задач'}
-        </p>
-      </div>
+      <span className={`${base} bg-secondary text-muted-foreground`}>
+        <Loader2 className='h-3 w-3 animate-spin' />
+        Анализ
+      </span>
     );
   }
 
-  if (review.llm_blocks.length === 0) {
+  if (review.status === 'failed') {
     return (
-      <div className='flex items-center gap-2 rounded-card border border-border bg-card px-4 py-3'>
-        <CheckCircle2 className='h-4 w-4 shrink-0 text-(--success-500)' />
-        <span className='text-sm text-muted-foreground'>
-          Всё хорошо по итогам встречи
-        </span>
-      </div>
+      <span className={`${base} bg-destructive/10 text-destructive`}>
+        <AlertCircle className='h-3 w-3' />
+        Ошибка
+      </span>
+    );
+  }
+
+  const flagged = countFlagged(review);
+
+  if (flagged === 0) {
+    return (
+      <span className={`${base} bg-(--success-500)/10 text-(--success-500)`}>
+        <CheckCircle2 className='h-3 w-3' />
+        Всё хорошо
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={`${base} bg-(--warning-500)/10 text-(--warning-500)`}
+      title='Задачи, требующие внимания'
+    >
+      <AlertCircle className='h-3 w-3' />
+      {flagged} к вниманию
+    </span>
+  );
+}
+
+function ReviewBody({ review }: { review: MeetingTaskReview }) {
+  if (review.status === 'failed') {
+    return (
+      <p className='text-xs text-muted-foreground'>
+        {review.error ?? 'Не удалось проанализировать задачи встречи'}
+      </p>
     );
   }
 
@@ -82,25 +107,37 @@ export function MeetingTaskReviewCard({
     };
   }, [event.id, initialReview.status]);
 
-  const dateLabel = formatEventDateTime(event.starts_at);
+  const timeLabel = format(new Date(event.starts_at), 'HH:mm');
+  const hasBody =
+    review.status === 'failed' ||
+    (review.status === 'done' && review.llm_blocks.length > 0);
 
   return (
-    <div className='space-y-2'>
-      <div className='flex items-center justify-between rounded-card border border-border bg-card px-4 py-3'>
-        <div>
-          <p className='text-sm font-medium text-foreground'>{event.title}</p>
+    <div className='overflow-hidden rounded-card border border-border bg-card shadow-sm transition-shadow hover:shadow-md'>
+      <div className='flex items-center gap-3 px-4 py-3'>
+        <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary'>
+          <CalendarDays className='h-4 w-4 text-muted-foreground' />
+        </span>
+
+        <div className='min-w-0 flex-1'>
+          <p className='truncate text-sm font-semibold text-foreground'>
+            {event.title}
+          </p>
           <p className='text-xs text-muted-foreground'>
-            {dateLabel}
+            {timeLabel}
             {review.status === 'done' &&
-              ` · Проанализировано: ${review.analyzed_count} задач`}
+              ` · обсуждалось ${review.discussed_count} ${pluralTasks(review.discussed_count)}`}
           </p>
         </div>
-        {review.status === 'pending' && (
-          <Loader2 className='h-3.5 w-3.5 animate-spin text-muted-foreground' />
-        )}
+
+        <StatusPill review={review} />
       </div>
 
-      <ReviewBody review={review} />
+      {hasBody && (
+        <div className='border-t border-border bg-muted/40 px-3 py-3'>
+          <ReviewBody review={review} />
+        </div>
+      )}
     </div>
   );
 }
