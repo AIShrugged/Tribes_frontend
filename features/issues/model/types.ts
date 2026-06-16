@@ -177,6 +177,10 @@ export interface IssueFilters {
   archived?: boolean;
   exclude_archived?: boolean;
   unassigned?: boolean;
+  overdue?: boolean;
+  due_date_from?: string;
+  due_date_to?: string;
+  blocked?: boolean;
 }
 
 export interface FilterPreset {
@@ -349,6 +353,13 @@ export interface IssueHealthFindings {
   priority_ignored: IssueHealthPriorityIgnoredItem[];
 }
 
+export interface IssueHealthLiveCounts {
+  overdue: number;
+  due_today: number;
+  due_this_week: number;
+  critical_ignored: number;
+}
+
 export interface IssueHealthReport {
   id: number;
   team_id: number;
@@ -356,4 +367,5 @@ export interface IssueHealthReport {
   generated_at: string;
   findings: IssueHealthFindings;
   ai_summary: string | null;
+  live_counts: IssueHealthLiveCounts;
 }

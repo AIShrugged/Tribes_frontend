@@ -9,6 +9,7 @@ import remarkGfm from 'remark-gfm';
 import { ROUTES } from '@/shared/lib/routes';
 
 import type {
+  IssueHealthLiveCounts,
   IssueHealthOverdueItem,
   IssueHealthPriorityIgnoredItem,
   IssueHealthReport,
@@ -273,7 +274,11 @@ function overdueSubText(items: IssueHealthOverdueItem[]): string {
 }
 
 function todaySubText(items: IssueHealthSprintRiskItem[]): string {
-  const noAssignee = items.filter((i) => {
+  const todayMs = new Date().setHours(0, 0, 0, 0);
+  const todayItems = items.filter((i) => {
+    return new Date(i.due_date).setHours(0, 0, 0, 0) === todayMs;
+  });
+  const noAssignee = todayItems.filter((i) => {
     return !i.assignee_name;
   }).length;
   if (noAssignee === 0) return '';
@@ -363,42 +368,15 @@ export function IssueHealthAttentionCard({
   teamName,
   report,
   updatedLabel,
+  orgCounts,
 }: {
   teamName: string;
   report: IssueHealthReport;
   updatedLabel: string;
+  orgCounts: IssueHealthLiveCounts;
 }) {
   const [expanded, setExpanded] = useState(false);
   const { findings } = report;
-  const { counts } = findings;
-
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  // Sprint-risk items whose due_date has now passed since the report was generated
-  const newlyOverdueFromRisk = findings.sprint_risk.filter((i) => {
-    const due = new Date(i.due_date);
-    due.setHours(0, 0, 0, 0);
-    return due < todayStart;
-  });
-
-  // Sprint-risk items still due today (recomputed from due_date, not stale days_until_due)
-  const todayRiskItems = findings.sprint_risk.filter((i) => {
-    const due = new Date(i.due_date);
-    due.setHours(0, 0, 0, 0);
-    return due.getTime() === todayStart.getTime();
-  });
-
-  const todayRiskCount = todayRiskItems.length;
-  const criticalCount = findings.priority_ignored.filter((i) => {
-    return i.priority_label === 'critical';
-  }).length;
-
-  const activeSprintRiskItems = findings.sprint_risk.filter((i) => {
-    const due = new Date(i.due_date);
-    due.setHours(0, 0, 0, 0);
-    return due >= todayStart;
-  });
 
   const nonEmptyGroupCount = [
     findings.overdue.length > 0,
@@ -447,25 +425,25 @@ export function IssueHealthAttentionCard({
       >
         <StatCard
           label='Просрочено'
-          value={findings.overdue.length + newlyOverdueFromRisk.length}
+          value={orgCounts.overdue}
           sub={overdueSubText(findings.overdue)}
           variant='danger'
         />
         <StatCard
           label='Дедлайн сегодня'
-          value={todayRiskCount}
-          sub={todaySubText(todayRiskItems)}
+          value={orgCounts.due_today}
+          sub={todaySubText(findings.sprint_risk)}
           variant='warn'
         />
         <StatCard
           label='На этой неделе'
-          value={counts.sprint_risk - newlyOverdueFromRisk.length}
-          sub={weekSubText(activeSprintRiskItems)}
+          value={orgCounts.due_this_week}
+          sub={weekSubText(findings.sprint_risk)}
           variant='info'
         />
         <StatCard
           label='Критический приоритет'
-          value={criticalCount}
+          value={orgCounts.critical_ignored}
           sub={prioritySubText(findings.priority_ignored)}
           variant='ok'
         />

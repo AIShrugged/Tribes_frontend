@@ -27,6 +27,10 @@ export function buildIssuesQuery(filters: IssueFilters = {}) {
   if (filters.search) params.set('search', filters.search);
   if (filters.archived) params.set('archived', '1');
   if (filters.exclude_archived) params.set('exclude_archived', '1');
+  if (filters.overdue) params.set('overdue', '1');
+  if (filters.due_date_from) params.set('due_date_from', filters.due_date_from);
+  if (filters.due_date_to) params.set('due_date_to', filters.due_date_to);
+  if (filters.blocked) params.set('blocked', '1');
 
   return params.toString();
 }

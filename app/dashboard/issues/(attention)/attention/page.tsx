@@ -32,7 +32,10 @@ export default async function IssuesAttentionPage() {
   return (
     <div className='flex flex-col gap-4 px-2 pt-2 pb-6'>
       <Suspense>
-        <IssueHealthSection teams={teamsResult.data} />
+        <IssueHealthSection
+          teams={teamsResult.data}
+          statsOverdue={stats.overdue}
+        />
       </Suspense>
 
       <AttentionTableClient

@@ -2,13 +2,19 @@ import { getIssueHealth } from '@/features/issues/api/issue-health';
 import { IssueHealthAttentionCard } from '@/features/issues/ui/issue-health-attention-card';
 
 import type { TeamProps } from '@/entities/team';
-import type { IssueHealthReport } from '@/features/issues/model/types';
+import type {
+  IssueHealthLiveCounts,
+  IssueHealthReport,
+} from '@/features/issues/model/types';
 import type { ReactNode } from 'react';
 
 function hasHealthProblems(report: IssueHealthReport): boolean {
-  const { counts } = report.findings;
+  const { live_counts } = report;
   return (
-    counts.overdue > 0 || counts.sprint_risk > 0 || counts.priority_ignored > 0
+    live_counts.overdue > 0 ||
+    live_counts.due_today > 0 ||
+    live_counts.due_this_week > 0 ||
+    live_counts.critical_ignored > 0
   );
 }
 
@@ -62,11 +68,34 @@ function buildBanners(
   return banners;
 }
 
+// Sum live_counts across ALL teams (not just those with banners) to get org-wide totals.
+function aggregateOrgCounts(
+  results: PromiseSettledResult<IssueHealthReport | null>[],
+): IssueHealthLiveCounts {
+  const totals: IssueHealthLiveCounts = {
+    overdue: 0,
+    due_today: 0,
+    due_this_week: 0,
+    critical_ignored: 0,
+  };
+  for (const result of results) {
+    if (result.status !== 'fulfilled' || !result.value) continue;
+    const lc = result.value.live_counts;
+    totals.overdue += lc.overdue;
+    totals.due_today += lc.due_today;
+    totals.due_this_week += lc.due_this_week;
+    totals.critical_ignored += lc.critical_ignored;
+  }
+  return totals;
+}
+
 export async function IssueHealthSection({
   teams,
+  statsOverdue,
   emptyState,
 }: {
   teams: TeamProps[];
+  statsOverdue?: number;
   emptyState?: ReactNode;
 }) {
   if (teams.length === 0) return emptyState ?? null;
@@ -80,6 +109,10 @@ export async function IssueHealthSection({
   const banners = buildBanners(teams, results);
   if (banners.length === 0) return emptyState ?? null;
 
+  const base = aggregateOrgCounts(results);
+  const orgCounts =
+    statsOverdue === undefined ? base : { ...base, overdue: statsOverdue };
+
   return (
     <div className='flex flex-col gap-3'>
       {banners.map(({ team, report, updatedLabel }) => {
@@ -89,6 +122,7 @@ export async function IssueHealthSection({
             teamName={team.name}
             report={report}
             updatedLabel={updatedLabel}
+            orgCounts={orgCounts}
           />
         );
       })}

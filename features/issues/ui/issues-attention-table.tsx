@@ -330,8 +330,57 @@ interface AttentionTableClientProps {
 }
 
 const PAGE_SIZE = 20;
-// Backend enforces limit ≤ 100.
-const MAX_PAGE_SIZE = 100;
+
+function toDateStr(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+function buildChunkParams(
+  filter: FilterId,
+  assignee: number | null,
+  orgId: number,
+  offset: number,
+) {
+  const base = {
+    organization_id: orgId || null,
+    assignee,
+    offset,
+    limit: PAGE_SIZE,
+  };
+
+  if (filter === 'overdue') {
+    return {
+      ...base,
+      overdue: true,
+      sort: 'due_date' as const,
+      order: 'asc' as const,
+    };
+  }
+
+  if (filter === 'this_week') {
+    const today = new Date();
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return {
+      ...base,
+      due_date_from: toDateStr(tomorrow),
+      due_date_to: toDateStr(weekEnd),
+      sort: 'due_date' as const,
+      order: 'asc' as const,
+    };
+  }
+
+  if (filter === 'blocked') {
+    return {
+      ...base,
+      blocked: true,
+      sort: 'updated_at' as const,
+      order: 'desc' as const,
+    };
+  }
+
+  return { ...base, sort: 'updated_at' as const, order: 'desc' as const };
+}
 
 export function AttentionTableClient({
   initialIssues,
@@ -366,52 +415,22 @@ export function AttentionTableClient({
     }
     let cancelled = false;
 
-    const baseParams = {
-      organization_id: cookieOrgId || null,
-      assignee: resolvedAssignee(activeFilter),
-      sort: 'updated_at' as const,
-      order: 'desc' as const,
-    };
-
-    const run = async () => {
-      if (activeFilter === 'overdue' || activeFilter === 'this_week') {
-        // Load two batches in parallel to cover orgs with up to 200 tasks.
-        // Backend caps limit at 100, so two requests cover all tasks and
-        // ensure the client-side date filter sees every item.
-        const [first, second] = await Promise.all([
-          loadIssuesChunk({ ...baseParams, offset: 0, limit: MAX_PAGE_SIZE }),
-          loadIssuesChunk({
-            ...baseParams,
-            offset: MAX_PAGE_SIZE,
-            limit: MAX_PAGE_SIZE,
-          }),
-        ]);
-        if (cancelled) return;
-        const merged = [...first.data, ...second.data];
-        setFirstPage({
-          data: merged,
-          hasMore: first.totalCount > MAX_PAGE_SIZE * 2,
-        });
-        setTotalCount(first.totalCount);
-      } else {
-        const {
-          data,
-          hasMore,
-          totalCount: count,
-        } = await loadIssuesChunk({
-          ...baseParams,
-          offset: 0,
-          limit: PAGE_SIZE,
-        });
+    loadIssuesChunk(
+      buildChunkParams(
+        activeFilter,
+        resolvedAssignee(activeFilter),
+        cookieOrgId,
+        0,
+      ),
+    )
+      .then(({ data, hasMore, totalCount: count }) => {
         if (cancelled) return;
         setFirstPage({ data, hasMore });
         setTotalCount(count);
-      }
-    };
-
-    run().catch(() => {
-      if (!cancelled) toast.error('Не удалось загрузить задачи');
-    });
+      })
+      .catch(() => {
+        if (!cancelled) toast.error('Не удалось загрузить задачи');
+      });
 
     return () => {
       cancelled = true;
@@ -420,14 +439,14 @@ export function AttentionTableClient({
 
   const fetchMore = useCallback(
     (offset: number) => {
-      return loadIssuesChunk({
-        organization_id: cookieOrgId || null,
-        assignee: resolvedAssignee(activeFilter),
-        sort: 'updated_at',
-        order: 'desc',
-        offset,
-        limit: PAGE_SIZE,
-      });
+      return loadIssuesChunk(
+        buildChunkParams(
+          activeFilter,
+          resolvedAssignee(activeFilter),
+          cookieOrgId,
+          offset,
+        ),
+      );
     },
     [activeFilter, cookieOrgId, resolvedAssignee],
   );
@@ -442,42 +461,15 @@ export function AttentionTableClient({
     initialHasMore: firstPage.hasMore,
   });
 
+  // All filtering is server-side — just deduplicate pages from infinite scroll.
   const visibleItems = useMemo(() => {
     const seen = new Set<number>();
-    const deduped = items.filter((issue) => {
+    return items.filter((issue) => {
       if (seen.has(issue.id)) return false;
       seen.add(issue.id);
       return true;
     });
-
-    if (activeFilter === 'overdue') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return deduped.filter((i) => {
-        return (
-          i.due_date !== null &&
-          new Date(i.due_date) < today &&
-          !TERMINAL_STATUSES.has(i.status)
-        );
-      });
-    }
-    if (activeFilter === 'this_week') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-      return deduped.filter((i) => {
-        if (!i.due_date) return false;
-        const d = new Date(i.due_date);
-        return d >= today && d <= weekEnd;
-      });
-    }
-    if (activeFilter === 'blocked') {
-      return deduped.filter((i) => {
-        return String(i.status) === 'blocked';
-      });
-    }
-    return deduped;
-  }, [items, activeFilter]);
+  }, [items]);
 
   return (
     <div className='flex flex-col gap-4'>
