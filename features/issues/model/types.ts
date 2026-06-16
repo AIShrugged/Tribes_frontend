@@ -181,6 +181,7 @@ export interface IssueFilters {
   due_date_from?: string;
   due_date_to?: string;
   blocked?: boolean;
+  exclude_statuses?: IssueStatus[];
 }
 
 export interface FilterPreset {

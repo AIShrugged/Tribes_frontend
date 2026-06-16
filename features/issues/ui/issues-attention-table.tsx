@@ -13,18 +13,18 @@ import { EmptyState } from '@/shared/ui/feedback/empty-state';
 import { InfiniteScrollStatus } from '@/shared/ui/layout/infinite-scroll-status';
 import SpinLoader from '@/shared/ui/layout/spin-loader';
 
-import type { Issue } from '@/features/issues/model/types';
+import type { Issue, IssueStatus } from '@/features/issues/model/types';
 
 // ---------------------------------------------------------------------------
 // Priority badge
 // ---------------------------------------------------------------------------
 
-const PRIORITY_P_MAP: Record<string, { prefix: string; cls: string }> = {
-  Critical: { prefix: 'P0', cls: 'bg-red-500/10 text-red-400' },
-  High: { prefix: 'P1', cls: 'bg-orange-500/10 text-orange-400' },
-  Normal: { prefix: 'P2', cls: 'bg-secondary text-muted-foreground' },
-  Low: { prefix: 'P3', cls: 'bg-blue-500/10 text-blue-400' },
-  Minimal: { prefix: 'P4', cls: 'bg-secondary/60 text-muted-foreground/60' },
+const PRIORITY_MAP: Record<string, string> = {
+  Critical: 'bg-red-500/10 text-red-400',
+  High: 'bg-orange-500/10 text-orange-400',
+  Normal: 'bg-secondary text-muted-foreground',
+  Low: 'bg-blue-500/10 text-blue-400',
+  Minimal: 'bg-secondary/60 text-muted-foreground/60',
 };
 
 function getPriorityBadge(
@@ -32,8 +32,8 @@ function getPriorityBadge(
 ): { label: string; cls: string } | null {
   if (priority === 0) return null;
   const level = getPriorityLevel(priority);
-  const meta = PRIORITY_P_MAP[level.label] ?? PRIORITY_P_MAP['Normal'];
-  return { label: `${meta.prefix} ${level.label}`, cls: meta.cls };
+  const cls = PRIORITY_MAP[level.label] ?? PRIORITY_MAP['Normal'];
+  return { label: level.label, cls };
 }
 
 // ---------------------------------------------------------------------------
@@ -59,12 +59,12 @@ function getStatusBadge(status: string): { label: string; cls: string } {
 }
 
 // ---------------------------------------------------------------------------
-// Due date (Russian)
+// Due date
 // ---------------------------------------------------------------------------
 
 const TERMINAL_STATUSES = new Set(['done', 'closed', 'cancelled']);
 
-function formatDueDateRu(
+function formatDueDate(
   dueDate: string | null,
   status: string,
 ): { label: string; cls: string } {
@@ -78,7 +78,7 @@ function formatDueDateRu(
     (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  const dateLabel = due.toLocaleDateString('ru-RU', {
+  const dateLabel = due.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
   });
@@ -88,12 +88,12 @@ function formatDueDateRu(
       return { label: dateLabel, cls: 'text-muted-foreground/50' };
     }
     return {
-      label: `Просрочено · ${Math.abs(diffDays)} дн.`,
+      label: `Overdue · ${Math.abs(diffDays)} d.`,
       cls: 'text-red-400',
     };
   }
-  if (diffDays === 0) return { label: 'Сегодня', cls: 'text-amber-400' };
-  if (diffDays === 1) return { label: 'Завтра', cls: 'text-amber-400' };
+  if (diffDays === 0) return { label: 'Today', cls: 'text-amber-400' };
+  if (diffDays === 1) return { label: 'Tomorrow', cls: 'text-amber-400' };
 
   return { label: dateLabel, cls: 'text-muted-foreground' };
 }
@@ -133,7 +133,7 @@ function getInitials(name: string): string {
 
 function IssueAttentionRow({ issue, href }: { issue: Issue; href: string }) {
   const priority = getPriorityBadge(issue.priority);
-  const due = formatDueDateRu(issue.due_date, issue.status);
+  const due = formatDueDate(issue.due_date, issue.status);
   const status = getStatusBadge(issue.status);
   const assigneeName = issue.assignee?.name ?? null;
 
@@ -179,7 +179,7 @@ function IssueAttentionRow({ issue, href }: { issue: Issue; href: string }) {
             </span>
           </div>
         ) : (
-          <span className='text-sm text-muted-foreground/40'>Не назначен</span>
+          <span className='text-sm text-muted-foreground/40'>Unassigned</span>
         )}
       </td>
       <td className='px-4 py-3 align-middle'>
@@ -197,13 +197,7 @@ function IssueAttentionRow({ issue, href }: { issue: Issue; href: string }) {
 // Table header
 // ---------------------------------------------------------------------------
 
-const COLUMNS = [
-  'ЗАДАЧА',
-  'ПРИОРИТЕТ',
-  'ДЕДЛАЙН',
-  'ОТВЕТСТВЕННЫЙ',
-  'СТАТУС',
-] as const;
+const COLUMNS = ['TASK', 'PRIORITY', 'DUE DATE', 'ASSIGNEE', 'STATUS'] as const;
 
 function AttentionTableHead() {
   return (
@@ -264,7 +258,7 @@ function AttentionChips({
         }}
         className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${chipClass(activeFilter === 'mine')}`}
       >
-        Мои
+        Mine
         {activeFilter === 'mine' && (
           <span className='text-xs text-muted-foreground'>· {totalCount}</span>
         )}
@@ -277,7 +271,7 @@ function AttentionChips({
         }}
         className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${chipClass(activeFilter === 'all')}`}
       >
-        Все
+        All
         <span className='text-xs text-muted-foreground'>· {totalCount}</span>
       </button>
 
@@ -289,7 +283,7 @@ function AttentionChips({
           }}
           className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${overdueChipClass(activeFilter === 'overdue')}`}
         >
-          Просрочено
+          Overdue
           <span className='text-xs opacity-60'>· {overdue}</span>
         </button>
       )}
@@ -301,7 +295,7 @@ function AttentionChips({
         }}
         className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${chipClass(activeFilter === 'this_week')}`}
       >
-        На этой неделе
+        This week
       </button>
 
       <button
@@ -311,7 +305,7 @@ function AttentionChips({
         }}
         className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-colors ${chipClass(activeFilter === 'blocked')}`}
       >
-        Блокеры
+        Blockers
       </button>
     </div>
   );
@@ -346,6 +340,7 @@ function buildChunkParams(
     assignee,
     offset,
     limit: PAGE_SIZE,
+    exclude_statuses: ['done'] as IssueStatus[],
   };
 
   if (filter === 'overdue') {
@@ -484,8 +479,8 @@ export function AttentionTableClient({
         <div className='rounded-card border border-border bg-card p-6'>
           <EmptyState
             icon={Bug}
-            title='Задачи не найдены'
-            description='Попробуйте сменить фильтр.'
+            title='No tasks found'
+            description='Try switching the filter.'
           />
         </div>
       ) : (

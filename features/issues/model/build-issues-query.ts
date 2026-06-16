@@ -31,6 +31,10 @@ export function buildIssuesQuery(filters: IssueFilters = {}) {
   if (filters.due_date_from) params.set('due_date_from', filters.due_date_from);
   if (filters.due_date_to) params.set('due_date_to', filters.due_date_to);
   if (filters.blocked) params.set('blocked', '1');
+  if (filters.exclude_statuses?.length) {
+    for (const s of filters.exclude_statuses)
+      params.append('exclude_statuses[]', s);
+  }
 
   return params.toString();
 }

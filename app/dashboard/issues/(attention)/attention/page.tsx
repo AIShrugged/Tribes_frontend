@@ -24,6 +24,7 @@ export default async function IssuesAttentionPage() {
       order: 'desc',
       offset: 0,
       limit: 20,
+      exclude_statuses: ['done'],
     }),
     getIssueStats(),
     getTeams(cookieOrgId),

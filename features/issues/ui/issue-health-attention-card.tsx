@@ -101,7 +101,7 @@ function AiSummaryCard({ summary }: { summary: string }) {
     <div className='mb-4 rounded-button border border-red-500/25 border-l-[3px] border-l-red-500 bg-linear-to-b from-red-500/6 to-red-500/2 px-4 py-3.5'>
       <div className='mb-3 flex items-center gap-2.5 flex-wrap'>
         <span className='shrink-0 rounded px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-widest bg-red-500 text-white'>
-          Критическое состояние
+          Critical state
         </span>
         {title && (
           <span className='text-sm font-medium text-foreground'>{title}</span>
@@ -190,13 +190,13 @@ function OverdueRow({ item }: { item: IssueHealthOverdueItem }) {
       className='flex items-center gap-2.5 rounded-button border border-transparent bg-white/1.5 px-2.5 py-2 transition-colors hover:border-border hover:bg-white/3'
     >
       <span className='shrink-0 rounded px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide bg-red-500/10 text-red-400'>
-        +{Math.round(item.days_overdue)} дн.
+        +{Math.round(item.days_overdue)} d.
       </span>
       <span className='flex-1 min-w-0 text-sm truncate text-foreground'>
         {item.name}
       </span>
       <span className='shrink-0 text-[11.5px] text-muted-foreground'>
-        {item.assignee_name ?? 'Не назначен'} · {formatDate(item.due_date)}
+        {item.assignee_name ?? 'Unassigned'} · {formatDate(item.due_date)}
       </span>
       <ChevronRight className='shrink-0 h-3.5 w-3.5 text-muted-foreground' />
     </Link>
@@ -204,9 +204,9 @@ function OverdueRow({ item }: { item: IssueHealthOverdueItem }) {
 }
 
 function sprintRiskLabel(diffDays: number): string {
-  if (diffDays < 0) return `просрочено ${Math.abs(diffDays)} дн.`;
-  if (diffDays === 0) return 'Сегодня';
-  return `через ${diffDays} дн.`;
+  if (diffDays < 0) return `overdue ${Math.abs(diffDays)} d.`;
+  if (diffDays === 0) return 'Today';
+  return `in ${diffDays} d.`;
 }
 
 function SprintRiskRow({ item }: { item: IssueHealthSprintRiskItem }) {
@@ -226,7 +226,7 @@ function SprintRiskRow({ item }: { item: IssueHealthSprintRiskItem }) {
         {item.name}
       </span>
       <span className='shrink-0 text-[11.5px] text-muted-foreground'>
-        {item.assignee_name ?? 'Не назначен'} · {formatDate(item.due_date)}
+        {item.assignee_name ?? 'Unassigned'} · {formatDate(item.due_date)}
       </span>
       <ChevronRight className='shrink-0 h-3.5 w-3.5 text-muted-foreground' />
     </Link>
@@ -251,14 +251,14 @@ function PriorityIgnoredRow({
             : 'bg-orange-500/10 text-orange-400'
         }`}
       >
-        {isCritical ? 'Критический' : 'Высокий'}
+        {isCritical ? 'Critical' : 'High'}
       </span>
       <span className='flex-1 min-w-0 text-sm truncate text-foreground'>
         {item.name}
       </span>
       <span className='shrink-0 text-[11.5px] text-muted-foreground'>
-        {item.has_assignee ? 'Без активности' : 'Нет исполнителя'} ·{' '}
-        {Math.round(item.days_inactive)} дн.
+        {item.has_assignee ? 'No activity' : 'No assignee'} ·{' '}
+        {Math.round(item.days_inactive)} d.
       </span>
       <ChevronRight className='shrink-0 h-3.5 w-3.5 text-muted-foreground' />
     </Link>
@@ -276,7 +276,7 @@ function overdueSubText(items: IssueHealthOverdueItem[]): string {
       return Math.round(i.days_overdue);
     }),
   );
-  return `до ${max} дн. просрочки`;
+  return `up to ${max} d. overdue`;
 }
 
 function todaySubText(items: IssueHealthSprintRiskItem[]): string {
@@ -288,7 +288,7 @@ function todaySubText(items: IssueHealthSprintRiskItem[]): string {
     return !i.assignee_name;
   }).length;
   if (noAssignee === 0) return '';
-  return `${noAssignee} без ответственного`;
+  return `${noAssignee} unassigned`;
 }
 
 function weekSubText(items: IssueHealthSprintRiskItem[]): string {
@@ -300,15 +300,15 @@ function weekSubText(items: IssueHealthSprintRiskItem[]): string {
       .filter(Boolean),
   );
   if (people.size === 0) return '';
-  return `у ${people.size} ${people.size === 1 ? 'сотрудника' : 'сотрудников'}`;
+  return `${people.size} ${people.size === 1 ? 'person' : 'people'}`;
 }
 
 function prioritySubText(items: IssueHealthPriorityIgnoredItem[]): string {
   const noAssignee = items.filter((i) => {
     return !i.has_assignee;
   }).length;
-  if (noAssignee === 0) return 'все назначены';
-  return `${noAssignee} без исполнителя`;
+  if (noAssignee === 0) return 'all assigned';
+  return `${noAssignee} unassigned`;
 }
 
 // ---------------------------------------------------------------------------
@@ -342,21 +342,21 @@ function ExpandedInsights({
   return (
     <div className={`grid gap-3 ${gridClass}`}>
       {findings.overdue.length > 0 && (
-        <InsightGroup title='Просроченные задачи'>
+        <InsightGroup title='Overdue tasks'>
           {findings.overdue.map((item) => {
             return <OverdueRow key={item.issue_id} item={item} />;
           })}
         </InsightGroup>
       )}
       {findings.sprint_risk.length > 0 && (
-        <InsightGroup title='Риски дедлайна'>
+        <InsightGroup title='Deadline risks'>
           {findings.sprint_risk.map((item) => {
             return <SprintRiskRow key={item.issue_id} item={item} />;
           })}
         </InsightGroup>
       )}
       {findings.priority_ignored.length > 0 && (
-        <InsightGroup title='Игнорируемые приоритеты'>
+        <InsightGroup title='Ignored priorities'>
           {findings.priority_ignored.map((item) => {
             return <PriorityIgnoredRow key={item.issue_id} item={item} />;
           })}
@@ -398,7 +398,7 @@ export function IssueHealthAttentionCard({
       attemptsRef.current += 1;
       if (attemptsRef.current > MAX_ATTEMPTS) {
         clearInterval(interval);
-        toast.error('Анализ занимает слишком много времени');
+        toast.error('Analysis is taking too long');
         return;
       }
       try {
@@ -407,11 +407,11 @@ export function IssueHealthAttentionCard({
           setLocalReport(fresh);
           clearInterval(interval);
           if (fresh.status === 'done') {
-            toast.success('Анализ обновлён');
+            toast.success('Analysis updated');
             await revalidateAttentionPage();
           }
           if (fresh.status === 'failed') {
-            toast.error('Не удалось обновить анализ');
+            toast.error('Failed to update analysis');
           }
         }
       } catch {
@@ -449,13 +449,13 @@ export function IssueHealthAttentionCard({
       <div className='mb-4 flex items-center justify-between gap-4'>
         <div className='flex items-center gap-2.5 text-sm font-semibold'>
           <PulseDot />
-          Требуют внимания · {teamName}
+          Needs attention · {teamName}
         </div>
         <div className='flex items-center gap-3 shrink-0'>
           {isAnalysisPending ? (
             <span className='flex items-center gap-1.5 text-xs text-muted-foreground'>
               <RefreshCw className='h-3 w-3 animate-spin' />
-              Обновляется...
+              Updating...
             </span>
           ) : (
             <span className='text-xs text-muted-foreground'>
@@ -466,7 +466,7 @@ export function IssueHealthAttentionCard({
             type='button'
             onClick={handleRefresh}
             disabled={isRefreshing || isAnalysisPending}
-            title='Обновить анализ'
+            title='Refresh analysis'
             className='flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40'
           >
             <RefreshCw
@@ -482,7 +482,7 @@ export function IssueHealthAttentionCard({
             }}
             className='flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors'
           >
-            {expanded ? 'Скрыть' : 'Показать все'}
+            {expanded ? 'Hide' : 'Show all'}
             {expanded ? (
               <ChevronDown className='h-3 w-3' />
             ) : (
@@ -503,25 +503,25 @@ export function IssueHealthAttentionCard({
         style={expanded ? { marginBottom: '1rem' } : undefined}
       >
         <StatCard
-          label='Просрочено'
+          label='Overdue'
           value={orgCounts.overdue}
           sub={overdueSubText(findings.overdue)}
           variant='danger'
         />
         <StatCard
-          label='Дедлайн сегодня'
+          label='Due today'
           value={orgCounts.due_today}
           sub={todaySubText(findings.sprint_risk)}
           variant='warn'
         />
         <StatCard
-          label='На этой неделе'
+          label='This week'
           value={orgCounts.due_this_week}
           sub={weekSubText(findings.sprint_risk)}
           variant='info'
         />
         <StatCard
-          label='Критический приоритет'
+          label='Critical priority'
           value={orgCounts.critical_ignored}
           sub={prioritySubText(findings.priority_ignored)}
           variant='ok'

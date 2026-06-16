@@ -21,25 +21,25 @@ function hasHealthProblems(report: IssueHealthReport): boolean {
 function formatUpdatedLabel(generatedAt: string): string {
   const dt = new Date(generatedAt);
   const today = new Date();
-  const time = dt.toLocaleTimeString('ru-RU', {
+  const time = dt.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
   });
 
   if (dt.toDateString() === today.toDateString()) {
-    return `Анализ обновлён сегодня в ${time}`;
+    return `Analysis updated today at ${time}`;
   }
 
   const yesterday = new Date(Date.now() - 86_400_000);
   if (dt.toDateString() === yesterday.toDateString()) {
-    return `Анализ обновлён вчера в ${time}`;
+    return `Analysis updated yesterday at ${time}`;
   }
 
-  const dateLabel = dt.toLocaleDateString('ru-RU', {
+  const dateLabel = dt.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
   });
-  return `Анализ обновлён ${dateLabel} в ${time}`;
+  return `Analysis updated ${dateLabel} at ${time}`;
 }
 
 type HealthBanner = {
