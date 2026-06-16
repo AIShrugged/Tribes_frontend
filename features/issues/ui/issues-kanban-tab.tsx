@@ -49,7 +49,8 @@ export function IssuesKanbanTab({ initialResult }: IssuesKanbanTabProps) {
           ? Number(filters.organization_id)
           : null,
         team_id: filters.team_id ? Number(filters.team_id) : null,
-        type: filters.type || undefined,
+        type: filters.type === 'task' ? undefined : filters.type || undefined,
+        exclude_types: filters.type === 'task' ? ['epic'] : undefined,
         assignee_id:
           filters.assignee_id && filters.assignee_id !== 'unassigned'
             ? Number(filters.assignee_id)

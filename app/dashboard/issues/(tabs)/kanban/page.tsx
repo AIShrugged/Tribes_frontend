@@ -32,7 +32,8 @@ export default async function IssuesKanbanPage({
   const kanbanFilters: KanbanFilters = {
     organization_id: cookieOrgId,
     team_id: null,
-    type: typeParam || undefined,
+    type: typeParam === 'task' ? undefined : typeParam || undefined,
+    exclude_types: typeParam === 'task' ? ['epic'] : undefined,
     assignee_id:
       rawAssigneeId !== null && Number.isFinite(rawAssigneeId)
         ? rawAssigneeId

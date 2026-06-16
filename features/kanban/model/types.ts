@@ -38,6 +38,7 @@ export interface KanbanFilters {
   organization_id?: number | null;
   team_id?: number | null;
   type?: string;
+  exclude_types?: string[];
   assignee_id?: number | null;
   author_id?: number | null;
   epic_id?: number | null;

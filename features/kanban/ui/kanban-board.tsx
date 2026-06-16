@@ -199,8 +199,8 @@ export function KanbanBoard({
 
   const filteredColumns = useMemo(() => {
     const lowerSearch = filters.search.toLowerCase();
-    // 'task' is stored as 'organization' in the backend; translate for card comparison
-    const filterType = filters.type === 'task' ? 'organization' : filters.type;
+    // When type is 'task', backend already excludes epics via exclude_types; no client filter needed.
+    const filterType = filters.type === 'task' ? '' : filters.type;
     const result: Record<IssueStatus, KanbanCard[]> = {
       open: [],
       in_progress: [],
