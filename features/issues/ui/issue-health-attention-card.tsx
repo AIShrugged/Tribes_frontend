@@ -1,11 +1,17 @@
 'use client';
 
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { toast } from 'sonner';
 
+import {
+  getIssueHealth,
+  refreshIssueHealth,
+  revalidateAttentionPage,
+} from '@/features/issues/api/issue-health';
 import { ROUTES } from '@/shared/lib/routes';
 
 import type {
@@ -376,7 +382,58 @@ export function IssueHealthAttentionCard({
   orgCounts: IssueHealthLiveCounts;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const { findings } = report;
+  const [isRefreshing, startTransition] = useTransition();
+  const [localReport, setLocalReport] = useState(report);
+  const attemptsRef = useRef(0);
+  const { findings } = localReport;
+  const isAnalysisPending = localReport.status === 'pending';
+
+  useEffect(() => {
+    if (!isAnalysisPending) return;
+
+    attemptsRef.current = 0;
+    const MAX_ATTEMPTS = 20; // 60s at 3s intervals
+
+    const interval = setInterval(async () => {
+      attemptsRef.current += 1;
+      if (attemptsRef.current > MAX_ATTEMPTS) {
+        clearInterval(interval);
+        toast.error('Анализ занимает слишком много времени');
+        return;
+      }
+      try {
+        const fresh = await getIssueHealth(localReport.team_id);
+        if (fresh && fresh.status !== 'pending') {
+          setLocalReport(fresh);
+          clearInterval(interval);
+          if (fresh.status === 'done') {
+            toast.success('Анализ обновлён');
+            await revalidateAttentionPage();
+          }
+          if (fresh.status === 'failed') {
+            toast.error('Не удалось обновить анализ');
+          }
+        }
+      } catch {
+        // ignore transient errors during polling
+      }
+    }, 3000);
+
+    return () => {
+      return clearInterval(interval);
+    };
+  }, [isAnalysisPending, localReport.team_id]);
+
+  function handleRefresh() {
+    startTransition(async () => {
+      const result = await refreshIssueHealth(localReport.team_id);
+      if (result.error) {
+        toast.error(result.error);
+      } else if (result.data) {
+        setLocalReport(result.data);
+      }
+    });
+  }
 
   const nonEmptyGroupCount = [
     findings.overdue.length > 0,
@@ -395,7 +452,27 @@ export function IssueHealthAttentionCard({
           Требуют внимания · {teamName}
         </div>
         <div className='flex items-center gap-3 shrink-0'>
-          <span className='text-xs text-muted-foreground'>{updatedLabel}</span>
+          {isAnalysisPending ? (
+            <span className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+              <RefreshCw className='h-3 w-3 animate-spin' />
+              Обновляется...
+            </span>
+          ) : (
+            <span className='text-xs text-muted-foreground'>
+              {updatedLabel}
+            </span>
+          )}
+          <button
+            type='button'
+            onClick={handleRefresh}
+            disabled={isRefreshing || isAnalysisPending}
+            title='Обновить анализ'
+            className='flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40'
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`}
+            />
+          </button>
           <button
             type='button'
             onClick={() => {
@@ -416,7 +493,9 @@ export function IssueHealthAttentionCard({
       </div>
 
       {/* AI summary */}
-      {report.ai_summary && <AiSummaryCard summary={report.ai_summary} />}
+      {localReport.ai_summary && (
+        <AiSummaryCard summary={localReport.ai_summary} />
+      )}
 
       {/* Stats grid */}
       <div

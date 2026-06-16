@@ -360,11 +360,14 @@ export interface IssueHealthLiveCounts {
   critical_ignored: number;
 }
 
+export type IssueHealthStatus = 'pending' | 'done' | 'failed';
+
 export interface IssueHealthReport {
   id: number;
   team_id: number;
   period_start: string;
   generated_at: string;
+  status: IssueHealthStatus;
   findings: IssueHealthFindings;
   ai_summary: string | null;
   live_counts: IssueHealthLiveCounts;
