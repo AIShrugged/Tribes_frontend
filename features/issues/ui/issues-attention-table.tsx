@@ -30,7 +30,6 @@ const PRIORITY_MAP: Record<string, string> = {
 function getPriorityBadge(
   priority: number,
 ): { label: string; cls: string } | null {
-  if (priority === 0) return null;
   const level = getPriorityLevel(priority);
   const cls = PRIORITY_MAP[level.label] ?? PRIORITY_MAP['Normal'];
   return { label: level.label, cls };
