@@ -217,7 +217,7 @@ export interface IssueUpsertDTO {
   assignee_id: number | null;
   author_id: number | null;
   due_date: string | null;
-  priority: number;
+  priority: number | null;
   upload_token?: string | null;
 }
 

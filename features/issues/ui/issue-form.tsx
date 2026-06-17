@@ -76,11 +76,6 @@ interface IssueFormValues {
   priority: string;
 }
 
-function defaultDueDate(): string {
-  const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  return d.toISOString().slice(0, 10);
-}
-
 function submitLabel(hasPendingOps: boolean, isEdit: boolean): string {
   if (hasPendingOps) return 'Uploading...';
   return isEdit ? 'Save changes' : 'Create task';
@@ -170,8 +165,8 @@ export function IssueForm({
       epic_id: issue?.epic_id ? String(issue.epic_id) : '',
       assignee_id: issue?.assignee_id ? String(issue.assignee_id) : '',
       author_id: defaultAuthorId,
-      due_date: issue?.due_date ?? defaultDueDate(),
-      priority: String(issue?.priority ?? 0),
+      due_date: issue?.due_date ?? '',
+      priority: issue?.priority == null ? '' : String(issue.priority),
     };
   }, [defaultOrganizationId, issue, defaultAuthorId, resolvedType]);
 
@@ -289,7 +284,7 @@ export function IssueForm({
         assignee_id: values.assignee_id ? Number(values.assignee_id) : null,
         author_id: values.author_id ? Number(values.author_id) : null,
         due_date: values.due_date || null,
-        priority: Number(values.priority) || 0,
+        priority: values.priority === '' ? null : Number(values.priority),
         upload_token: issue ? null : uploadToken,
       };
       const result = issue
