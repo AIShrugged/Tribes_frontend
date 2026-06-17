@@ -14,7 +14,6 @@ import {
   Users,
   CheckSquare,
   Upload,
-  GitCommitHorizontal,
 } from 'lucide-react';
 
 import { ROUTES } from '@/shared/lib/routes';
@@ -82,13 +81,6 @@ export function getMenuItems(): MenuProps[] {
       activeHref: ROUTES.DASHBOARD.AGENTS,
       position: 90,
     },
-    {
-      id: 'changelog',
-      label: 'Changelog',
-      icon: 'gitCommit',
-      href: ROUTES.DASHBOARD.CHANGELOG,
-      position: 70,
-    },
   ];
 
   return items.toSorted((a, b) => {
@@ -112,5 +104,4 @@ export const ICONS_MAP = {
   users: Users,
   checkSquare: CheckSquare,
   upload: Upload,
-  gitCommit: GitCommitHorizontal,
 } as const;
