@@ -104,5 +104,9 @@ export const ROUTES = {
     ISSUES_DETAIL: (id: string | number) => {
       return `/dashboard/issues/${id}`;
     },
+    CHANGELOG: '/dashboard/changelog',
+    CHANGELOG_DETAIL: (id: string | number) => {
+      return `/dashboard/changelog/${id}`;
+    },
   },
 } as const;
