@@ -19,6 +19,11 @@ const TABS = [
     label: 'Decisions',
     match: 'exact' as const,
   },
+  {
+    href: ROUTES.DASHBOARD.CHANGELOG,
+    label: 'Changelog',
+    match: 'startsWith' as const,
+  },
 ] as const;
 
 /**
