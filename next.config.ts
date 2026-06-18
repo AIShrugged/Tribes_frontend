@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
+    // File uploads (issue attachments) are sent as File args to Server Actions.
+    // Next.js defaults the Server Action request body to 1 MB, which silently
+    // rejects any document larger than that before the action runs. The client
+    // allows files up to 10 MB (see pending-attachment-uploader.tsx), so the
+    // limit must cover that plus multipart overhead.
+    serverActions: {
+      bodySizeLimit: '12mb',
+    },
     staleTimes: {
       dynamic: 0,
       static: 180,

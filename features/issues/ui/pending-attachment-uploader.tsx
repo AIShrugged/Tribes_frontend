@@ -66,8 +66,12 @@ export function PendingAttachmentUploader({
   }, [isBusy, onPendingChange]);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+    // Snapshot the FileList into a real array BEFORE clearing input.value.
+    // In Chromium-based browsers `event.target.files` is a live object that
+    // `event.target.value = ''` empties in place — iterating it after the
+    // reset would silently process zero files (no upload, no error, nothing).
+    const files = event.target.files ? [...event.target.files] : [];
+    if (files.length === 0) return;
 
     const MAX_FILES_PER_EVENT = 10;
     if (files.length > MAX_FILES_PER_EVENT) {
