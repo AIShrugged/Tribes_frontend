@@ -1,10 +1,12 @@
 'use client';
 
+import clsx from 'clsx';
 import {
   AlertTriangle,
   Check,
   ChevronDown,
   ChevronUp,
+  MessageSquareText,
   Sparkles,
   X,
 } from 'lucide-react';
@@ -18,6 +20,8 @@ import {
 import {
   formatDateTime,
   formatRunUuid,
+  getAddCommentText,
+  getApproveConfirmText,
   getSuggestionPreview,
   stripBrainPrefix,
 } from '@/features/brain/lib/format';
@@ -59,7 +63,10 @@ export function SuggestionCard({ suggestion, onResolved, onConflict }: Props) {
   const isBusy = isApproving || isRejecting;
   const title = stripBrainPrefix(current.title) || current.title;
   const preview = getSuggestionPreview(current);
-  const hasDetails = Boolean(current.reasoning) || Boolean(current.evidence);
+  const commentText = getAddCommentText(current);
+  const commentIsLong = Boolean(commentText && commentText.length > 160);
+  const hasDetails =
+    Boolean(current.reasoning) || Boolean(current.evidence) || commentIsLong;
 
   const handleApprove = () => {
     startApprove(async () => {
@@ -144,6 +151,22 @@ export function SuggestionCard({ suggestion, onResolved, onConflict }: Props) {
             {preview}
           </p>
         </div>
+        {commentText && (
+          <div className='flex items-start gap-2 rounded-[var(--r-md)] border border-[var(--border)] px-3 py-2'>
+            <MessageSquareText
+              className='mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--muted-foreground)]'
+              aria-hidden='true'
+            />
+            <p
+              className={clsx(
+                'text-sm leading-6 text-[var(--foreground)]',
+                isExpanded ? 'whitespace-pre-line' : 'line-clamp-3',
+              )}
+            >
+              {commentText}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className='flex flex-wrap items-center gap-x-4 gap-y-2'>
@@ -178,7 +201,7 @@ export function SuggestionCard({ suggestion, onResolved, onConflict }: Props) {
             ) : (
               <ChevronDown className='h-3.5 w-3.5' aria-hidden='true' />
             )}
-            {isExpanded ? 'Скрыть обоснование' : 'Показать обоснование'}
+            {isExpanded ? 'Свернуть' : 'Подробнее'}
           </button>
           {isExpanded && (
             <div className='flex flex-col gap-3 border-l-2 border-[var(--divider)] pl-3'>
@@ -215,8 +238,13 @@ export function SuggestionCard({ suggestion, onResolved, onConflict }: Props) {
           {isConfirmingApprove ? (
             <div className='flex flex-col gap-2'>
               <p className='text-sm text-[var(--foreground)]'>
-                Применить предложение? {preview}
+                {getApproveConfirmText(current)}
               </p>
+              {commentText && (
+                <p className='line-clamp-3 rounded-[var(--r-md)] bg-[var(--surface-3)] px-3 py-2 text-xs text-[var(--muted-foreground)]'>
+                  {commentText}
+                </p>
+              )}
               <div className='flex flex-wrap gap-2'>
                 <Button
                   type='button'

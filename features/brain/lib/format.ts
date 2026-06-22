@@ -4,12 +4,16 @@ import {
   Brain,
   CheckCheck,
   CheckCircle2,
+  FilePlus2,
   Lightbulb,
+  MessageSquarePlus,
   Play,
+  RefreshCw,
   Wrench,
 } from 'lucide-react';
 
 import type {
+  AddCommentPayload,
   BrainEvent,
   BrainEventGroup,
   BrainSuggestion,
@@ -80,13 +84,23 @@ export function getStatusMeta(status: string): {
 
 // --- Suggestion key (action type) ---
 
-export const SUGGESTION_KEY_META: Record<string, { label: string }> = {
-  create_issue: { label: 'Создание задачи' },
-  update_task_status: { label: 'Смена статуса' },
+export interface SuggestionKeyMeta {
+  label: string;
+  icon: LucideIcon;
+}
+
+export const SUGGESTION_KEY_META: Record<string, SuggestionKeyMeta> = {
+  create_issue: { label: 'Создание задачи', icon: FilePlus2 },
+  update_task_status: { label: 'Смена статуса', icon: RefreshCw },
+  add_comment: { label: 'Комментарий', icon: MessageSquarePlus },
 };
 
+export function getKeyMeta(key: string): SuggestionKeyMeta {
+  return SUGGESTION_KEY_META[key] ?? { label: key, icon: ArrowRight };
+}
+
 export function getKeyLabel(key: string): string {
-  return SUGGESTION_KEY_META[key]?.label ?? key;
+  return getKeyMeta(key).label;
 }
 
 /**
@@ -108,7 +122,56 @@ export function getSuggestionPreview(suggestion: BrainSuggestion): string {
     return `Задача #${payload?.issue_id ?? '—'} → статус «${payload?.status ?? '—'}»`;
   }
 
+  if (suggestion.key === 'add_comment') {
+    const payload = suggestion.payload as AddCommentPayload;
+
+    return `Комментарий к задаче #${payload?.issue_id ?? '—'}`;
+  }
+
   return stripBrainPrefix(suggestion.title);
+}
+
+/**
+ * The comment body for an `add_comment` suggestion (else null). Rendered below
+ * the preview — clamped in the card, full when expanded.
+ * @param suggestion - the suggestion.
+ */
+export function getAddCommentText(suggestion: BrainSuggestion): string | null {
+  if (suggestion.key !== 'add_comment') return null;
+
+  const payload = suggestion.payload as AddCommentPayload;
+  const text =
+    typeof payload?.comment === 'string' ? payload.comment.trim() : '';
+
+  return text || null;
+}
+
+/**
+ * The confirmation question shown before approving, phrased per action type.
+ * @param suggestion - the suggestion being approved.
+ */
+export function getApproveConfirmText(suggestion: BrainSuggestion): string {
+  if (suggestion.key === 'create_issue') {
+    const payload = suggestion.payload as CreateIssuePayload;
+    const name =
+      stripBrainPrefix(payload?.name) || stripBrainPrefix(suggestion.title);
+
+    return `Создать задачу «${name}» (${payload?.type ?? '—'})?`;
+  }
+
+  if (suggestion.key === 'update_task_status') {
+    const payload = suggestion.payload as UpdateTaskStatusPayload;
+
+    return `Изменить статус задачи #${payload?.issue_id ?? '—'} на «${payload?.status ?? '—'}»?`;
+  }
+
+  if (suggestion.key === 'add_comment') {
+    const payload = suggestion.payload as AddCommentPayload;
+
+    return `Добавить комментарий к задаче #${payload?.issue_id ?? '—'}?`;
+  }
+
+  return 'Применить предложение?';
 }
 
 // --- Reasoning log event types ---

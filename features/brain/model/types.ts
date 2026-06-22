@@ -14,7 +14,10 @@ export type BrainSuggestionStatus =
   | 'superseded'
   | 'expired';
 
-export type BrainSuggestionKey = 'create_issue' | 'update_task_status';
+export type BrainSuggestionKey =
+  | 'create_issue'
+  | 'update_task_status'
+  | 'add_comment';
 
 export interface BrainSuggestionEvidence {
   meeting_id?: number | null;
@@ -41,9 +44,16 @@ export interface UpdateTaskStatusPayload {
   status: string;
 }
 
+/** payload for key="add_comment". */
+export interface AddCommentPayload {
+  issue_id: number;
+  comment: string;
+}
+
 export type BrainSuggestionPayload =
   | CreateIssuePayload
   | UpdateTaskStatusPayload
+  | AddCommentPayload
   | Record<string, unknown>;
 
 /** applied_result for key="create_issue" — present after approve. */
@@ -59,9 +69,16 @@ export interface UpdateTaskStatusResult {
   new_status: string;
 }
 
+/** applied_result for key="add_comment" — present after approve. */
+export interface AddCommentResult {
+  issue_id: number;
+  comment_id: number;
+}
+
 export type BrainAppliedResult =
   | CreateIssueResult
   | UpdateTaskStatusResult
+  | AddCommentResult
   | Record<string, unknown>;
 
 export interface BrainSuggestion {

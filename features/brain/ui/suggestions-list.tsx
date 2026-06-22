@@ -31,6 +31,7 @@ const KEY_FILTERS: readonly FilterOption<string>[] = [
   { value: '', label: 'Все типы' },
   { value: 'create_issue', label: 'Создание задачи' },
   { value: 'update_task_status', label: 'Смена статуса' },
+  { value: 'add_comment', label: 'Комментарий' },
 ];
 
 interface Props {

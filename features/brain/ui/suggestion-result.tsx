@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { ROUTES } from '@/shared/lib/routes';
 
 import type {
+  AddCommentResult,
   BrainAppliedResult,
   CreateIssueResult,
   UpdateTaskStatusResult,
 } from '@/features/brain/model/types';
+import type { ReactNode } from 'react';
 
 interface Props {
   suggestionKey: string;
@@ -20,9 +22,36 @@ function getIssueId(result: BrainAppliedResult | null): number | null {
   return typeof id === 'number' ? id : null;
 }
 
+function renderSummary(
+  suggestionKey: string,
+  result: BrainAppliedResult,
+): ReactNode {
+  if (suggestionKey === 'update_task_status') {
+    const typed = result as UpdateTaskStatusResult;
+
+    return (
+      <span>
+        Статус изменён:{' '}
+        <span className='font-medium'>«{typed.old_status}»</span> →{' '}
+        <span className='font-medium'>«{typed.new_status}»</span>
+      </span>
+    );
+  }
+
+  if (suggestionKey === 'add_comment') {
+    const typed = result as AddCommentResult;
+
+    return <span>Комментарий добавлен к задаче #{typed.issue_id}</span>;
+  }
+
+  const typed = result as CreateIssueResult;
+
+  return <span>Задача создана{typed.name ? `: «${typed.name}»` : ''}</span>;
+}
+
 /**
- * Renders the outcome of an applied suggestion: a link to the created issue or a
- * status-change summary, depending on the action type.
+ * Renders the outcome of an applied suggestion: a created-issue link, a
+ * status-change summary or a comment-added confirmation, per the action type.
  * @param root0 - props.
  * @param root0.suggestionKey - the suggestion's action key.
  * @param root0.result - the backend `applied_result` payload.
@@ -35,25 +64,7 @@ export function SuggestionResult({ suggestionKey, result }: Props) {
   return (
     <div className='flex flex-wrap items-center gap-2 rounded-[var(--r-md)] bg-[var(--success-bg)] px-3 py-2 text-xs text-[var(--success)]'>
       <CheckCircle2 className='h-4 w-4 flex-shrink-0' aria-hidden='true' />
-      {suggestionKey === 'update_task_status' ? (
-        <span>
-          Статус изменён:{' '}
-          <span className='font-medium'>
-            «{(result as UpdateTaskStatusResult).old_status}»
-          </span>{' '}
-          →{' '}
-          <span className='font-medium'>
-            «{(result as UpdateTaskStatusResult).new_status}»
-          </span>
-        </span>
-      ) : (
-        <span>
-          Задача создана
-          {(result as CreateIssueResult).name
-            ? `: «${(result as CreateIssueResult).name}»`
-            : ''}
-        </span>
-      )}
+      {renderSummary(suggestionKey, result)}
       {issueId != null && (
         <Link
           href={ROUTES.DASHBOARD.ISSUES_DETAIL(issueId)}
