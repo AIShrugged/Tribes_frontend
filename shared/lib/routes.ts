@@ -108,5 +108,8 @@ export const ROUTES = {
     CHANGELOG_DETAIL: (id: string | number) => {
       return `/dashboard/today/changelog/${id}`;
     },
+    TEMP: '/dashboard/temp',
+    TEMP_SUGGESTIONS: '/dashboard/temp/suggestions',
+    TEMP_REASONING: '/dashboard/temp/reasoning',
   },
 } as const;

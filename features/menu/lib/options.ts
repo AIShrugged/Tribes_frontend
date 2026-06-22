@@ -1,6 +1,7 @@
 import {
   BarChart2,
   Bot,
+  Brain,
   Bug,
   Calendar,
   BookOpen,
@@ -81,6 +82,14 @@ export function getMenuItems(): MenuProps[] {
       activeHref: ROUTES.DASHBOARD.AGENTS,
       position: 90,
     },
+    {
+      id: 'temp',
+      label: 'Temp',
+      icon: 'brain',
+      href: ROUTES.DASHBOARD.TEMP,
+      activeHref: ROUTES.DASHBOARD.TEMP,
+      position: 95,
+    },
   ];
 
   return items.toSorted((a, b) => {
@@ -90,6 +99,7 @@ export function getMenuItems(): MenuProps[] {
 
 export const ICONS_MAP = {
   bot: Bot,
+  brain: Brain,
   layoutDashboard: LayoutDashboard,
   teams: UsersRound,
   bookOpen: BookOpen,

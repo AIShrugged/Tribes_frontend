@@ -1,0 +1,28 @@
+export * from './api/suggestions';
+export * from './api/events';
+export { getBrainAccessContext, canManageBrain } from './lib/access';
+
+export type {
+  BrainSuggestion,
+  BrainSuggestionStatus,
+  BrainSuggestionKey,
+  BrainSuggestionEvidence,
+  BrainSuggestionPayload,
+  BrainAppliedResult,
+  CreateIssuePayload,
+  UpdateTaskStatusPayload,
+  CreateIssueResult,
+  UpdateTaskStatusResult,
+  BrainEvent,
+  BrainEventType,
+  BrainEventGroup,
+  BrainOrgOption,
+  SuggestionStatusFilter,
+  BrainApproveOutcome,
+  BrainRejectOutcome,
+} from './model/types';
+
+export { BrainTabsNav } from './ui/brain-tabs-nav';
+export { BrainAccessDenied } from './ui/brain-access-denied';
+export { SuggestionsList } from './ui/suggestions-list';
+export { ReasoningLog } from './ui/reasoning-log';
