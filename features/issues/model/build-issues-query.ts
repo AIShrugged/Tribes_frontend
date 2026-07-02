@@ -25,6 +25,7 @@ export function buildIssuesQuery(filters: IssueFilters = {}) {
   if (filters.sort) params.set('sort', filters.sort);
   if (filters.order) params.set('order', filters.order);
   if (filters.search) params.set('search', filters.search);
+  if (filters.code) params.set('code', filters.code);
   if (filters.archived) params.set('archived', '1');
   if (filters.exclude_archived) params.set('exclude_archived', '1');
   if (filters.overdue) params.set('overdue', '1');

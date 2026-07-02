@@ -19,10 +19,31 @@ const NAME_VALIDATION_RULES = {
      * @param value - value.
      * @returns Result.
      */
-    noOnlySpaces: (value: string) => {
+    noOnlySpaces: (value?: string) => {
       return (
-        value.trim().length >= 3 ||
+        (value ?? '').trim().length >= 3 ||
         'Organization name cannot contain only spaces'
+      );
+    },
+  },
+} as const;
+
+// Backend prefix rule: starts with a letter, latin letters/digits only, 3-10
+// chars. Empty is allowed here — an omitted code lets the backend auto-generate.
+export const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9]{2,9}$/;
+
+export const CODE_VALIDATION_RULES = {
+  validate: {
+    /**
+     * format — allow empty (auto-generate) or a value matching CODE_PATTERN.
+     * @param value - the code field value.
+     * @returns true or an error message.
+     */
+    format: (value?: string) => {
+      return (
+        !value ||
+        CODE_PATTERN.test(value) ||
+        'Code must be 3–10 characters, start with a letter, letters/numbers only'
       );
     },
   },
@@ -30,6 +51,7 @@ const NAME_VALIDATION_RULES = {
 
 export const ORGANIZATION_VALUES: OrganizationDTO = {
   name: '',
+  code: '',
 };
 
 export const ORGANIZATION_FIELDS = [

@@ -274,26 +274,46 @@ describe('createOrganization', () => {
     expect(body.name).toBe('Test Org');
   });
 
-  it('throws on failure', async () => {
+  it('returns an error result on failure', async () => {
     globalThis.fetch = jest
       .fn()
       .mockResolvedValue(makeResponse(422, 'Validation error'));
 
-    await expect(createOrganization({ name: 'Bad' })).rejects.toThrow(
-      'Failed to create organization',
+    const result = await createOrganization({ name: 'Bad' });
+
+    expect(result).toEqual(
+      expect.objectContaining({ data: null, error: 'Validation error' }),
     );
   });
 
-  it('throws when success=false in response', async () => {
-    // When success=false the function throws the error from the response body
+  it('returns fieldErrors from a 422 validation body', async () => {
+    globalThis.fetch = jest.fn().mockResolvedValue(
+      makeResponse(422, {
+        message: 'The code has already been taken.',
+        errors: { code: ['The code has already been taken.'] },
+      }),
+    );
+
+    const result = await createOrganization({ name: 'X', code: 'DEV' });
+
+    expect(result.error).toBe('The code has already been taken.');
+    // Narrow to the error branch of the ActionResult union.
+    if (result.data === null) {
+      expect(result.fieldErrors?.code).toBe('The code has already been taken.');
+    }
+  });
+
+  it('returns an error result when success=false', async () => {
     globalThis.fetch = jest
       .fn()
       .mockResolvedValue(
         makeResponse(200, { success: false, error: 'Duplicate name' }),
       );
 
-    await expect(createOrganization({ name: 'Dup' })).rejects.toThrow(
-      'Duplicate name',
+    const result = await createOrganization({ name: 'Dup' });
+
+    expect(result).toEqual(
+      expect.objectContaining({ data: null, error: 'Duplicate name' }),
     );
   });
 });

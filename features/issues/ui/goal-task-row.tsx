@@ -3,7 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
-import { getPriorityLevel } from '@/entities/issue';
+import { getPriorityLevel, issueCodeLabel } from '@/entities/issue';
 import {
   formatTaskDue,
   TONE_TEXT_CLASS,
@@ -44,7 +44,7 @@ function initials(name: string | null | undefined): string {
  * @returns meta string.
  */
 function taskMeta(task: Issue): string {
-  const id = `#${task.id.toString()}`;
+  const id = issueCodeLabel(task.code, task.id);
 
   if (task.status === 'done' && task.close_date) {
     const closed = parseISO(task.close_date);

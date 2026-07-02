@@ -175,6 +175,32 @@ export async function getIssue(id: number): Promise<Issue> {
 }
 
 /**
+ * getIssueByCode — resolves an issue by its human-readable code (e.g. "DEV-14").
+ * Case-insensitive on the backend. Returns 404 for a missing OR inaccessible
+ * code (no existence leak). Reads only — mutations still go by numeric id.
+ * @param code - the issue code from the URL.
+ * @returns issue resource.
+ */
+export async function getIssueByCode(code: string): Promise<Issue> {
+  try {
+    const { data } = await httpClient<Issue>(
+      `${API_URL}/issues/by-code/${encodeURIComponent(code)}`,
+    );
+
+    return data!;
+  } catch (error) {
+    if (
+      error instanceof ServerError &&
+      (error.status === 404 || error.status === 403)
+    ) {
+      notFound();
+    }
+
+    throw error;
+  }
+}
+
+/**
  * createIssue.
  * @param payload - issue payload.
  * @returns created issue or validation error.

@@ -1,6 +1,7 @@
 export {
   getIssues,
   getIssue,
+  getIssueByCode,
   createIssue,
   updateIssue,
   deleteIssue,

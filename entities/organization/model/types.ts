@@ -36,6 +36,7 @@ export interface OrganizationProps {
   id: number;
   name: string;
   slug: string;
+  code?: string | null;
   context?: string | null;
   onboarded_at?: string | null;
   team_map?: OrganizationTeamMapEntry[] | null;
@@ -51,6 +52,9 @@ export interface OrganizationProps {
 
 export interface OrganizationDTO {
   name: string;
+  // Optional prefix override on creation. Omit → backend auto-generates from the
+  // name. Immutable afterwards, so it never appears on OrganizationUpdateDTO.
+  code?: string;
 }
 
 export interface OrganizationUpdateDTO {

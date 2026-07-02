@@ -32,6 +32,7 @@ jest.mock('@/features/organization/api/organization', () => {
     },
     updateOrganization: jest.fn().mockResolvedValue({}),
     setActiveOrganization: jest.fn().mockResolvedValue({ ok: true }),
+    previewOrganizationCode: jest.fn().mockResolvedValue(null),
   };
 });
 
@@ -158,9 +159,9 @@ describe('OrganizationForm', () => {
     await user.type(screen.getByTestId(FIELD_NAME), 'New Company');
     await user.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => {
-      expect(mockCreateOrganization).toHaveBeenCalledWith({
-        name: 'New Company',
-      });
+      expect(mockCreateOrganization).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'New Company' }),
+      );
     });
   });
 
@@ -172,5 +173,19 @@ describe('OrganizationForm', () => {
     expect(await screen.findByTestId('error-name')).toHaveTextContent(
       'Already exists',
     );
+  });
+
+  it('surfaces a 422 code field error from the create result', async () => {
+    mockCreateOrganization.mockResolvedValue({
+      data: null,
+      error: 'The code has already been taken.',
+      fieldErrors: { code: 'The code has already been taken.' },
+    });
+    render(<OrganizationForm />);
+    await user.type(screen.getByTestId(FIELD_NAME), 'Dup Co');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    expect(
+      await screen.findByText('The code has already been taken.'),
+    ).toBeInTheDocument();
   });
 });

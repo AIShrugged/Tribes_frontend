@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, type UseFormSetError } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import {
@@ -14,6 +14,7 @@ import {
   ORGANIZATION_FIELDS,
   ORGANIZATION_VALUES,
 } from '@/features/organization/lib/fields';
+import { OrganizationCodeField } from '@/features/organization/ui/organization-code-field';
 import { VARIANT_MAPPER, type VariantType } from '@/shared/lib/fieldMapper';
 import { ROUTES } from '@/shared/lib/routes';
 import { Button } from '@/shared/ui/button/Button';
@@ -22,6 +23,28 @@ import type {
   OrganizationDTO,
   OrganizationProps,
 } from '@/entities/organization';
+import type { ActionResult } from '@/shared/types/server-action';
+
+/**
+ * applyCreateErrors — maps a failed createOrganization result onto the form
+ * fields. Prefers per-field errors (e.g. 422 errors.code) and falls back to the
+ * general message on the name field. No-op on success (error is null).
+ * @param result - the ActionResult returned by createOrganization.
+ * @param setError - react-hook-form setError.
+ */
+function applyCreateErrors(
+  result: ActionResult<OrganizationProps>,
+  setError: UseFormSetError<OrganizationDTO>,
+) {
+  if (!result.error) return;
+
+  const codeError = result.fieldErrors?.code;
+  const nameError = result.fieldErrors?.name;
+
+  if (codeError) setError('code', { message: codeError });
+  if (nameError) setError('name', { message: nameError });
+  if (!codeError && !nameError) setError('name', { message: result.error });
+}
 
 /**
  * OrganizationForm component.
@@ -43,7 +66,9 @@ export default function OrganizationForm({
     setError,
     formState: { isDirty },
   } = useForm<OrganizationDTO>({
-    defaultValues: values ?? ORGANIZATION_VALUES,
+    defaultValues: values
+      ? { name: values.name, code: values.code ?? '' }
+      : ORGANIZATION_VALUES,
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
@@ -57,6 +82,7 @@ export default function OrganizationForm({
 
     try {
       if (isEdit && values?.id) {
+        // Code is immutable — never sent on update.
         await updateOrganization(values.id, {
           name: data.name,
         });
@@ -67,7 +93,14 @@ export default function OrganizationForm({
         return;
       }
 
-      await createOrganization(data);
+      // Empty code → omit so the backend auto-generates the prefix.
+      // Success redirects inside the action; only the error path returns here.
+      const result = await createOrganization({
+        name: data.name,
+        code: data.code?.trim() || undefined,
+      });
+
+      applyCreateErrors(result, setError);
     } catch (error) {
       setError('name', {
         message: (error as Error).message,
@@ -106,6 +139,8 @@ export default function OrganizationForm({
             />
           );
         })}
+
+        <OrganizationCodeField control={control} isEdit={isEdit} />
 
         {isEdit && (
           <div className={'mt-auto w-full md:w-[170px]'}>

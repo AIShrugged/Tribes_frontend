@@ -1,9 +1,11 @@
 import { differenceInDays } from 'date-fns';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
+import { IssueCodeBadge } from '@/entities/issue';
 import {
   getIssue,
+  getIssueByCode,
   getIssueAttachments,
   getPersons,
   getEpics,
@@ -34,9 +36,21 @@ export default async function IssueDetailPage({
   searchParams,
 }: IssueDetailPageProps) {
   const [{ id }, { from }] = await Promise.all([params, searchParams]);
+
+  // A purely numeric segment is a raw id; anything else is a code (e.g.
+  // "DEV-14"). Resolve the code to its issue, then canonicalize to the numeric
+  // detail URL — every child component below keys off the numeric id, so this
+  // keeps a single render path for both entry points.
+  if (!/^\d+$/.test(id)) {
+    const issueByCode = await getIssueByCode(id);
+    const suffix = from ? `?from=${encodeURIComponent(from)}` : '';
+
+    redirect(`${ROUTES.DASHBOARD.ISSUES_DETAIL(issueByCode.id)}${suffix}`);
+  }
+
   const issueId = Number(id);
 
-  if (!Number.isFinite(issueId) || issueId <= 0) notFound();
+  if (issueId <= 0) notFound();
 
   const backHref = validateBackHref(from) ?? ROUTES.DASHBOARD.ISSUES_KANBAN;
   const organizationId = await getOrganizationId();
@@ -86,11 +100,14 @@ export default async function IssueDetailPage({
               href={backHref}
               title='Task'
               extraContent={
-                isArchived ? (
-                  <span className='inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/60'>
-                    Archived
-                  </span>
-                ) : undefined
+                <span className='flex items-center gap-2'>
+                  <IssueCodeBadge code={issue.code} id={issue.id} />
+                  {isArchived ? (
+                    <span className='inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/60'>
+                      Archived
+                    </span>
+                  ) : null}
+                </span>
               }
             />
             <div className='overflow-y-auto'>

@@ -85,6 +85,25 @@ describe('buildIssuesQuery', () => {
     expect(params.get('search')).toBe('hello');
   });
 
+  it('sends code when provided', () => {
+    const qs = buildIssuesQuery({ code: 'DEV-14' });
+    const params = parseQuery(qs);
+    expect(params.get('code')).toBe('DEV-14');
+  });
+
+  it('omits code when not provided', () => {
+    const qs = buildIssuesQuery({});
+    const params = parseQuery(qs);
+    expect(params.has('code')).toBe(false);
+  });
+
+  it('forwards sort=number', () => {
+    const qs = buildIssuesQuery({ sort: 'number', order: 'asc' });
+    const params = parseQuery(qs);
+    expect(params.get('sort')).toBe('number');
+    expect(params.get('order')).toBe('asc');
+  });
+
   it('sends unassigned=1 when unassigned is true', () => {
     const qs = buildIssuesQuery({ unassigned: true });
     const params = parseQuery(qs);

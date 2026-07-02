@@ -228,7 +228,8 @@ export function KanbanBoard({
         if (
           lowerSearch.length > 0 &&
           !card.name.toLowerCase().includes(lowerSearch) &&
-          !(card.description?.toLowerCase().includes(lowerSearch) ?? false)
+          !(card.description?.toLowerCase().includes(lowerSearch) ?? false) &&
+          !(card.code?.toLowerCase().includes(lowerSearch) ?? false)
         ) {
           continue;
         }

@@ -1,5 +1,6 @@
 export { IssueStatusBadge } from './ui/issue-status-badge';
 export { IssuePriorityBadge } from './ui/issue-priority-badge';
+export { IssueCodeBadge, issueCodeLabel } from './ui/issue-code-badge';
 export type {
   IssueStatus,
   EpicOption,

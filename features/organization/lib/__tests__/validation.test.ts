@@ -1,4 +1,5 @@
 import {
+  CODE_VALIDATION_RULES,
   ORGANIZATION_FIELDS,
   ORGANIZATION_VALUES,
 } from '@/features/organization/lib/fields';
@@ -6,6 +7,40 @@ import {
 describe('ORGANIZATION_VALUES', () => {
   it('has empty name by default', () => {
     expect(ORGANIZATION_VALUES.name).toBe('');
+  });
+
+  it('has empty code by default', () => {
+    expect(ORGANIZATION_VALUES.code).toBe('');
+  });
+});
+
+describe('CODE_VALIDATION_RULES format', () => {
+  const format = CODE_VALIDATION_RULES.validate.format;
+
+  it('allows an empty value (backend auto-generates)', () => {
+    expect(format('')).toBe(true);
+    expect(format()).toBe(true);
+  });
+
+  it('accepts a valid code', () => {
+    expect(format('DEV')).toBe(true);
+    expect(format('ABC123')).toBe(true);
+  });
+
+  it('rejects a code shorter than 3 chars', () => {
+    expect(typeof format('AB')).toBe('string');
+  });
+
+  it('rejects a code longer than 10 chars', () => {
+    expect(typeof format('ABCDEFGHIJK')).toBe('string');
+  });
+
+  it('rejects a code that does not start with a letter', () => {
+    expect(typeof format('1AB')).toBe('string');
+  });
+
+  it('rejects a code with non-alphanumeric characters', () => {
+    expect(typeof format('DEV-1')).toBe('string');
   });
 });
 

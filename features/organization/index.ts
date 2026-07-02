@@ -2,6 +2,7 @@ export {
   getOrganizations,
   getOrganization,
   createOrganization,
+  previewOrganizationCode,
   updateOrganization,
   setActiveOrganization,
   selectOrganizationAction,

@@ -8,6 +8,8 @@ import type React from 'react';
 
 export interface KanbanCard {
   id: number;
+  number: number | null;
+  code: string | null;
   name: string;
   description: string | null;
   type: string;

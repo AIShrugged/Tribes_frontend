@@ -12,6 +12,8 @@ import type { Issue } from '@/features/issues/model/types';
 function makeIssue(overrides: Partial<Issue>): Issue {
   return {
     id: 1,
+    number: null,
+    code: null,
     name: 'Task',
     description: null,
     type: 'development',

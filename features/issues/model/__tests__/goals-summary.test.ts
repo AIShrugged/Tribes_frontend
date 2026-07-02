@@ -12,6 +12,8 @@ const NOW = new Date('2026-06-15T12:00:00Z');
 function epic(overrides: Partial<Issue>): Issue {
   return {
     id: 1,
+    number: null,
+    code: null,
     name: 'Epic',
     description: null,
     type: 'epic',

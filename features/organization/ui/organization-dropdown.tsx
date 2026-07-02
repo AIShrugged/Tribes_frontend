@@ -84,9 +84,16 @@ function OrgItem({
     return (
       <div className='gap-5 px-4 py-2.5 w-full flex flex-row justify-between items-center border-b border-border bg-accent/30'>
         <div>
-          <p className='text-sm font-medium text-foreground'>
-            {organization.name}
-          </p>
+          <div className='flex items-center gap-2'>
+            <p className='text-sm font-medium text-foreground'>
+              {organization.name}
+            </p>
+            {organization.code ? (
+              <span className='font-mono text-xs text-muted-foreground'>
+                {organization.code}
+              </span>
+            ) : null}
+          </div>
           <p className='text-xs text-muted-foreground'>
             {organization.pivot?.role ?? 'member'}
           </p>
@@ -104,7 +111,14 @@ function OrgItem({
       disabled={pending}
       className='px-4 rounded-none justify-between'
     >
-      <p className='text-sm text-foreground'>{organization.name}</p>
+      <span className='flex min-w-0 items-center gap-2'>
+        <p className='text-sm text-foreground truncate'>{organization.name}</p>
+        {organization.code ? (
+          <span className='font-mono text-xs text-muted-foreground'>
+            {organization.code}
+          </span>
+        ) : null}
+      </span>
       <p className='text-xs text-muted-foreground'>
         {organization.pivot?.role ?? 'member'}
       </p>

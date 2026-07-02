@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { IssueStatusBadge } from '@/entities/issue';
+import { IssueCodeBadge, IssueStatusBadge } from '@/entities/issue';
 import { getIssues } from '@/features/issues/api/issues';
 import {
   formatDeadline,
@@ -83,9 +83,7 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
         >
           {epic.name}
         </Link>
-        <span className='font-mono text-xs text-[var(--muted-foreground)]'>
-          EPIC-{epic.id.toString()}
-        </span>
+        <IssueCodeBadge code={epic.code} id={epic.id} />
         <IssueStatusBadge status={epic.status} isOverdue={isOverdue} />
       </div>
 

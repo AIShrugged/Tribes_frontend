@@ -13,7 +13,11 @@ import {
 } from 'react';
 import { toast } from 'sonner';
 
-import { IssuePriorityBadge, IssueStatusBadge } from '@/entities/issue';
+import {
+  IssueCodeBadge,
+  IssuePriorityBadge,
+  IssueStatusBadge,
+} from '@/entities/issue';
 import {
   getArchivedCount,
   loadArchivedChunk,
@@ -588,8 +592,12 @@ export function IssuesPage({
                       key={issue.id}
                       className='border-t border-border hover:bg-accent/20'
                     >
-                      <td className='p-2 align-top font-mono text-muted-foreground whitespace-nowrap text-sm'>
-                        #{issue.id}
+                      <td className='p-2 align-top whitespace-nowrap'>
+                        <IssueCodeBadge
+                          code={issue.code}
+                          id={issue.id}
+                          className='text-sm'
+                        />
                       </td>
                       <td className='max-w-0 overflow-hidden p-2 align-top'>
                         <div className='flex items-center gap-1.5 min-w-0'>

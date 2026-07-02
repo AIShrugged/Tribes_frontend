@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { issueCodeLabel } from '@/entities/issue';
 import { loadIssuesChunk } from '@/features/issues/api/issues';
 import { useIssueDetailHref } from '@/features/issues/hooks/use-issue-detail-href';
 import { getPriorityLevel } from '@/features/issues/model/types';
@@ -144,7 +145,7 @@ function IssueAttentionRow({ issue, href }: { issue: Issue; href: string }) {
             {issue.name}
           </span>
           <span className='mt-0.5 block text-xs text-muted-foreground/50'>
-            #{issue.id}
+            {issueCodeLabel(issue.code, issue.id)}
             {issue.epic?.name ? ` · ${issue.epic.name}` : ''}
           </span>
         </Link>

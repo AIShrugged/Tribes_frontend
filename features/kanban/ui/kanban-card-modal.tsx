@@ -3,6 +3,7 @@
 import { Calendar, ExternalLink, MessageSquare, Paperclip } from 'lucide-react';
 import Link from 'next/link';
 
+import { IssueCodeBadge } from '@/entities/issue';
 import {
   type KanbanCard,
   KANBAN_COLUMNS,
@@ -39,9 +40,7 @@ export function KanbanCardModal({ card, onClose }: KanbanCardModalProps) {
                   <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                     {colConfig.label}
                   </span>
-                  <span className='text-xs text-muted-foreground/60 font-mono'>
-                    #{card.id}
-                  </span>
+                  <IssueCodeBadge code={card.code} id={card.id} />
                 </div>
               ) : null;
             })()}

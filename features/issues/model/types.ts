@@ -71,6 +71,8 @@ export interface IssueAgentTaskRun {
 
 export interface Issue {
   id: number;
+  number: number | null;
+  code: string | null;
   name: string;
   description: string | null;
   type: string;
@@ -113,6 +115,7 @@ export interface IssueAttachment {
 
 export type IssueSortField =
   | 'id'
+  | 'number'
   | 'name'
   | 'type'
   | 'status'
@@ -125,6 +128,7 @@ export type IssueSortField =
 // Import from '@/features/issues' — do NOT redefine locally in consumers.
 export const VALID_SORT_FIELDS = new Set<IssueSortField>([
   'id',
+  'number',
   'name',
   'type',
   'status',
@@ -174,6 +178,7 @@ export interface IssueFilters {
   sort?: IssueSortField;
   order?: SortOrder;
   search?: string;
+  code?: string;
   archived?: boolean;
   exclude_archived?: boolean;
   unassigned?: boolean;

@@ -92,11 +92,43 @@ export const getOrganization = cache(
 );
 
 /**
- * createOrganization.
- * @param data - data.
- * @returns Promise.
+ * previewOrganizationCode — live suggestion of the project prefix the backend
+ * would generate for a given name (transliterates Cyrillic, resolves collisions
+ * against the real DB). Best-effort: returns null on any failure so it never
+ * blocks the create form. The final code is the one returned by
+ * createOrganization — treat this only as a prefill hint.
+ * @param name - the org name typed so far.
+ * @returns suggested code or null.
  */
-export async function createOrganization(data: OrganizationDTO) {
+export async function previewOrganizationCode(
+  name: string,
+): Promise<string | null> {
+  const trimmed = name.trim();
+
+  if (!trimmed) return null;
+
+  try {
+    const { data } = await httpClient<{ code: string }>(
+      `${API_URL}/organizations/preview-code?name=${encodeURIComponent(trimmed)}`,
+    );
+
+    return data?.code ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * createOrganization. On success the backend returns the final `code` (source of
+ * truth — may differ from the preview on a collision) and we redirect via
+ * selectOrganizationAction. On a validation failure (e.g. 422 errors.code) we
+ * return an ActionResult with fieldErrors so the form can surface them.
+ * @param data - name and optional code override.
+ * @returns ActionResult (error path only; success redirects).
+ */
+export async function createOrganization(
+  data: OrganizationDTO,
+): Promise<ActionResult<OrganizationProps>> {
   const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_URL}/organizations`, {
     method: 'POST',
@@ -109,27 +141,44 @@ export async function createOrganization(data: OrganizationDTO) {
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      redirect('/api/auth/logout');
+    }
+
     const text = await res.text();
 
     // eslint-disable-next-line no-console
     console.error(
       `[org] createOrganization → ${res.status} ${res.statusText}: ${text}`,
     );
-    throw new Error('Failed to create organization. Please try again.');
+
+    const parsed = parseApiError(
+      text,
+      'Failed to create organization. Please try again.',
+    );
+
+    return {
+      data: null,
+      error: parsed.message,
+      fieldErrors: parsed.fieldErrors,
+    };
   }
 
   const json: ApiResponse<OrganizationProps> = await res.json();
 
   if (!json.success || !json.data) {
-    throw new Error(json.error ?? 'Invalid API response');
+    return { data: null, error: json.error ?? 'Invalid API response' };
   }
 
   const formData = new FormData();
 
   formData.append('organization_id', String(json.data.id));
 
+  // selectOrganizationAction redirects; the NEXT_REDIRECT propagates and the
+  // return below is only reached in the (unexpected) non-redirect case.
   await selectOrganizationAction(formData);
-  revalidatePath('/organizations');
+
+  return { data: json.data, error: null };
 }
 
 /**

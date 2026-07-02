@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { memo } from 'react';
 
-import { IssuePriorityBadge } from '@/entities/issue';
+import { IssueCodeBadge, IssuePriorityBadge } from '@/entities/issue';
 import {
   type KanbanCardItemProps,
   TYPE_COLORS,
@@ -45,6 +45,7 @@ export const KanbanCardItem = memo(function KanbanCardItem({
         isMoving ? 'opacity-60 pointer-events-none' : '',
       ].join(' ')}
     >
+      <IssueCodeBadge code={card.code} id={card.id} className='mb-1 block' />
       <Link
         href={detailHref}
         className='block text-sm font-medium text-foreground hover:text-primary leading-snug mb-2'
