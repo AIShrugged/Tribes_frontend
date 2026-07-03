@@ -155,3 +155,50 @@ export type BrainRejectOutcome =
   | { kind: 'conflict'; suggestion: BrainSuggestion | null; message: string }
   | { kind: 'forbidden'; message: string }
   | { kind: 'error'; message: string };
+
+// ------------------------------
+// Second-brain instances (per-organization enable/disable).
+// Mirrors the backend brain-instances endpoints exactly (secrets are write-only
+// and NEVER returned — only `claude_auth_type` reveals the active auth mode).
+// ------------------------------
+
+/** Lifecycle status of an organization's second-brain container. */
+export type SecondBrainStatus =
+  | 'disabled' // off, or never enabled
+  | 'pending' // enabling — container coming up (transitional)
+  | 'running' // up and working
+  | 'stopping' // disabling (transitional)
+  | 'stopped' // stopped (transitional)
+  | 'error'; // failed — see `last_error`
+
+/** Claude credential kind: OAuth subscription token vs. Anthropic API key. */
+export type ClaudeAuthType = 'oauth' | 'api_key';
+
+export interface SecondBrainInstance {
+  organization_id: number;
+  enabled: boolean;
+  status: SecondBrainStatus;
+  container_name: string | null;
+  claude_auth_type: ClaudeAuthType | null;
+  /** Reason shown when `status === 'error'`. */
+  last_error: string | null;
+  last_started_at: string | null; // iso8601
+  last_reconciled_at: string | null; // iso8601
+}
+
+/**
+ * Enable payload. Credential fields are required on the FIRST enable and
+ * optional afterwards: send `{}` to re-enable with the stored credential, or
+ * new values to rotate it (the container is recreated).
+ */
+export interface EnableBrainPayload {
+  claude_auth_type?: ClaudeAuthType;
+  claude_auth_token?: string;
+}
+
+/** Domain error codes returned in `meta.error_code` by the brain endpoints. */
+export type SecondBrainErrorCode =
+  | 'SECOND_BRAIN_MANAGER_REQUIRED'
+  | 'SECOND_BRAIN_FORBIDDEN'
+  | 'SECOND_BRAIN_CREDENTIAL_REQUIRED'
+  | 'SECOND_BRAIN_INVALID_AUTH_TYPE';

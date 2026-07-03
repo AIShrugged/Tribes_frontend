@@ -14,7 +14,6 @@ import { SuggestionCard } from './suggestion-card';
 
 import type { FilterOption } from './brain-filter-pills';
 import type {
-  BrainOrgOption,
   BrainSuggestion,
   SuggestionStatusFilter,
 } from '@/features/brain/model/types';
@@ -37,34 +36,33 @@ const KEY_FILTERS: readonly FilterOption<string>[] = [
 interface Props {
   initialItems: BrainSuggestion[];
   initialTotalCount: number;
-  organizations: BrainOrgOption[];
+  /** The active organization — every query is scoped to it. */
+  organizationId: number;
 }
 
 interface QueryState {
   status: SuggestionStatusFilter;
   key: string;
-  orgId: number | undefined;
 }
 
 /**
- * The suggestions inbox: status/key/org filters, manual refresh, paginated
- * cards. Approve/reject happen per-card; the list updates the resolved row in
- * place and refetches on a 409 conflict.
+ * The suggestions inbox for the active organization: status/key filters, manual
+ * refresh, paginated cards. Approve/reject happen per-card; the list updates the
+ * resolved row in place and refetches on a 409 conflict.
  * @param root0 - props.
  * @param root0.initialItems - SSR-loaded pending suggestions.
  * @param root0.initialTotalCount - total pending count from the Items-Count header.
- * @param root0.organizations - managed orgs for the optional org filter.
+ * @param root0.organizationId - the active organization id (query scope).
  */
 export function SuggestionsList({
   initialItems,
   initialTotalCount,
-  organizations,
+  organizationId,
 }: Props) {
   const [items, setItems] = useState<BrainSuggestion[]>(initialItems);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [status, setStatus] = useState<SuggestionStatusFilter>('pending');
   const [key, setKey] = useState('');
-  const [orgId, setOrgId] = useState<number | undefined>();
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(
     initialItems.length < initialTotalCount,
@@ -72,30 +70,32 @@ export function SuggestionsList({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const runQuery = useCallback(async (next: QueryState) => {
-    setIsLoading(true);
-    setStatus(next.status);
-    setKey(next.key);
-    setOrgId(next.orgId);
+  const runQuery = useCallback(
+    async (next: QueryState) => {
+      setIsLoading(true);
+      setStatus(next.status);
+      setKey(next.key);
 
-    try {
-      const result = await getBrainSuggestions({
-        status: next.status,
-        key: next.key || undefined,
-        organizationId: next.orgId,
-        page: 1,
-      });
+      try {
+        const result = await getBrainSuggestions({
+          status: next.status,
+          key: next.key || undefined,
+          organizationId,
+          page: 1,
+        });
 
-      setItems(result.data);
-      setTotalCount(result.totalCount);
-      setHasMore(result.hasMore);
-      setPage(1);
-    } catch {
-      toast.error('Не удалось загрузить предложения');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        setItems(result.data);
+        setTotalCount(result.totalCount);
+        setHasMore(result.hasMore);
+        setPage(1);
+      } catch {
+        toast.error('Не удалось загрузить предложения');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [organizationId],
+  );
 
   const loadMore = useCallback(async () => {
     setIsLoadingMore(true);
@@ -105,7 +105,7 @@ export function SuggestionsList({
       const result = await getBrainSuggestions({
         status,
         key: key || undefined,
-        organizationId: orgId,
+        organizationId,
         page: nextPage,
       });
 
@@ -120,7 +120,7 @@ export function SuggestionsList({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, status, key, orgId]);
+  }, [page, status, key, organizationId]);
 
   // Keep the resolved card visible (with its applied/failed result) but reflect
   // the new status; the row drops out of the pending view on the next refresh.
@@ -133,8 +133,8 @@ export function SuggestionsList({
   }, []);
 
   const handleConflict = useCallback(() => {
-    runQuery({ status, key, orgId });
-  }, [runQuery, status, key, orgId]);
+    runQuery({ status, key });
+  }, [runQuery, status, key]);
 
   const showInitialSkeleton = isLoading && items.length === 0;
 
@@ -184,7 +184,7 @@ export function SuggestionsList({
           loadingText='Обновляем…'
           leftIcon={<RefreshCw className='h-4 w-4' aria-hidden='true' />}
           onClick={() => {
-            runQuery({ status, key, orgId });
+            runQuery({ status, key });
           }}
         >
           Обновить
@@ -198,7 +198,7 @@ export function SuggestionsList({
           disabled={isLoading}
           ariaLabel='Фильтр по статусу'
           onChange={(value) => {
-            runQuery({ status: value, key, orgId });
+            runQuery({ status: value, key });
           }}
         />
         <BrainFilterPills
@@ -207,34 +207,9 @@ export function SuggestionsList({
           disabled={isLoading}
           ariaLabel='Фильтр по типу действия'
           onChange={(value) => {
-            runQuery({ status, key: value, orgId });
+            runQuery({ status, key: value });
           }}
         />
-        {organizations.length > 1 && (
-          <select
-            value={orgId ?? ''}
-            disabled={isLoading}
-            aria-label='Фильтр по организации'
-            onChange={(event) => {
-              const value = event.target.value;
-              runQuery({
-                status,
-                key,
-                orgId: value ? Number(value) : undefined,
-              });
-            }}
-            className='w-fit rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-xs text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
-          >
-            <option value=''>Все организации</option>
-            {organizations.map((organization) => {
-              return (
-                <option key={organization.id} value={organization.id}>
-                  {organization.name}
-                </option>
-              );
-            })}
-          </select>
-        )}
       </div>
 
       {content}

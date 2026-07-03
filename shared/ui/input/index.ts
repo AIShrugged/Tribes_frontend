@@ -4,6 +4,7 @@ export type { DropdownOption } from './InputDropdown';
 export { default as InputPassword } from './InputPassword';
 export { default as InputTextarea } from './InputTextarea';
 export { default as Checkbox } from './Checkbox';
+export { Switch } from './Switch';
 export { default as InputError } from './Error';
 export { default as Textarea } from './textarea';
 export { TenantScopeFields } from './tenant-scope-fields';

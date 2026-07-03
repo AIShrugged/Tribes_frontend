@@ -9,13 +9,13 @@ import { ServerError } from '@/shared/lib/errors';
 export const metadata = { title: 'Предложения' };
 
 /**
- * Suggestions inbox tab — pending second-brain proposals for manager review.
+ * Suggestions inbox tab — pending second-brain proposals for the ACTIVE
+ * organization, for manager review.
  */
 export default async function TempSuggestionsPage() {
-  const { canManageBrain, managerOrganizations } =
-    await getBrainAccessContext();
+  const { canManageBrain, activeOrganization } = await getBrainAccessContext();
 
-  if (!canManageBrain) {
+  if (!canManageBrain || !activeOrganization) {
     return <BrainAccessDenied />;
   }
 
@@ -23,7 +23,10 @@ export default async function TempSuggestionsPage() {
   let items: Awaited<ReturnType<typeof getBrainSuggestions>>['data'] = [];
   let total = 0;
 
-  await getBrainSuggestions({ status: 'pending' })
+  await getBrainSuggestions({
+    status: 'pending',
+    organizationId: activeOrganization.id,
+  })
     .then((result) => {
       items = result.data;
       total = result.totalCount;
@@ -44,7 +47,7 @@ export default async function TempSuggestionsPage() {
     <SuggestionsList
       initialItems={items}
       initialTotalCount={total}
-      organizations={managerOrganizations}
+      organizationId={activeOrganization.id}
     />
   );
 }

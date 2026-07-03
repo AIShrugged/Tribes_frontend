@@ -16,13 +16,14 @@ import { SkeletonList } from '@/shared/ui/layout/skeleton';
 
 import { BrainEventItem } from './brain-event-item';
 
-import type { BrainEvent, BrainOrgOption } from '@/features/brain/model/types';
+import type { BrainEvent } from '@/features/brain/model/types';
 import type { ReactNode } from 'react';
 
 interface Props {
   initialItems: BrainEvent[];
   initialTotalCount: number;
-  organizations: BrainOrgOption[];
+  /** The active organization — every query is scoped to it. */
+  organizationId: number;
 }
 
 function distinctRuns(events: BrainEvent[]): string[] {
@@ -54,18 +55,18 @@ function mergeRuns(previous: string[], events: BrainEvent[]): string[] {
 }
 
 /**
- * Read-only reasoning log: events grouped by run (loop pass), ordered by seq,
- * with type icons. Supports an optional run filter and org filter, manual
- * refresh and pagination.
+ * Read-only reasoning log for the active organization: events grouped by run
+ * (loop pass), ordered by seq, with type icons. Supports an optional run filter,
+ * manual refresh and pagination.
  * @param root0 - props.
  * @param root0.initialItems - SSR-loaded events.
  * @param root0.initialTotalCount - total event count from the Items-Count header.
- * @param root0.organizations - managed orgs for the optional org filter.
+ * @param root0.organizationId - the active organization id (query scope).
  */
 export function ReasoningLog({
   initialItems,
   initialTotalCount,
-  organizations,
+  organizationId,
 }: Props) {
   const [items, setItems] = useState<BrainEvent[]>(initialItems);
   const [totalCount, setTotalCount] = useState(initialTotalCount);
@@ -73,7 +74,6 @@ export function ReasoningLog({
     return distinctRuns(initialItems);
   });
   const [runFilter, setRunFilter] = useState('');
-  const [orgId, setOrgId] = useState<number | undefined>();
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(
     initialItems.length < initialTotalCount,
@@ -82,15 +82,14 @@ export function ReasoningLog({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const runQuery = useCallback(
-    async (next: { runUuid: string; orgId: number | undefined }) => {
+    async (runUuid: string) => {
       setIsLoading(true);
-      setRunFilter(next.runUuid);
-      setOrgId(next.orgId);
+      setRunFilter(runUuid);
 
       try {
         const result = await getBrainEvents({
-          runUuid: next.runUuid || undefined,
-          organizationId: next.orgId,
+          runUuid: runUuid || undefined,
+          organizationId,
           page: 1,
         });
 
@@ -107,7 +106,7 @@ export function ReasoningLog({
         setIsLoading(false);
       }
     },
-    [],
+    [organizationId],
   );
 
   const loadMore = useCallback(async () => {
@@ -117,7 +116,7 @@ export function ReasoningLog({
       const nextPage = page + 1;
       const result = await getBrainEvents({
         runUuid: runFilter || undefined,
-        organizationId: orgId,
+        organizationId,
         page: nextPage,
       });
 
@@ -135,7 +134,7 @@ export function ReasoningLog({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, runFilter, orgId]);
+  }, [page, runFilter, organizationId]);
 
   const groups = groupEventsByRun(items);
   const showInitialSkeleton = isLoading && items.length === 0;
@@ -208,7 +207,7 @@ export function ReasoningLog({
           loadingText='Обновляем…'
           leftIcon={<RefreshCw className='h-4 w-4' aria-hidden='true' />}
           onClick={() => {
-            runQuery({ runUuid: runFilter, orgId });
+            runQuery(runFilter);
           }}
         >
           Обновить
@@ -221,7 +220,7 @@ export function ReasoningLog({
           disabled={isLoading}
           aria-label='Фильтр по запуску'
           onChange={(event) => {
-            runQuery({ runUuid: event.target.value, orgId });
+            runQuery(event.target.value);
           }}
           className='w-fit max-w-full rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-xs text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
         >
@@ -234,30 +233,6 @@ export function ReasoningLog({
             );
           })}
         </select>
-        {organizations.length > 1 && (
-          <select
-            value={orgId ?? ''}
-            disabled={isLoading}
-            aria-label='Фильтр по организации'
-            onChange={(event) => {
-              const value = event.target.value;
-              runQuery({
-                runUuid: runFilter,
-                orgId: value ? Number(value) : undefined,
-              });
-            }}
-            className='w-fit rounded-[var(--r-md)] border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-xs text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
-          >
-            <option value=''>Все организации</option>
-            {organizations.map((organization) => {
-              return (
-                <option key={organization.id} value={organization.id}>
-                  {organization.name}
-                </option>
-              );
-            })}
-          </select>
-        )}
       </div>
 
       {content}

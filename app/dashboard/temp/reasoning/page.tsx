@@ -10,13 +10,12 @@ export const metadata = { title: 'Журнал размышлений' };
 
 /**
  * Reasoning log tab — read-only feed of the second brain's thoughts and tool
- * calls, grouped by run.
+ * calls for the ACTIVE organization, grouped by run.
  */
 export default async function TempReasoningPage() {
-  const { canManageBrain, managerOrganizations } =
-    await getBrainAccessContext();
+  const { canManageBrain, activeOrganization } = await getBrainAccessContext();
 
-  if (!canManageBrain) {
+  if (!canManageBrain || !activeOrganization) {
     return <BrainAccessDenied />;
   }
 
@@ -24,7 +23,7 @@ export default async function TempReasoningPage() {
   let items: Awaited<ReturnType<typeof getBrainEvents>>['data'] = [];
   let total = 0;
 
-  await getBrainEvents()
+  await getBrainEvents({ organizationId: activeOrganization.id })
     .then((result) => {
       items = result.data;
       total = result.totalCount;
@@ -45,7 +44,7 @@ export default async function TempReasoningPage() {
     <ReasoningLog
       initialItems={items}
       initialTotalCount={total}
-      organizations={managerOrganizations}
+      organizationId={activeOrganization.id}
     />
   );
 }

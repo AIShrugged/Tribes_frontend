@@ -109,6 +109,7 @@ export const ROUTES = {
       return `/dashboard/today/changelog/${id}`;
     },
     TEMP: '/dashboard/temp',
+    TEMP_SETTINGS: '/dashboard/temp/settings',
     TEMP_SUGGESTIONS: '/dashboard/temp/suggestions',
     TEMP_REASONING: '/dashboard/temp/reasoning',
   },
