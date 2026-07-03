@@ -3,7 +3,7 @@
 import { Calendar, ExternalLink, MessageSquare, Paperclip } from 'lucide-react';
 import Link from 'next/link';
 
-import { IssueCodeBadge } from '@/entities/issue';
+import { IssueCodeBadge, issueHrefSegment } from '@/entities/issue';
 import {
   type KanbanCard,
   KANBAN_COLUMNS,
@@ -114,7 +114,7 @@ export function KanbanCardModal({ card, onClose }: KanbanCardModalProps) {
           </ModalBody>
           <ModalFooter>
             <Link
-              href={`${ROUTES.DASHBOARD.ISSUES}/${card.id}`}
+              href={`${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(card)}`}
               className='flex items-center justify-center gap-1.5 w-full h-8 text-xs font-medium rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors'
             >
               <ExternalLink className='h-3 w-3' />

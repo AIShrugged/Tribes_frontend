@@ -38,26 +38,16 @@ export default async function IssueDetailPage({
   const [{ id }, { from }] = await Promise.all([params, searchParams]);
 
   // A purely numeric segment is a raw id; anything else is a code (e.g.
-  // "DEV-14"). Resolve the code to its issue, then canonicalize to the numeric
-  // detail URL — every child component below keys off the numeric id, so this
-  // keeps a single render path for both entry points.
-  if (!/^\d+$/.test(id)) {
-    const issueByCode = await getIssueByCode(id);
-    const suffix = from ? `?from=${encodeURIComponent(from)}` : '';
+  // "DEV-960"). Both entry points render in place so a code URL stays in the
+  // address bar. getIssue / getIssueByCode call notFound() on 404/403.
+  const isNumeric = /^\d+$/.test(id);
 
-    redirect(`${ROUTES.DASHBOARD.ISSUES_DETAIL(issueByCode.id)}${suffix}`);
-  }
+  if (isNumeric && Number(id) <= 0) notFound();
 
-  const issueId = Number(id);
-
-  if (issueId <= 0) notFound();
-
-  const backHref = validateBackHref(from) ?? ROUTES.DASHBOARD.ISSUES_KANBAN;
   const organizationId = await getOrganizationId();
 
-  const [issue, attachments, persons, epics, comments, userResponse] =
-    await Promise.all([
-      getIssue(issueId).catch((error: Error) => {
+  const issue = isNumeric
+    ? await getIssue(Number(id)).catch((error: Error) => {
         if (
           error.message.includes('404') ||
           error.message.toLowerCase().includes('not found') ||
@@ -66,7 +56,35 @@ export default async function IssueDetailPage({
           notFound();
         }
         throw error;
-      }),
+      })
+    : await getIssueByCode(id);
+
+  // Org scoping: an organization's issue is only viewable while that org is the
+  // active one. The backend grants read access by membership (so a user in two
+  // orgs can resolve either org's code), but the app is scoped to one active
+  // org. Viewing another org's task — or switching orgs while on it — sends the
+  // user back to their board rather than showing a dead task. Personal issues
+  // (organization_id === null) stay viewable by their owner.
+  if (
+    issue.organization_id !== null &&
+    issue.organization_id !== organizationId
+  ) {
+    redirect(ROUTES.DASHBOARD.ISSUES_KANBAN);
+  }
+
+  // Canonicalize numeric URLs to the code form so the address bar shows the code
+  // (e.g. /dashboard/issues/DEV-960). Personal issues without a code stay numeric.
+  if (isNumeric && issue.code) {
+    const suffix = from ? `?from=${encodeURIComponent(from)}` : '';
+
+    redirect(`${ROUTES.DASHBOARD.ISSUES_DETAIL(issue.code)}${suffix}`);
+  }
+
+  const issueId = issue.id;
+  const backHref = validateBackHref(from) ?? ROUTES.DASHBOARD.ISSUES_KANBAN;
+
+  const [attachments, persons, epics, comments, userResponse] =
+    await Promise.all([
       getIssueAttachments(issueId).catch(() => {
         return [];
       }),

@@ -3,7 +3,11 @@
 import { format } from 'date-fns';
 import Link from 'next/link';
 
-import { IssueStatusBadge } from '@/entities/issue';
+import {
+  IssueCodeBadge,
+  IssueStatusBadge,
+  issueHrefSegment,
+} from '@/entities/issue';
 import { ROUTES } from '@/shared/lib/routes';
 import { Button } from '@/shared/ui/button';
 import SpinLoader from '@/shared/ui/layout/spin-loader';
@@ -65,12 +69,12 @@ export function ArchivedSection({
                     key={issue.id}
                     className='border-t border-border/40 hover:bg-accent/10 opacity-75'
                   >
-                    <td className='px-4 py-2.5 align-top font-mono text-muted-foreground whitespace-nowrap text-xs'>
-                      #{issue.id}
+                    <td className='px-4 py-2.5 align-top whitespace-nowrap'>
+                      <IssueCodeBadge code={issue.code} id={issue.id} />
                     </td>
                     <td className='max-w-0 overflow-hidden px-4 py-2.5 align-top'>
                       <Link
-                        href={`${ROUTES.DASHBOARD.ISSUES}/${issue.id}`}
+                        href={`${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(issue)}`}
                         className='block truncate font-medium text-muted-foreground hover:text-primary text-sm'
                       >
                         {issue.name}

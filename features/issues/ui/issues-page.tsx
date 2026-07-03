@@ -17,6 +17,7 @@ import {
   IssueCodeBadge,
   IssuePriorityBadge,
   IssueStatusBadge,
+  issueHrefSegment,
 } from '@/entities/issue';
 import {
   getArchivedCount,
@@ -607,7 +608,7 @@ export function IssuesPage({
                             className='shrink-0'
                           />
                           <Link
-                            href={issueDetailHref(issue.id)}
+                            href={issueDetailHref(issueHrefSegment(issue))}
                             className='truncate font-medium text-foreground hover:text-primary'
                           >
                             {issue.name}

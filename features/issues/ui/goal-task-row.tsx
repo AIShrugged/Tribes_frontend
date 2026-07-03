@@ -3,7 +3,11 @@ import { format, parseISO } from 'date-fns';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
-import { getPriorityLevel, issueCodeLabel } from '@/entities/issue';
+import {
+  getPriorityLevel,
+  issueCodeLabel,
+  issueHrefSegment,
+} from '@/entities/issue';
 import {
   formatTaskDue,
   TONE_TEXT_CLASS,
@@ -76,7 +80,7 @@ export function GoalTaskRow({
   task: Issue;
   trailing?: ReactNode;
 }) {
-  const href = `${ROUTES.DASHBOARD.ISSUES}/${task.id.toString()}`;
+  const href = `${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(task)}`;
   const isDone = task.status === 'done';
   const due: { label: string; tone: GoalsTone } = isDone
     ? { label: 'Closed', tone: 'none' }

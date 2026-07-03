@@ -1,6 +1,10 @@
 import Link from 'next/link';
 
-import { IssueCodeBadge, IssueStatusBadge } from '@/entities/issue';
+import {
+  IssueCodeBadge,
+  IssueStatusBadge,
+  issueHrefSegment,
+} from '@/entities/issue';
 import { ROUTES } from '@/shared/lib/routes';
 import { Card, CardBody } from '@/shared/ui/card';
 
@@ -29,7 +33,7 @@ export function EpicChildIssues({ issues }: EpicChildIssuesProps) {
                 return (
                   <Link
                     key={child.id}
-                    href={`${ROUTES.DASHBOARD.ISSUES}/${child.id.toString()}`}
+                    href={`${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(child)}`}
                     className='flex items-center justify-between rounded-[var(--radius-card)] border border-border bg-background/30 px-4 py-3 hover:bg-background/50 transition-colors'
                   >
                     <span className='flex min-w-0 items-center gap-2'>

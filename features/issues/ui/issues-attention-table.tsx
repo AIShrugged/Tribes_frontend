@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { issueCodeLabel } from '@/entities/issue';
+import { issueCodeLabel, issueHrefSegment } from '@/entities/issue';
 import { loadIssuesChunk } from '@/features/issues/api/issues';
 import { useIssueDetailHref } from '@/features/issues/hooks/use-issue-detail-href';
 import { getPriorityLevel } from '@/features/issues/model/types';
@@ -501,7 +501,7 @@ export function AttentionTableClient({
                     <IssueAttentionRow
                       key={issue.id}
                       issue={issue}
-                      href={issueDetailHref(issue.id)}
+                      href={issueDetailHref(issueHrefSegment(issue))}
                     />
                   );
                 })}

@@ -12,6 +12,7 @@ import {
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { issueHrefSegment } from '@/entities/issue';
 import {
   createIssue,
   deleteIssue,
@@ -334,8 +335,8 @@ export function IssueForm({
         router.refresh();
       } else {
         const detailUrl = backHref
-          ? `${ROUTES.DASHBOARD.ISSUES}/${result.data.id}?from=${encodeURIComponent(backHref)}`
-          : `${ROUTES.DASHBOARD.ISSUES}/${result.data.id}`;
+          ? `${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(result.data)}?from=${encodeURIComponent(backHref)}`
+          : `${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(result.data)}`;
         router.push(detailUrl);
       }
     });

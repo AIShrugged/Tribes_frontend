@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { memo } from 'react';
 
-import { IssueCodeBadge, IssuePriorityBadge } from '@/entities/issue';
+import {
+  IssueCodeBadge,
+  IssuePriorityBadge,
+  issueHrefSegment,
+} from '@/entities/issue';
 import {
   type KanbanCardItemProps,
   TYPE_COLORS,
@@ -25,7 +29,7 @@ export const KanbanCardItem = memo(function KanbanCardItem({
 
   const params = searchParams.toString();
   const from = encodeURIComponent(params ? `${pathname}?${params}` : pathname);
-  const detailHref = `${ROUTES.DASHBOARD.ISSUES}/${card.id}?from=${from}`;
+  const detailHref = `${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(card)}?from=${from}`;
 
   return (
     <div

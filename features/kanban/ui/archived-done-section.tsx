@@ -3,6 +3,7 @@
 import { format } from 'date-fns';
 import Link from 'next/link';
 
+import { issueHrefSegment } from '@/entities/issue';
 import { ROUTES } from '@/shared/lib/routes';
 import SpinLoader from '@/shared/ui/layout/spin-loader';
 
@@ -62,7 +63,7 @@ export function ArchivedDoneSection({
             className='rounded-md border border-dashed border-border/50 bg-card/30 p-2.5 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-80 transition-opacity'
           >
             <Link
-              href={`${ROUTES.DASHBOARD.ISSUES}/${card.id}`}
+              href={`${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(card)}`}
               className='block text-xs font-medium text-muted-foreground hover:text-primary leading-snug truncate'
             >
               {card.name}

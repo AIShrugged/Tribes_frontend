@@ -1,6 +1,10 @@
 import Link from 'next/link';
 
-import { IssueCodeBadge, IssueStatusBadge } from '@/entities/issue';
+import {
+  IssueCodeBadge,
+  IssueStatusBadge,
+  issueHrefSegment,
+} from '@/entities/issue';
 import { getIssues } from '@/features/issues/api/issues';
 import {
   formatDeadline,
@@ -60,7 +64,7 @@ export async function EpicGoalCard({ epic }: { epic: Issue }) {
   const barColor = getProgressColor(progress);
   const numColor = getProgressTextColor(progress);
 
-  const epicDetailHref = `${ROUTES.DASHBOARD.ISSUES}/${epic.id.toString()}`;
+  const epicDetailHref = `${ROUTES.DASHBOARD.ISSUES}/${issueHrefSegment(epic)}`;
   const kanbanHref = `${ROUTES.DASHBOARD.ISSUES_KANBAN}?epic_id=${epic.id.toString()}`;
   const {
     isOverdue,
