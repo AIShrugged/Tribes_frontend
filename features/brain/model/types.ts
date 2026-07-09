@@ -202,3 +202,110 @@ export type SecondBrainErrorCode =
   | 'SECOND_BRAIN_FORBIDDEN'
   | 'SECOND_BRAIN_CREDENTIAL_REQUIRED'
   | 'SECOND_BRAIN_INVALID_AUTH_TYPE';
+
+// ------------------------------
+// Meeting protocol (summary) & agenda — the "Протокол и агенда" tab.
+// Both artifacts are written to the same tables by either the main pipeline or
+// the second brain (after manager approval), and read back through the
+// calendar-event endpoints below:
+//   GET  /calendar-events/{id}/meeting-summary          → MeetingSummary
+//   POST /calendar-events/{id}/meeting-summary/generate → MeetingSummary
+//   GET  /calendar-events/{id}/agendas                  → MeetingAgenda[]
+//   POST /calendar-events/{id}/agendas/generate         → 202 (async job)
+// ------------------------------
+
+/**
+ * Generation lifecycle of a protocol/agenda artifact. Backend enum AgendaStatus
+ * and the meeting_summaries.status column share these values. Render content
+ * only on `done`; show a spinner on `pending`/`in_progress`; show a retry plate
+ * on `failed`.
+ */
+export type MeetingArtifactStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'done'
+  | 'failed';
+
+/** A protocol attendee — MeetingSummaryResource maps participants to `{ name }`. */
+export interface MeetingSummaryAttendee {
+  name: string | null;
+}
+
+/**
+ * A decision that came up again — the summary flags it against the earlier one.
+ * Free-form JSON on the backend; every field is tolerated as optional.
+ */
+export interface MeetingSummaryRepeatedDiscussion {
+  new_decision?: string | null;
+  previous_decision?: string | null;
+  previous_date?: string | null;
+}
+
+/**
+ * Meeting protocol — the AI summary of the meeting that just happened.
+ * Mirrors MeetingSummaryResource::toArray() exactly.
+ */
+export interface MeetingSummary {
+  id: number;
+  calendar_event_id: number;
+  status: MeetingArtifactStatus;
+  title: string | null;
+  /** Narrative summary in Markdown (`##` headings, lists). */
+  summary: string | null;
+  key_points: string[];
+  decisions: string[];
+  repeated_discussions: MeetingSummaryRepeatedDiscussion[];
+  attendees: MeetingSummaryAttendee[];
+  created_at: string;
+  updated_at: string;
+}
+
+/** Agenda scope: shared meeting agenda vs. a single participant's personal one. */
+export type MeetingAgendaType = 'general' | 'personal';
+
+/** One agenda discussion topic — title with an optional elaboration. */
+export interface AgendaDiscussionTopic {
+  title?: string | null;
+  description?: string | null;
+}
+
+/** A row of the "Проверка обязательств" table in the agenda. */
+export interface AgendaCommitmentCheck {
+  person?: string | null;
+  commitment?: string | null;
+  deadline?: string | null;
+  status?: string | null;
+  question?: string | null;
+}
+
+/**
+ * Structured agenda payload (meeting_agendas.raw_json). Every field is optional —
+ * the generator may omit any of them. Prefer this over `content` for rendering.
+ */
+export interface AgendaRawJson {
+  meeting_goal?: string | null;
+  main_problem?: string | null;
+  discussion_topics?: AgendaDiscussionTopic[];
+  commitments_check?: AgendaCommitmentCheck[];
+  decisions_recap?: string[];
+  [key: string]: unknown;
+}
+
+/**
+ * Meeting agenda — the agenda of the NEXT meeting in the series.
+ * Mirrors the raw MeetingAgenda model returned by AgendaController (no Resource).
+ */
+export interface MeetingAgenda {
+  id: number;
+  calendar_event_id: number;
+  user_id: number | null;
+  type: MeetingAgendaType;
+  status: MeetingArtifactStatus;
+  /** Pre-rendered Markdown agenda — fallback when `raw_json` is empty. */
+  content: string | null;
+  raw_json: AgendaRawJson | null;
+  sent_at: string | null;
+  send_scheduled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}

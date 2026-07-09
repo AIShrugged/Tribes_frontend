@@ -112,5 +112,6 @@ export const ROUTES = {
     TEMP_SETTINGS: '/dashboard/temp/settings',
     TEMP_SUGGESTIONS: '/dashboard/temp/suggestions',
     TEMP_REASONING: '/dashboard/temp/reasoning',
+    TEMP_PROTOCOLS: '/dashboard/temp/protocols',
   },
 } as const;
