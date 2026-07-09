@@ -50,6 +50,22 @@ export function formatDateTime(value: string | null | undefined): string {
   }
 }
 
+/**
+ * Formats an ISO date (with or without a time part) as `dd.MM.yyyy`; returns the
+ * raw value on parse failure and a dash on empty input. Used for protocol/agenda
+ * dates like `previous_date` and commitment `deadline`.
+ * @param value - ISO 8601 date string.
+ */
+export function formatDateOnly(value: string | null | undefined): string {
+  if (!value) return '—';
+
+  try {
+    return format(parseISO(value), 'dd.MM.yyyy');
+  } catch {
+    return value;
+  }
+}
+
 /** Shortens a run UUID to `xxxxxxxx…xxxx` for compact display. */
 export function formatRunUuid(value: string | null | undefined): string {
   if (!value) return '—';

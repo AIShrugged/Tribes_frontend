@@ -7,6 +7,7 @@ const TABS = [
   { href: ROUTES.DASHBOARD.TEMP_SETTINGS, label: 'Управление' },
   { href: ROUTES.DASHBOARD.TEMP_SUGGESTIONS, label: 'Предложения' },
   { href: ROUTES.DASHBOARD.TEMP_REASONING, label: 'Журнал размышлений' },
+  { href: ROUTES.DASHBOARD.TEMP_PROTOCOLS, label: 'Протокол и агенда' },
 ] as const;
 
 /**

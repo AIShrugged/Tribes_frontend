@@ -1,6 +1,11 @@
 export * from './api/suggestions';
 export * from './api/events';
 export * from './api/instances';
+export {
+  getMeetingSummary,
+  generateMeetingSummary,
+} from './api/meeting-summary';
+export { getMeetingAgendas, generateMeetingAgenda } from './api/meeting-agenda';
 export { getBrainAccessContext, canManageBrain } from './lib/access';
 
 export type {
@@ -28,6 +33,15 @@ export type {
   SecondBrainInstance,
   EnableBrainPayload,
   SecondBrainErrorCode,
+  MeetingArtifactStatus,
+  MeetingSummary,
+  MeetingSummaryAttendee,
+  MeetingSummaryRepeatedDiscussion,
+  MeetingAgenda,
+  MeetingAgendaType,
+  AgendaRawJson,
+  AgendaDiscussionTopic,
+  AgendaCommitmentCheck,
 } from './model/types';
 
 export { BrainTabsNav } from './ui/brain-tabs-nav';
@@ -35,3 +49,4 @@ export { BrainAccessDenied } from './ui/brain-access-denied';
 export { SuggestionsList } from './ui/suggestions-list';
 export { ReasoningLog } from './ui/reasoning-log';
 export { BrainInstanceCard } from './ui/brain-instance-card';
+export { MeetingProtocolAgenda } from './ui/meeting-protocol-agenda';
