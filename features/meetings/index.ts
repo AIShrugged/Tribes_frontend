@@ -5,6 +5,12 @@ export { DateSwitcher } from './ui/date-switcher';
 export { MeetingCard } from './ui/meeting-card';
 export { MeetingDetailTabsNav } from './ui/meeting-detail-tabs-nav';
 export { BotToggleButton } from './ui/bot-toggle-button';
+export {
+  BotManageProvider,
+  useBotManage,
+  type BotOrgOption,
+  type BotManageContextValue,
+} from './model/bot-manage-context';
 export { MeetingJoinButton } from './ui/meeting-join-button';
 export { MeetingCalendarPopover } from './ui/meeting-calendar-popover';
 export { OrgCalendarEvent } from './ui/org-calendar-event';
@@ -51,6 +57,7 @@ export {
   parseCalendarFilters,
   hasActiveCalendarFilters,
 } from './model/filters';
+export { MeetingsTabsNav } from './ui/meetings-tabs-nav';
 export { MeetingsListFiltersBar } from './ui/meetings-list-filters-bar';
 export { MeetingsCalendarFiltersBar } from './ui/meetings-calendar-filters-bar';
 export { MeetingsListClient } from './ui/meetings-list-client';

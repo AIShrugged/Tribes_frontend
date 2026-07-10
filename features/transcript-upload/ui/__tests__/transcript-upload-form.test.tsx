@@ -52,7 +52,9 @@ const meetings: CalendarEventListItem[] = [
     platform: 'google_meet',
     url: null,
     description: null,
+    creator_user_id: 1,
     required_bot: false,
+    organization_id: null,
     has_summary: false,
   },
 ];

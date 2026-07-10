@@ -79,6 +79,7 @@ const makeEvent = (id: number = 1): EventProps => {
     platform: 'google',
     required_bot: false,
     creator_user_id: 1,
+    organization_id: null,
   };
 };
 const user = userEvent.setup({ delay: null });

@@ -4,6 +4,7 @@ import { useTransition } from 'react';
 
 import Event from '@/features/calendar/ui/event';
 import { EventPopup } from '@/features/event';
+import { useBotManage } from '@/features/meetings';
 import { getAttendees, getGuests } from '@/features/participants';
 import { useModal } from '@/shared/hooks/use-modal';
 
@@ -19,6 +20,7 @@ import type { EventProps } from '@/entities/event';
  */
 export function CalendarEvent({ event }: { event: EventProps }) {
   const { open, close } = useModal();
+  const { currentUserId, organizations } = useBotManage();
   const [, startTransition] = useTransition();
   /**
    * handleFutureEventClick.
@@ -41,10 +43,21 @@ export function CalendarEvent({ event }: { event: EventProps }) {
             guests={guests}
             event={e}
             close={close}
+            currentUserId={currentUserId}
+            organizations={organizations}
           />,
         );
       } catch {
-        open(<EventPopup attendees={[]} guests={[]} event={e} close={close} />);
+        open(
+          <EventPopup
+            attendees={[]}
+            guests={[]}
+            event={e}
+            close={close}
+            currentUserId={currentUserId}
+            organizations={organizations}
+          />,
+        );
       }
     });
   };

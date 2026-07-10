@@ -131,7 +131,11 @@ export function MeetingCalendarPopover({
           <MeetingJoinButton url={event.url} isCompleted={isCompleted} />
         )}
         {!isPast && (
-          <BotToggleButton eventId={event.id} isBotAdded={event.required_bot} />
+          <BotToggleButton
+            eventId={event.id}
+            isBotAdded={event.required_bot}
+            creatorUserId={event.creator_user_id}
+          />
         )}
         <Button
           variant='pill'

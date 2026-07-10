@@ -15,8 +15,9 @@ export function toEventProps(item: CalendarEventListItem): EventProps {
     platform: item.platform,
     url: item.url ?? '',
     description: item.description ?? '',
-    creator_user_id: 0,
+    creator_user_id: item.creator_user_id,
     required_bot: item.required_bot,
+    organization_id: item.organization_id,
     has_summary: item.has_summary,
   };
 }

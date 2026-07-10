@@ -39,7 +39,7 @@ export default async function OrganizationCalendarPage({
   const dateFrom = format(monthStart, 'yyyy-MM-dd');
   const dateTo = format(endOfMonth(monthStart), 'yyyy-MM-dd');
 
-  const allMeetings = await getAllOrgCalendarEvents(dateFrom, dateTo);
+  const allMeetings = await getAllOrgCalendarEvents(orgId, dateFrom, dateTo);
 
   return (
     <div className='h-full flex flex-col overflow-hidden'>

@@ -53,6 +53,7 @@ const makeEvent = (overrides: Partial<EventProps> = {}): EventProps => {
     url: 'https://zoom.us/j/123',
     required_bot: false,
     creator_user_id: 1,
+    organization_id: null,
     has_summary: false,
     ...overrides,
   };

@@ -4,12 +4,17 @@ import { redirect } from 'next/navigation';
 import React, { type PropsWithChildren, Suspense } from 'react';
 
 import { ThemeProvider } from '@/app/providers/ThemeProvider';
+import { BotManageProvider } from '@/features/meetings';
 import { MenuSidebar, SidebarFooter } from '@/features/menu';
 import {
   getOnboardingActionLabel,
   getOnboardingStatusText,
 } from '@/features/onboarding';
-import { OrganizationSelector, getOrganization } from '@/features/organization';
+import {
+  OrganizationSelector,
+  getOrganization,
+  getOrganizations,
+} from '@/features/organization';
 import { User, getUser } from '@/features/user';
 import { updateThemePreference } from '@/features/user-profile/api/preferences';
 import { ROUTES } from '@/shared/lib/routes';
@@ -62,6 +67,18 @@ export default async function Layout({ children }: PropsWithChildren) {
   }
 
   const { data: user } = await getUser();
+
+  let botOrganizations: { id: number; name: string }[] = [];
+
+  try {
+    const { data: orgs } = await getOrganizations();
+
+    botOrganizations = (orgs ?? []).map((org) => {
+      return { id: org.id, name: org.name };
+    });
+  } catch {
+    // Non-fatal — the bot toggle simply falls back to no org options.
+  }
 
   return (
     <ThemeProvider initialTheme={theme}>
@@ -133,7 +150,16 @@ export default async function Layout({ children }: PropsWithChildren) {
           </header>
 
           {/* Scrollable content */}
-          <main className='flex-1 overflow-y-auto p-2 min-h-0'>{children}</main>
+          <main className='flex-1 overflow-y-auto p-2 min-h-0'>
+            <BotManageProvider
+              value={{
+                currentUserId: user?.id ?? null,
+                organizations: botOrganizations,
+              }}
+            >
+              {children}
+            </BotManageProvider>
+          </main>
         </div>
 
         {/* Chat panel — third column, hidden on xl- screens and /dashboard/chat */}

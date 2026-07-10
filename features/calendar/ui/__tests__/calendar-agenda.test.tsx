@@ -15,6 +15,7 @@ const makeEvent = (id: number, title: string, startsAt: string): EventProps => {
     url: 'https://zoom.us',
     required_bot: false,
     creator_user_id: 1,
+    organization_id: null,
     has_summary: false,
   };
 };
