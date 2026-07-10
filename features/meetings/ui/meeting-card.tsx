@@ -1,16 +1,39 @@
 'use client';
 
-import { Bot, BotOff, CheckCircle2, ExternalLink } from 'lucide-react';
+import {
+  Bot,
+  BotOff,
+  Building2,
+  CheckCircle2,
+  ExternalLink,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { getMeetingDisplayState } from '@/features/meetings/model/meeting-state';
 import { ROUTES } from '@/shared/lib/routes';
 import { Badge } from '@/shared/ui/badge';
 
+import { useBotManage, type BotOrgOption } from '../model/bot-manage-context';
+
 import { BotToggleButton } from './bot-toggle-button';
 import { MeetingJoinButton } from './meeting-join-button';
 
 import type { CalendarEventListItem } from '@/features/meetings/model/types';
+
+function resolveOrgName(
+  organizations: BotOrgOption[],
+  organizationId: number | null,
+): string | null {
+  if (organizationId == null) {
+    return null;
+  }
+
+  return (
+    organizations.find((o) => {
+      return o.id === organizationId;
+    })?.name ?? null
+  );
+}
 
 function formatTimeRange(startsAt: Date, endsAt: Date) {
   const formatter = new Intl.DateTimeFormat('en-US', {
@@ -102,7 +125,9 @@ interface MeetingCardProps {
  */
 export function MeetingCard({ meeting }: MeetingCardProps) {
   const router = useRouter();
+  const { organizations } = useBotManage();
   const now = new Date();
+  const orgName = resolveOrgName(organizations, meeting.organization_id);
   const startsAt = new Date(meeting.starts_at);
   const endsAt = new Date(meeting.ends_at);
   const isReady = Boolean(meeting.has_summary);
@@ -167,11 +192,19 @@ export function MeetingCard({ meeting }: MeetingCardProps) {
           </Badge>
         )}
 
+        {orgName && (
+          <Badge variant='default' className='gap-1'>
+            <Building2 className='h-3.5 w-3.5' />
+            {orgName}
+          </Badge>
+        )}
+
         <MeetingJoinButton url={meeting.url} isCompleted={isCompleted} />
 
         <BotToggleButton
           eventId={meeting.id}
           isBotAdded={meeting.required_bot}
+          creatorUserId={meeting.creator_user_id}
         />
       </div>
     </article>

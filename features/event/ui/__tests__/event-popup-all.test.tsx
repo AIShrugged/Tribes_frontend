@@ -52,6 +52,7 @@ const makeEvent = (id: number): EventProps => {
     platform: 'google',
     required_bot: false,
     creator_user_id: 1,
+    organization_id: null,
     has_summary: false,
     starts_at: '2024-01-12 10:00:00',
     url: `https://example.com/event/${id}`,

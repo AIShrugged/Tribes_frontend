@@ -1,23 +1,34 @@
 'use client';
 
-import { ExternalLink, Minus, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { type JSX, useState, useTransition } from 'react';
-import { toast } from 'sonner';
+import { ExternalLink } from 'lucide-react';
+import React, { type JSX } from 'react';
 
-import { switchBot } from '@/features/event/api/calendar-events';
 import EventSummary from '@/features/event/ui/event-summary';
+import { BotToggleButton, type BotOrgOption } from '@/features/meetings';
 import {
   participantLabels as participants,
   Participants,
 } from '@/features/participants';
-import { Button } from '@/shared/ui/button/Button';
 import ModalBody from '@/shared/ui/modal/modal-body';
 import ModalFooter from '@/shared/ui/modal/modal-footer';
 import ModalHeader from '@/shared/ui/modal/modal-header';
 
 import type { EventProps } from '@/entities/event';
 import type { AttendeeProps, GuestProps } from '@/entities/participant';
+
+interface EventPopupProps {
+  event: EventProps;
+  close: () => void;
+  attendees: AttendeeProps[];
+  guests: GuestProps[];
+  /** Authenticated user id — gates the bot toggle to the meeting creator. */
+  currentUserId?: number | null;
+  /**
+   * Org options for the bot picker. Passed explicitly because the popup renders
+   * in the app-root modal portal, outside BotManageProvider.
+   */
+  organizations?: BotOrgOption[];
+}
 
 /**
  * EventPopup component.
@@ -26,6 +37,8 @@ import type { AttendeeProps, GuestProps } from '@/entities/participant';
  * @param root0.close - Callback to close the popup.
  * @param root0.attendees - List of attendees.
  * @param root0.guests - List of guests.
+ * @param root0.currentUserId - Authenticated user id (gates the bot toggle to the creator).
+ * @param root0.organizations - Org options for the bot picker.
  * @returns JSX element.
  */
 export function EventPopup({
@@ -33,35 +46,9 @@ export function EventPopup({
   close,
   guests,
   attendees,
-}: {
-  event: EventProps;
-  close: () => void;
-  attendees: AttendeeProps[];
-  guests: GuestProps[];
-}): JSX.Element {
-  const [isPending, startTransition] = useTransition();
-  const [isBotAdded, setIsBotAdded] = useState(event.required_bot);
-  const router = useRouter();
-  const Icon = isBotAdded ? Minus : Plus;
-  const actionText = isBotAdded ? 'remove bot' : 'add bot';
-  /**
-   * handleSwitchBot.
-   */
-  const handleSwitchBot = () => {
-    const next = !isBotAdded;
-    setIsBotAdded(next);
-    startTransition(async () => {
-      const result = await switchBot(event.id, next);
-      if (result.error) {
-        setIsBotAdded(!next);
-        toast.error(result.error);
-        return;
-      }
-      router.refresh();
-      close();
-    });
-  };
-
+  currentUserId = null,
+  organizations = [],
+}: EventPopupProps): JSX.Element {
   return (
     <>
       <ModalHeader onClick={close} title={event.title} />
@@ -90,17 +77,14 @@ export function EventPopup({
             </a>
           )}
           <div className={'flex-1 md:w-[250px] md:ml-auto md:flex-none'}>
-            <Button
-              onClick={handleSwitchBot}
-              disabled={isPending}
-              loading={isPending}
-              aria-label={isBotAdded ? 'remove bot' : 'add bot'}
-            >
-              <div className='flex items-center gap-3'>
-                <Icon size={24} aria-hidden='true' />
-                <span>{actionText}</span>
-              </div>
-            </Button>
+            <BotToggleButton
+              variant='block'
+              eventId={event.id}
+              isBotAdded={event.required_bot}
+              creatorUserId={event.creator_user_id}
+              currentUserId={currentUserId}
+              organizations={organizations}
+            />
           </div>
         </div>
       </ModalFooter>

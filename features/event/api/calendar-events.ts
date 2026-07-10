@@ -48,16 +48,36 @@ export async function getCalendarEventDetail(calendarEventId: string | number) {
   return { data };
 }
 
+/**
+ * Enable/disable the recording bot for a calendar event.
+ *
+ * Backend contract (POST /calendar-events/{id}/bot/require): `organization_id`
+ * is `required_if:required_bot,true` and records which organization the bot was
+ * connected from (the meeting then appears in that org's calendar). It is cleared
+ * when disabling, so we only send it when enabling.
+ * @param eventId - calendar event id.
+ * @param botRequired - whether the bot should join.
+ * @param organizationId - org to connect the bot from; required when enabling.
+ */
 export async function switchBot(
   eventId: number,
   botRequired: boolean,
+  organizationId?: number | null,
 ): Promise<ActionResult<CalendarEventDetailResponse>> {
+  const body: { required_bot: boolean; organization_id?: number } = {
+    required_bot: botRequired,
+  };
+
+  if (botRequired && organizationId != null) {
+    body.organization_id = organizationId;
+  }
+
   try {
     const { data } = await httpClient<CalendarEventDetailResponse>(
       `${API_URL}/calendar-events/${eventId}/bot/require`,
       {
         method: 'POST',
-        body: JSON.stringify({ required_bot: botRequired }),
+        body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
       },
     );
@@ -77,7 +97,11 @@ export async function switchBot(
         error.responseBody ?? '',
         'Failed to update bot',
       );
-      return { data: null, error: parsed.message };
+      return {
+        data: null,
+        error: parsed.message,
+        fieldErrors: parsed.fieldErrors,
+      };
     }
     throw error;
   }

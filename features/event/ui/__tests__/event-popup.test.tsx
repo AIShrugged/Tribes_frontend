@@ -1,14 +1,22 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
+import { switchBot } from '@/features/event/api/calendar-events';
 import { EventPopup } from '@/features/event/ui/event-popup';
 
 import type { EventProps } from '@/entities/event';
 
 jest.mock('@/features/event/api/calendar-events', () => {
   return {
-    switchBot: jest.fn().mockResolvedValue({ data: null, error: null }),
+    switchBot: jest
+      .fn()
+      .mockResolvedValue({ data: { event: {} }, error: null }),
   };
 });
+
+const switchBotMock = switchBot as jest.MockedFunction<typeof switchBot>;
+
+const ORGS = [{ id: 10, name: 'Acme' }];
 
 jest.mock('next/navigation', () => {
   return {
@@ -78,12 +86,17 @@ const makeEvent = (overrides: Partial<EventProps> = {}): EventProps => {
     platform: 'zoom',
     required_bot: false,
     creator_user_id: 1,
+    organization_id: null,
     has_summary: false,
     ...overrides,
   };
 };
 
 describe('EventPopup', () => {
+  beforeEach(() => {
+    switchBotMock.mockClear();
+  });
+
   it('renders event title in header', () => {
     render(
       <EventPopup
@@ -110,13 +123,15 @@ describe('EventPopup', () => {
     expect(screen.getByTestId('event-summary')).toBeInTheDocument();
   });
 
-  it('shows "Add Bot" button when bot not added', () => {
+  it('shows "Add Bot" button to the creator when bot not added', () => {
     render(
       <EventPopup
-        event={makeEvent({ required_bot: false })}
+        event={makeEvent({ required_bot: false, creator_user_id: 1 })}
         close={jest.fn()}
         guests={[]}
         attendees={[]}
+        currentUserId={1}
+        organizations={ORGS}
       />,
     );
     expect(
@@ -124,17 +139,89 @@ describe('EventPopup', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows "Remove Bot" button when bot is added', () => {
+  it('shows "Remove Bot" button to the creator when bot is added', () => {
     render(
       <EventPopup
-        event={makeEvent({ required_bot: true })}
+        event={makeEvent({ required_bot: true, creator_user_id: 1 })}
         close={jest.fn()}
         guests={[]}
         attendees={[]}
+        currentUserId={1}
+        organizations={ORGS}
       />,
     );
     expect(
       screen.getByRole('button', { name: /remove bot/i }),
     ).toBeInTheDocument();
+  });
+
+  it('hides the bot toggle for a non-creator', () => {
+    render(
+      <EventPopup
+        event={makeEvent({ required_bot: false, creator_user_id: 1 })}
+        close={jest.fn()}
+        guests={[]}
+        attendees={[]}
+        currentUserId={999}
+        organizations={ORGS}
+      />,
+    );
+    expect(
+      screen.queryByRole('button', { name: /add bot/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('enables the bot silently with the single org', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EventPopup
+        event={makeEvent({ required_bot: false, creator_user_id: 1 })}
+        close={jest.fn()}
+        guests={[]}
+        attendees={[]}
+        currentUserId={1}
+        organizations={ORGS}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /add bot/i }));
+
+    await waitFor(() => {
+      expect(switchBotMock).toHaveBeenCalledWith(1, true, 10);
+    });
+  });
+
+  it('shows the org picker before enabling when there are multiple orgs', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EventPopup
+        event={makeEvent({ required_bot: false, creator_user_id: 1 })}
+        close={jest.fn()}
+        guests={[]}
+        attendees={[]}
+        currentUserId={1}
+        organizations={[
+          { id: 10, name: 'Acme' },
+          { id: 20, name: 'Globex' },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /add bot/i }));
+
+    expect(screen.getByText(/connect bot from/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: 'Globex' }),
+    ).toBeInTheDocument();
+    // Picker only — no request until an org is chosen.
+    expect(switchBotMock).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('menuitem', { name: 'Globex' }));
+
+    await waitFor(() => {
+      expect(switchBotMock).toHaveBeenCalledWith(1, true, 20);
+    });
   });
 });
