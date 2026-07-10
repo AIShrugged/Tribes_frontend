@@ -17,7 +17,9 @@ export type BrainSuggestionStatus =
 export type BrainSuggestionKey =
   | 'create_issue'
   | 'update_task_status'
-  | 'add_comment';
+  | 'add_comment'
+  | 'save_meeting_summary'
+  | 'save_meeting_agenda';
 
 export interface BrainSuggestionEvidence {
   meeting_id?: number | null;
@@ -50,10 +52,40 @@ export interface AddCommentPayload {
   comment: string;
 }
 
+/**
+ * payload for key="save_meeting_summary" — a brain-drafted protocol awaiting
+ * approval. Same shape as the {@link MeetingSummary} artifact (Section 1) minus
+ * the server-computed `attendees`/`repeated_discussions`. `commitments` is
+ * carried but not rendered in the preview (Section 1 does not show it).
+ */
+export interface SaveMeetingSummaryPayload {
+  calendar_event_id: number;
+  title?: string | null;
+  summary?: string | null;
+  key_points?: string[];
+  decisions?: string[];
+  commitments?: unknown[];
+}
+
+/**
+ * payload for key="save_meeting_agenda" — a brain-drafted agenda awaiting
+ * approval. `calendar_event_id` is the NEXT meeting the agenda attaches to;
+ * `source_meeting_id` is the processed meeting (informational).
+ */
+export interface SaveMeetingAgendaPayload {
+  calendar_event_id: number;
+  type?: MeetingAgendaType;
+  content?: string | null;
+  raw_json?: AgendaRawJson | null;
+  source_meeting_id?: number | null;
+}
+
 export type BrainSuggestionPayload =
   | CreateIssuePayload
   | UpdateTaskStatusPayload
   | AddCommentPayload
+  | SaveMeetingSummaryPayload
+  | SaveMeetingAgendaPayload
   | Record<string, unknown>;
 
 /** applied_result for key="create_issue" — present after approve. */

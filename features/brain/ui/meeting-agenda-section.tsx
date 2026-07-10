@@ -3,24 +3,39 @@
 import { CalendarClock, ListChecks } from 'lucide-react';
 
 import { formatDateOnly } from '@/features/brain/lib/format';
+import { agendaFromDraftPayload } from '@/features/brain/lib/meeting-drafts';
 import { Badge } from '@/shared/ui/badge';
 import { MarkdownContent } from '@/shared/ui/markdown-content';
 
-import { MeetingArtifactSection } from './meeting-artifact-section';
+import {
+  MeetingArtifactSection,
+  RegenerateButton,
+} from './meeting-artifact-section';
+import { MeetingArtifactState } from './meeting-artifact-state';
+import { MeetingDraftCard } from './meeting-draft-card';
 
 import type {
   AgendaCommitmentCheck,
   AgendaDiscussionTopic,
   AgendaRawJson,
+  BrainSuggestion,
   MeetingAgenda,
+  SaveMeetingAgendaPayload,
 } from '@/features/brain/model/types';
+import type { ReactNode } from 'react';
 
 interface Props {
   /** The `general` agenda, or `null` when there is none / next meeting missing. */
   agenda: MeetingAgenda | null;
+  /** Pending brain draft for this agenda, or `null`. */
+  draft: BrainSuggestion | null;
   canManage: boolean;
   onRegenerate: () => void;
   regenerating: boolean;
+  onApproveDraft: () => void;
+  onRejectDraft: () => void;
+  /** Whether an approve/reject for the draft is in flight. */
+  draftBusy: boolean;
 }
 
 function SubLabel({ children }: { children: string }) {
@@ -209,37 +224,88 @@ function AgendaContent({ agenda }: { agenda: MeetingAgenda }) {
   );
 }
 
+/** Renders an agenda draft's payload with the Section 2 layout. */
+function AgendaDraftPreview({ draft }: { draft: BrainSuggestion }) {
+  return (
+    <AgendaContent
+      agenda={agendaFromDraftPayload(draft.payload as SaveMeetingAgendaPayload)}
+    />
+  );
+}
+
 /**
  * Agenda section of the "Протокол и агенда" tab — the agenda of the NEXT meeting
- * in the series. Prefers the structured `raw_json` render, falling back to the
- * pre-rendered Markdown `content`. Renders content on `done`, otherwise a
- * spinner / retry plate / empty state.
+ * in the series. Shows the real `done` agenda when present (a brain draft is
+ * hidden then — approving it would 422 against the existing agenda). With no real
+ * agenda, a pending draft is previewed inline for approval; otherwise a spinner /
+ * retry plate / empty state.
  * @param root0 - props.
  * @param root0.agenda - the general agenda or `null`.
- * @param root0.canManage - whether regenerate controls are shown.
+ * @param root0.draft - pending brain draft or `null`.
+ * @param root0.canManage - whether regenerate/draft controls are shown.
  * @param root0.onRegenerate - triggers an agenda regeneration.
  * @param root0.regenerating - whether a regeneration is in flight.
+ * @param root0.onApproveDraft - approves the pending draft.
+ * @param root0.onRejectDraft - rejects the pending draft.
+ * @param root0.draftBusy - whether a draft action is in flight.
  */
 export function MeetingAgendaSection({
   agenda,
+  draft,
   canManage,
   onRegenerate,
   regenerating,
+  onApproveDraft,
+  onRejectDraft,
+  draftBusy,
 }: Props) {
+  const doneAgenda = agenda?.status === 'done' ? agenda : null;
+  // A real done agenda blocks approval (422), so we do not surface a draft then.
+  const activeDraft = canManage && !doneAgenda ? draft : null;
+
+  const headerAction =
+    doneAgenda && canManage ? (
+      <RegenerateButton onClick={onRegenerate} busy={regenerating} />
+    ) : undefined;
+
+  let body: ReactNode;
+
+  if (doneAgenda) {
+    body = <AgendaContent agenda={doneAgenda} />;
+  } else if (activeDraft) {
+    body = (
+      <MeetingDraftCard
+        suggestion={activeDraft}
+        variant='primary'
+        onApprove={onApproveDraft}
+        onReject={onRejectDraft}
+        busy={draftBusy}
+      >
+        <AgendaDraftPreview draft={activeDraft} />
+      </MeetingDraftCard>
+    );
+  } else {
+    body = (
+      <MeetingArtifactState
+        status={agenda?.status ?? null}
+        emptyIcon={CalendarClock}
+        emptyTitle='Агенды нет'
+        emptyDescription='Нет следующей встречи серии, для которой её можно собрать.'
+        canManage={canManage}
+        onGenerate={onRegenerate}
+        generating={regenerating}
+        generateLabel='Сгенерировать агенду'
+      />
+    );
+  }
+
   return (
     <MeetingArtifactSection
       label='Агенда следующей встречи'
       labelIcon={ListChecks}
-      status={agenda?.status ?? null}
-      canManage={canManage}
-      onRegenerate={onRegenerate}
-      regenerating={regenerating}
-      emptyIcon={CalendarClock}
-      emptyTitle='Агенды нет'
-      emptyDescription='Нет следующей встречи серии, для которой её можно собрать.'
-      generateLabel='Сгенерировать агенду'
+      headerAction={headerAction}
     >
-      {agenda && <AgendaContent agenda={agenda} />}
+      {body}
     </MeetingArtifactSection>
   );
 }

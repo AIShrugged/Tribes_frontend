@@ -6,6 +6,7 @@ export {
   generateMeetingSummary,
 } from './api/meeting-summary';
 export { getMeetingAgendas, generateMeetingAgenda } from './api/meeting-agenda';
+export { getMeetingDrafts } from './api/meeting-suggestions';
 export { getBrainAccessContext, canManageBrain } from './lib/access';
 
 export type {
@@ -42,6 +43,8 @@ export type {
   AgendaRawJson,
   AgendaDiscussionTopic,
   AgendaCommitmentCheck,
+  SaveMeetingSummaryPayload,
+  SaveMeetingAgendaPayload,
 } from './model/types';
 
 export { BrainTabsNav } from './ui/brain-tabs-nav';
