@@ -54,22 +54,35 @@ export async function getCalendarEventDetail(calendarEventId: string | number) {
  * Backend contract (POST /calendar-events/{id}/bot/require): `organization_id`
  * is `required_if:required_bot,true` and records which organization the bot was
  * connected from (the meeting then appears in that org's calendar). It is cleared
- * when disabling, so we only send it when enabling.
+ * when disabling, so we only send it when enabling. `scope` is `single` (this
+ * event) or `series` (every future occurrence of the recurring meeting).
  * @param eventId - calendar event id.
  * @param botRequired - whether the bot should join.
  * @param organizationId - org to connect the bot from; required when enabling.
+ * @param scope - 'single' (default) toggles this event; 'series' the whole series.
  */
 export async function switchBot(
   eventId: number,
   botRequired: boolean,
   organizationId?: number | null,
+  scope: 'single' | 'series' = 'single',
 ): Promise<ActionResult<CalendarEventDetailResponse>> {
-  const body: { required_bot: boolean; organization_id?: number } = {
+  const body: {
+    required_bot: boolean;
+    organization_id?: number;
+    scope?: 'series';
+  } = {
     required_bot: botRequired,
   };
 
   if (botRequired && organizationId != null) {
     body.organization_id = organizationId;
+  }
+
+  // Only send scope when it deviates from the backend default to keep the
+  // single-event request identical to before.
+  if (scope === 'series') {
+    body.scope = 'series';
   }
 
   try {

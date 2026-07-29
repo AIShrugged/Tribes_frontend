@@ -1,6 +1,6 @@
 'use client';
 
-import { Bot, BotOff, Minus, Plus } from 'lucide-react';
+import { Bot, BotOff, ChevronDown, Minus, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import { Button } from '@/shared/ui/button';
 import { useBotManage, type BotOrgOption } from '../model/bot-manage-context';
 
 import { BotOrgPicker } from './bot-org-picker';
+import { BotScopeMenu, type BotScope } from './bot-scope-menu';
 
 interface BotTriggerButtonProps {
   variant: 'pill' | 'block';
@@ -76,9 +77,12 @@ interface BotToggleButtonProps {
 /**
  * BotToggleButton — enables/disables the recording bot for a calendar event.
  *
- * Only the meeting creator sees it. Enabling requires choosing which organization
- * the bot is connected from: with a single org it is applied silently, with
- * several a picker is shown first. Disabling clears the org binding.
+ * Only the meeting creator sees it. The main button toggles the bot for this
+ * meeting; the caret opens a scope menu to apply the change to the whole recurring
+ * series (every future occurrence sharing the meeting link). Enabling requires
+ * choosing which organization the bot is connected from: with a single org it is
+ * applied silently, with several a picker is shown first. Disabling clears the org
+ * binding.
  */
 export function BotToggleButton({
   eventId,
@@ -94,7 +98,8 @@ export function BotToggleButton({
 
   const [isPending, startTransition] = useTransition();
   const [optimisticBotAdded, setOptimisticBotAdded] = useState(isBotAdded);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [menu, setMenu] = useState<'none' | 'scope' | 'org'>('none');
+  const [pendingScope, setPendingScope] = useState<BotScope>('single');
   const router = useRouter();
 
   // Only the organizer can manage the bot (backend enforces this too). A null
@@ -104,12 +109,18 @@ export function BotToggleButton({
     return null;
   }
 
-  const applyBot = (next: boolean, organizationId?: number) => {
+  const menuDirection = variant === 'block' ? 'up' : 'down';
+
+  const applyBot = (
+    next: boolean,
+    scope: BotScope,
+    organizationId?: number,
+  ) => {
     setOptimisticBotAdded(next);
-    setPickerOpen(false);
+    setMenu('none');
 
     startTransition(async () => {
-      const result = await switchBot(eventId, next, organizationId);
+      const result = await switchBot(eventId, next, organizationId, scope);
 
       if (result.error) {
         setOptimisticBotAdded(!next); // revert on error
@@ -122,54 +133,95 @@ export function BotToggleButton({
     });
   };
 
-  const handleToggle = () => {
-    if (optimisticBotAdded) {
-      applyBot(false);
+  // Resolve a toggle for the given scope: disabling applies immediately; enabling
+  // needs the organization the bot is connected from (silent for one org, picker
+  // for several).
+  const beginToggle = (scope: BotScope) => {
+    const next = !optimisticBotAdded;
+
+    if (!next) {
+      applyBot(false, scope);
 
       return;
     }
 
-    // Enabling — the backend needs the org the bot is connected from.
     if (organizations.length === 0) {
       toast.error('Join an organization before enabling the bot.');
+      setMenu('none');
 
       return;
     }
 
     if (organizations.length === 1) {
-      applyBot(true, organizations[0].id);
+      applyBot(true, scope, organizations[0].id);
 
       return;
     }
 
-    setPickerOpen((prev) => {
-      return !prev;
-    });
+    setPendingScope(scope);
+    setMenu('org');
   };
 
   const handleTriggerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleToggle();
+    beginToggle('single');
+  };
+
+  const handleCaretClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenu((prev) => {
+      return prev === 'scope' ? 'none' : 'scope';
+    });
   };
 
   return (
     <div className={variant === 'block' ? 'relative w-full' : 'relative'}>
-      <BotTriggerButton
-        variant={variant}
-        added={optimisticBotAdded}
-        disabled={isPending}
-        onClick={handleTriggerClick}
-      />
-      {pickerOpen && (
-        <BotOrgPicker
-          organizations={organizations}
-          direction={variant === 'block' ? 'up' : 'down'}
+      <div className='flex items-stretch gap-1'>
+        <div className={variant === 'block' ? 'flex-1' : ''}>
+          <BotTriggerButton
+            variant={variant}
+            added={optimisticBotAdded}
+            disabled={isPending}
+            onClick={handleTriggerClick}
+          />
+        </div>
+        <button
+          type='button'
+          aria-label='Apply bot to the whole series'
+          aria-haspopup='menu'
+          aria-expanded={menu === 'scope'}
           disabled={isPending}
-          onSelect={(orgId) => {
-            return applyBot(true, orgId);
+          onClick={handleCaretClick}
+          className='inline-flex items-center justify-center self-stretch rounded-full border border-border px-2 text-muted-foreground transition-colors hover:bg-white/5 disabled:opacity-50'
+        >
+          <ChevronDown className='h-3.5 w-3.5' />
+        </button>
+      </div>
+
+      {menu === 'scope' && (
+        <BotScopeMenu
+          added={optimisticBotAdded}
+          direction={menuDirection}
+          disabled={isPending}
+          onSelect={(scope) => {
+            return beginToggle(scope);
           }}
           onClose={() => {
-            return setPickerOpen(false);
+            return setMenu('none');
+          }}
+        />
+      )}
+
+      {menu === 'org' && (
+        <BotOrgPicker
+          organizations={organizations}
+          direction={menuDirection}
+          disabled={isPending}
+          onSelect={(orgId) => {
+            return applyBot(true, pendingScope, orgId);
+          }}
+          onClose={() => {
+            return setMenu('none');
           }}
         />
       )}

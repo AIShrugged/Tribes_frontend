@@ -188,7 +188,33 @@ describe('EventPopup', () => {
     await user.click(screen.getByRole('button', { name: /add bot/i }));
 
     await waitFor(() => {
-      expect(switchBotMock).toHaveBeenCalledWith(1, true, 10);
+      expect(switchBotMock).toHaveBeenCalledWith(1, true, 10, 'single');
+    });
+  });
+
+  it('enables the bot for the whole series from the scope menu', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EventPopup
+        event={makeEvent({ required_bot: false, creator_user_id: 1 })}
+        close={jest.fn()}
+        guests={[]}
+        attendees={[]}
+        currentUserId={1}
+        organizations={ORGS}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: /apply bot to the whole series/i }),
+    );
+    await user.click(
+      screen.getByRole('menuitem', { name: /all meetings in series/i }),
+    );
+
+    await waitFor(() => {
+      expect(switchBotMock).toHaveBeenCalledWith(1, true, 10, 'series');
     });
   });
 
@@ -221,7 +247,7 @@ describe('EventPopup', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Globex' }));
 
     await waitFor(() => {
-      expect(switchBotMock).toHaveBeenCalledWith(1, true, 20);
+      expect(switchBotMock).toHaveBeenCalledWith(1, true, 20, 'single');
     });
   });
 });
